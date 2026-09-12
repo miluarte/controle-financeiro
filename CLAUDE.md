@@ -52,6 +52,8 @@ Formulários — todos construídos (2026-09-12):
 
 Componentes novos de apoio, sem equivalente no shadcn instalado, criados como componentes isolados próprios (seguindo a regra deste arquivo): `components/ui/textarea.tsx`, `components/ui/switch.tsx`, `components/shared/currency-input.tsx` (input monetário controlado em centavos), `components/shared/color-picker.tsx` e `components/shared/icon-picker.tsx` (usam `COLOR_TOKENS`/`ICON_TOKENS`).
 
+PWA (2026-09-12): app instalável via `serwist`/`@serwist/turbopack` (Next 16 roda em Turbopack, então a integração é essa e não o `@serwist/next` clássico baseado em webpack). `app/manifest.ts` gera o manifest (ícones em `public/icons/`, gerados a partir das cores do tema — `--primary`/`--primary-foreground`). `app/sw.ts` é o service worker (precache + `defaultCache` do Serwist); `app/serwist/[path]/route.ts` expõe o bundle em `/serwist/sw.js`; `SerwistProvider` (`app/layout.tsx`) registra o worker no client. `app/~offline/page.tsx` é a página de fallback quando uma rota ainda não cacheada é aberta sem rede. Isso cobre "instalar como app" e cache básico das rotas já visitadas — não é um rearquitetamento para localStorage/client-only: os dados continuem vindo do backend Apps Script via `lib/api/client.ts`, sem mudança de arquitetura.
+
 Pendente:
 - Fechamento mensal automático (saldo final de um mês virar saldo inicial do seguinte) — precisa de lógica nova no backend, ainda não existe.
 - Lógica de fatura de cartão para parcelas (quando o saldo é de fato afetado) — decisão em aberto, documentada no próprio `Code.gs`.
