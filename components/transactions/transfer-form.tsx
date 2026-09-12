@@ -86,7 +86,7 @@ export function TransferForm() {
         <CardContent className="space-y-4 p-4">
           <div className="space-y-1.5">
             <Label htmlFor="fromAccount">De</Label>
-            <Select value={fromAccountId} onValueChange={setFromAccountId}>
+            <Select value={fromAccountId} onValueChange={v => setFromAccountId(v ?? '')}>
               <SelectTrigger id="fromAccount" className="w-full">
                 <SelectValue placeholder="Conta de origem" />
               </SelectTrigger>
@@ -100,7 +100,7 @@ export function TransferForm() {
 
           <div className="space-y-1.5">
             <Label htmlFor="toAccount">Para</Label>
-            <Select value={toAccountId} onValueChange={setToAccountId}>
+            <Select value={toAccountId} onValueChange={v => setToAccountId(v ?? '')}>
               <SelectTrigger id="toAccount" className="w-full">
                 <SelectValue placeholder="Conta de destino" />
               </SelectTrigger>

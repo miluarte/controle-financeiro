@@ -156,7 +156,7 @@ export function TransactionForm({ id }: TransactionFormProps) {
 
           <div className="space-y-1.5">
             <Label htmlFor="account">Conta</Label>
-            <Select value={accountId} onValueChange={setAccountId}>
+            <Select value={accountId} onValueChange={v => setAccountId(v ?? '')}>
               <SelectTrigger id="account" className="w-full">
                 <SelectValue placeholder="Selecionar conta" />
               </SelectTrigger>
