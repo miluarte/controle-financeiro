@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { buttonVariants } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { Plus, ArrowLeftRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function QuickActionBar() {
@@ -14,6 +14,13 @@ export function QuickActionBar() {
       >
         <Plus className="mr-2 h-4 w-4" />
         Nova transação
+      </Link>
+      <Link
+        href="/transactions/transfer"
+        className={cn(buttonVariants({ variant: 'outline' }), 'flex-1')}
+      >
+        <ArrowLeftRight className="mr-2 h-4 w-4" />
+        Transferir
       </Link>
     </div>
   )

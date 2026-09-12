@@ -9,7 +9,7 @@ interface AccountCardProps {
   account: Account
 }
 
-const ACCOUNT_TYPE_LABELS: Record<Account['type'], string> = {
+export const ACCOUNT_TYPE_LABELS: Record<Account['type'], string> = {
   checking: 'Conta corrente',
   savings: 'Poupança',
   credit_card: 'Cartão de crédito',

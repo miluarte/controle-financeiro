@@ -19,7 +19,9 @@ async function request<T>(
 
   const res = await fetch(url.toString(), {
     method,
-    headers: method === 'POST' ? { 'Content-Type': 'application/json' } : undefined,
+    // text/plain evita o preflight CORS que o Apps Script Web App não trata bem.
+    // O backend faz JSON.parse(e.postData.contents) independente do header.
+    headers: method === 'POST' ? { 'Content-Type': 'text/plain;charset=utf-8' } : undefined,
     body: method === 'POST' ? JSON.stringify(body) : undefined,
   })
 
