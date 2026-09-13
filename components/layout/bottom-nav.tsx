@@ -3,13 +3,24 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { WidgetIcon, WalletIcon, CardIcon, TagIcon } from '@solar-icons/react'
+import {
+  WidgetBoldDuotoneIcon,
+  WidgetBoldIcon,
+  WalletBoldDuotoneIcon,
+  WalletBoldIcon,
+  CardBoldDuotoneIcon,
+  CardBoldIcon,
+  TagBoldDuotoneIcon,
+  TagBoldIcon,
+} from '@solar-icons/react'
 
-const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Início', icon: WidgetIcon },
-  { href: '/accounts', label: 'Contas', icon: WalletIcon },
-  { href: '/installments', label: 'Parcelas', icon: CardIcon },
-  { href: '/categories', label: 'Categorias', icon: TagIcon },
+type SolarIcon = React.ComponentType<{ className?: string }>
+
+const NAV_ITEMS: { href: string; label: string; icon: SolarIcon; activeIcon: SolarIcon }[] = [
+  { href: '/dashboard',    label: 'Início',     icon: WidgetBoldDuotoneIcon, activeIcon: WidgetBoldIcon },
+  { href: '/accounts',     label: 'Contas',     icon: WalletBoldDuotoneIcon, activeIcon: WalletBoldIcon },
+  { href: '/installments', label: 'Parcelas',   icon: CardBoldDuotoneIcon,   activeIcon: CardBoldIcon },
+  { href: '/categories',   label: 'Categorias', icon: TagBoldDuotoneIcon,    activeIcon: TagBoldIcon },
 ]
 
 export function BottomNav() {
@@ -17,8 +28,9 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-[4.5rem] items-center justify-around border-t bg-background px-2">
-      {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+      {NAV_ITEMS.map(({ href, label, icon: Icon, activeIcon: ActiveIcon }) => {
         const active = pathname.startsWith(href)
+        const IconComponent = active ? ActiveIcon : Icon
         return (
           <Link
             key={href}
@@ -28,7 +40,7 @@ export function BottomNav() {
               active ? 'text-primary' : 'text-muted-foreground',
             )}
           >
-            <Icon className="h-6 w-6" />
+            <IconComponent className="h-6 w-6" />
             {label}
           </Link>
         )

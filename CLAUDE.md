@@ -17,6 +17,10 @@ Sempre usar variável, instância e variant: tokens de tema (`app/globals.css`, 
 
 Valores monetários são sempre armazenados e trafegados em centavos (inteiro), nunca em decimal de reais. Exibição em tela usa `formatCurrency` (`lib/utils.ts`), que faz essa conversão. Não reintroduzir número decimal de reais em nenhum tipo ou payload.
 
+Todos os ícones vêm exclusivamente da biblioteca `@solar-icons/react`. Nunca usar `lucide-react` nem outra biblioteca de ícones. O pacote exige o estilo no nome do export — usar sempre o sufixo `BoldDuotone` como padrão (ex: `CardBoldDuotoneIcon`, `AddBoldDuotoneIcon`). Nomes sem sufixo de estilo não existem no pacote e causam erro de build.
+
+Quando um item está **selecionado ou ativo**, trocar o ícone para a variante `Bold` (filled/solid, ex: `CardBoldIcon`). O estado inativo usa `BoldDuotone`; o estado ativo usa `Bold`. Isso vale para navegação (bottom nav), pickers e qualquer elemento com estado de seleção.
+
 ## Escopo desta fase (v1, núcleo financeiro)
 
 Contas e cartões (`Account`, com tipo checking/savings/credit_card/cash — cartão de crédito é uma conta com `creditLimit`/`closingDay`/`dueDay` preenchidos, não uma entidade separada).

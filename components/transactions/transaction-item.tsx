@@ -3,7 +3,7 @@
 import type { Category, Transaction } from '@/lib/types'
 import { formatCurrency, formatDate, cn } from '@/lib/utils'
 import { TokenIcon } from '@/components/shared/token-icon'
-import { RepeatIcon } from '@solar-icons/react'
+import { RepeatBoldDuotoneIcon } from '@solar-icons/react'
 
 interface TransactionItemProps {
   transaction: Transaction
@@ -32,7 +32,7 @@ export function TransactionItem({ transaction, category, onClick }: TransactionI
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <p className="truncate font-medium">{transaction.description}</p>
-          {isRecurring && <RepeatIcon className="size-3.5 shrink-0 text-muted-foreground" />}
+          {isRecurring && <RepeatBoldDuotoneIcon className="size-3.5 shrink-0 text-muted-foreground" />}
         </div>
         <p className="text-xs text-muted-foreground">
           {formatDate(transaction.date)}
