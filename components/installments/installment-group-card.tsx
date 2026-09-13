@@ -22,7 +22,7 @@ export function InstallmentGroupCard({ group, onClick }: InstallmentGroupCardPro
   return (
     <button type="button" onClick={onClick} className="w-full text-left">
       <Card>
-        <CardContent className="p-4">
+        <CardContent >
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="truncate font-medium">{group.description}</p>
