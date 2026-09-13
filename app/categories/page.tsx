@@ -13,7 +13,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { Plus } from 'lucide-react'
+import { AddIcon } from '@solar-icons/react'
 
 export default function CategoriesPage() {
   const [categorySheetOpen, setCategorySheetOpen] = useState(false)
@@ -29,7 +29,7 @@ export default function CategoriesPage() {
               Categorias
             </h2>
             <Button variant="ghost" size="icon-sm" onClick={() => setCategorySheetOpen(true)}>
-              <Plus className="size-4" />
+              <AddIcon className="size-4" />
             </Button>
           </div>
           <CategoryBadge />
@@ -40,7 +40,7 @@ export default function CategoriesPage() {
               Metas de orçamento
             </h2>
             <Button variant="ghost" size="icon-sm" onClick={() => setGoalSheetOpen(true)}>
-              <Plus className="size-4" />
+              <AddIcon className="size-4" />
             </Button>
           </div>
           <BudgetGoalItem />

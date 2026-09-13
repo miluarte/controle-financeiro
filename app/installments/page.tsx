@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { PageHeader } from '@/components/layout/page-header'
 import { InstallmentList } from '@/components/installments/installment-list'
 import { buttonVariants } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { AddIcon } from '@solar-icons/react'
 import { cn } from '@/lib/utils'
 
 export default function InstallmentsPage() {
@@ -15,7 +15,7 @@ export default function InstallmentsPage() {
             href="/transactions/new"
             className={cn(buttonVariants({ variant: 'ghost', size: 'icon-sm' }))}
           >
-            <Plus className="size-4" />
+            <AddIcon className="size-4" />
           </Link>
         }
       />

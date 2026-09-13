@@ -9,12 +9,13 @@ interface CurrencyInputProps {
   onChange: (cents: number) => void
   placeholder?: string
   className?: string
+  disabled?: boolean
 }
 
 // Input controlado inteiramente em centavos: o usuário digita números,
 // a exibição é formatada como moeda, e o valor que sai em onChange nunca
 // é decimal — mantém a regra de "valores monetários sempre em centavos".
-export function CurrencyInput({ id, value, onChange, placeholder, className }: CurrencyInputProps) {
+export function CurrencyInput({ id, value, onChange, placeholder, className, disabled }: CurrencyInputProps) {
   const display = value ? formatCurrency(value) : ''
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -30,6 +31,7 @@ export function CurrencyInput({ id, value, onChange, placeholder, className }: C
       value={display}
       onChange={handleChange}
       className={className}
+      disabled={disabled}
     />
   )
 }

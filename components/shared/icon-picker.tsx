@@ -1,51 +1,52 @@
 'use client'
 
 import {
-  Wallet,
-  CreditCard,
-  Banknote,
-  PiggyBank,
-  Building,
-  Utensils,
-  Car,
-  Home,
-  HeartPulse,
-  Book,
-  Gamepad2,
-  Shirt,
-  Ellipsis,
-  Briefcase,
-  Laptop,
-  TrendingUp,
-  PlusCircle,
-  type LucideIcon,
-} from 'lucide-react'
+  WalletMoneyIcon,
+  CardIcon,
+  BanknoteIcon,
+  MoneyBagIcon,
+  Buildings2Icon,
+  CupHotIcon,
+  ScooterIcon,
+  HomeIcon,
+  HeartPulseIcon,
+  BookIcon,
+  GamepadIcon,
+  TShirtIcon,
+  MenuDotsIcon,
+  SuitcaseIcon,
+  LaptopIcon,
+  GraphUpIcon,
+  AddCircleIcon,
+} from '@solar-icons/react'
 import { ICON_TOKENS, type IconToken } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+
+type SolarIcon = React.ComponentType<{ className?: string; iconStyle?: string }>
+
+export const ICON_MAP: Record<IconToken, SolarIcon> = {
+  wallet: WalletMoneyIcon,
+  'credit-card': CardIcon,
+  banknote: BanknoteIcon,
+  'piggy-bank': MoneyBagIcon,
+  building: Buildings2Icon,
+  utensils: CupHotIcon,
+  car: ScooterIcon,
+  home: HomeIcon,
+  'heart-pulse': HeartPulseIcon,
+  book: BookIcon,
+  'gamepad-2': GamepadIcon,
+  shirt: TShirtIcon,
+  ellipsis: MenuDotsIcon,
+  briefcase: SuitcaseIcon,
+  laptop: LaptopIcon,
+  'trending-up': GraphUpIcon,
+  'plus-circle': AddCircleIcon,
+}
 
 interface IconPickerProps {
   value: IconToken | null
   onChange: (icon: IconToken) => void
-}
-
-export const ICON_MAP: Record<IconToken, LucideIcon> = {
-  wallet: Wallet,
-  'credit-card': CreditCard,
-  banknote: Banknote,
-  'piggy-bank': PiggyBank,
-  building: Building,
-  utensils: Utensils,
-  car: Car,
-  home: Home,
-  'heart-pulse': HeartPulse,
-  book: Book,
-  'gamepad-2': Gamepad2,
-  shirt: Shirt,
-  ellipsis: Ellipsis,
-  briefcase: Briefcase,
-  laptop: Laptop,
-  'trending-up': TrendingUp,
-  'plus-circle': PlusCircle,
 }
 
 export function IconPicker({ value, onChange }: IconPickerProps) {

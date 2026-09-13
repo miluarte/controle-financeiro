@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useAccounts } from '@/hooks/use-accounts'
 import { AccountCard } from './account-card'
 import { buttonVariants } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { AddIcon } from '@solar-icons/react'
 import { cn } from '@/lib/utils'
 
 export function AccountBalanceList() {
@@ -26,7 +26,7 @@ export function AccountBalanceList() {
         href="/accounts/new"
         className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
       >
-        <Plus className="mr-2 h-4 w-4" />
+        <AddIcon className="mr-2 h-4 w-4" />
         Adicionar conta
       </Link>
     </div>
