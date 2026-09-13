@@ -33,7 +33,7 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
           aria-pressed={value === token}
           onClick={() => onChange(token)}
           className={cn(
-            'size-7 rounded-full ring-1 ring-foreground/10 transition-all',
+            'size-10 rounded-full ring-1 ring-foreground/10 transition-all',
             SWATCH_CLASS[token],
             value === token && 'ring-2 ring-offset-2 ring-ring',
           )}

@@ -16,10 +16,10 @@ export function PageHeader({ title, back, actions, className }: PageHeaderProps)
   const router = useRouter()
 
   return (
-    <header className={cn('flex h-14 items-center gap-2 border-b bg-background px-4', className)}>
+    <header className={cn('flex h-16 items-center gap-2 border-b bg-background px-4', className)}>
       {back && (
-        <Button variant="ghost" size="icon" onClick={() => router.back()} className="-ml-2">
-          <ChevronLeft className="h-5 w-5" />
+        <Button variant="ghost" size="icon" onClick={() => router.back()} className="-ml-2.5">
+          <ChevronLeft className="h-6 w-6" />
         </Button>
       )}
       <h1 className="flex-1 text-lg font-semibold">{title}</h1>
