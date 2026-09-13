@@ -18,7 +18,6 @@ const STATUS_LABELS: Record<InstallmentGroup['status'], string> = {
 
 export function InstallmentGroupCard({ group, onClick }: InstallmentGroupCardProps) {
   const paidCount = effectivePaidCount(group.paidCount, group.installmentCount, group.startDate)
-  const remaining = group.installmentCount - paidCount
 
   return (
     <button type="button" onClick={onClick} className="w-full text-left">
@@ -30,9 +29,6 @@ export function InstallmentGroupCard({ group, onClick }: InstallmentGroupCardPro
               <p className="mt-1 text-sm text-muted-foreground">
                 {paidCount}/{group.installmentCount} pagas ·{' '}
                 {formatCurrency(group.installmentAmount)}/mês
-                {group.status === 'active' && remaining > 0 && (
-                  <> · <span className="text-foreground">{formatCurrency(group.installmentAmount * remaining)} restam</span></>
-                )}
               </p>
             </div>
             <Badge
