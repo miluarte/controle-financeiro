@@ -27,3 +27,21 @@ export function monthLabel(month: string): string {
   const date = new Date(Number(year), Number(m) - 1, 1)
   return date.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
 }
+
+/**
+ * Retorna o número efetivo de parcelas pagas de um grupo de parcelamento.
+ * Todas as parcelas anteriores ao mês atual são consideradas pagas,
+ * independentemente do paidCount armazenado no backend.
+ */
+export function effectivePaidCount(
+  paidCount: number,
+  installmentCount: number,
+  startDate: string,
+): number {
+  const start = new Date(startDate.slice(0, 10))
+  const now = new Date()
+  const monthsElapsed =
+    (now.getFullYear() - start.getFullYear()) * 12 +
+    (now.getMonth() - start.getMonth())
+  return Math.min(Math.max(paidCount, Math.max(0, monthsElapsed)), installmentCount)
+}

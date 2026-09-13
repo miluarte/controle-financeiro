@@ -18,7 +18,7 @@ import { CategoryPicker } from '@/components/categories/category-picker'
 import { useInstallments } from '@/hooks/use-installments'
 import { useAccounts } from '@/hooks/use-accounts'
 import type { InstallmentGroup } from '@/lib/types'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, effectivePaidCount } from '@/lib/utils'
 
 const STATUS_LABELS: Record<InstallmentGroup['status'], string> = {
   active: 'Em aberto',
@@ -45,7 +45,8 @@ export function InstallmentGroupEditForm({ group, onSuccess }: InstallmentGroupE
   const [error, setError] = useState<string | null>(null)
 
   const activeAccounts = accounts.filter(a => !a.archived)
-  const remaining = group.installmentCount - group.paidCount
+  const paidCount = effectivePaidCount(group.paidCount, group.installmentCount, group.startDate)
+  const remaining = group.installmentCount - paidCount
   const isActive = group.status === 'active'
 
   const count = Math.max(1, Number(installmentCount) || 1)
@@ -103,7 +104,7 @@ export function InstallmentGroupEditForm({ group, onSuccess }: InstallmentGroupE
         <CardContent className="grid grid-cols-3 gap-3 p-4 text-center">
           <div>
             <p className="text-xs text-muted-foreground">Pagas</p>
-            <p className="text-lg font-semibold">{group.paidCount}/{group.installmentCount}</p>
+            <p className="text-lg font-semibold">{paidCount}/{group.installmentCount}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Por parcela</p>
