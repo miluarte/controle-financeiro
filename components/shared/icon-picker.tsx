@@ -61,11 +61,11 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
             aria-pressed={value === token}
             onClick={() => onChange(token)}
             className={cn(
-              'flex size-8 items-center justify-center rounded-lg border border-input bg-transparent text-muted-foreground transition-colors',
+              'flex size-11 items-center justify-center rounded-lg border border-input bg-transparent text-muted-foreground transition-colors',
               value === token && 'border-primary bg-primary/10 text-primary',
             )}
           >
-            <Icon className="size-4" />
+            <Icon className="size-5" />
           </button>
         )
       })}
