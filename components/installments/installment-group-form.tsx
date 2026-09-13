@@ -122,7 +122,11 @@ export function InstallmentGroupForm({ onSuccess }: InstallmentGroupFormProps) {
 
           <div className="space-y-1.5">
             <Label htmlFor="installment-account">Cartão / conta</Label>
-            <Select value={accountId} onValueChange={v => setAccountId(v ?? '')}>
+            <Select
+              value={accountId}
+              onValueChange={v => setAccountId(v ?? '')}
+              items={Object.fromEntries(active.map(a => [a.id, a.name]))}
+            >
               <SelectTrigger id="installment-account" className="w-full">
                 <SelectValue placeholder="Selecionar" />
               </SelectTrigger>

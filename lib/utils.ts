@@ -8,7 +8,10 @@ export function formatCurrency(cents: number): string {
 }
 
 export function formatDate(date: string): string {
-  const [year, month, day] = date.split('-')
+  // A planilha às vezes devolve a data como timestamp ISO completo
+  // (2026-09-10T00:00:00.000Z) em vez de só "2026-09-10". Pegar os
+  // 10 primeiros caracteres cobre os dois formatos.
+  const [year, month, day] = date.slice(0, 10).split('-')
   return `${day}/${month}/${year}`
 }
 

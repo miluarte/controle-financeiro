@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { useTransactions } from '@/hooks/use-transactions'
 import { formatCurrency, currentMonth, monthLabel, cn } from '@/lib/utils'
 
@@ -18,35 +18,52 @@ export function MonthlySummaryCard() {
 
   const balance = totalIncome - totalExpense
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base capitalize">{monthLabel(month)}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
+  if (loading) {
+    return (
+      <Card>
+        <CardContent>
           <p className="text-sm text-muted-foreground">Carregando...</p>
-        ) : error ? (
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent>
           <p className="text-sm text-destructive">{error}</p>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Entrou</span>
-              <span className="font-medium text-green-600">{formatCurrency(totalIncome)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Saiu</span>
-              <span className="font-medium text-red-600">{formatCurrency(totalExpense)}</span>
-            </div>
-            <div className="flex items-center justify-between border-t pt-3">
-              <span className="text-sm font-medium">Saldo do mês</span>
-              <span className={cn('text-lg font-semibold', balance < 0 ? 'text-destructive' : 'text-foreground')}>
-                {formatCurrency(balance)}
-              </span>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      <Card>
+        <CardContent className="flex flex-col items-center gap-1 text-center">
+          <span className="text-sm text-muted-foreground capitalize">{monthLabel(month)}</span>
+          <span className={cn('text-3xl font-semibold', balance < 0 ? 'text-destructive' : 'text-foreground')}>
+            {formatCurrency(balance)}
+          </span>
+          <span className="text-xs text-muted-foreground">Saldo do mês</span>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Card>
+          <CardContent className="flex flex-col gap-1">
+            <span className="text-sm text-muted-foreground">Entrou</span>
+            <span className="text-lg font-semibold text-green-600">{formatCurrency(totalIncome)}</span>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex flex-col gap-1">
+            <span className="text-sm text-muted-foreground">Saiu</span>
+            <span className="text-lg font-semibold text-red-600">{formatCurrency(totalExpense)}</span>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 }

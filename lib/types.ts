@@ -41,9 +41,29 @@ export interface Transaction {
   installmentGroupId: string | null
   installmentNumber: number | null
   installmentTotal: number | null
+  recurringGroupId: string | null
+  purchaseDate: string | null
+  merchant: string | null
   notes: string | null
   createdAt: string
   updatedAt: string
+}
+
+export type RecurrenceFrequency = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'yearly'
+
+export interface RecurringGroup {
+  id: string
+  type: 'income' | 'expense'
+  description: string
+  amount: number
+  accountId: string
+  categoryId: string | null
+  frequency: RecurrenceFrequency
+  startDate: string
+  endDate: string | null
+  active: boolean
+  notes: string | null
+  createdAt: string
 }
 
 export type InstallmentGroupStatus = 'active' | 'paid_off' | 'cancelled'

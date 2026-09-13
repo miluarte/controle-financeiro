@@ -1,45 +1,27 @@
-'use client'
-
-import { useState } from 'react'
+import Link from 'next/link'
 import { PageHeader } from '@/components/layout/page-header'
 import { InstallmentList } from '@/components/installments/installment-list'
-import { InstallmentGroupForm } from '@/components/installments/installment-group-form'
-import { Button } from '@/components/ui/button'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
+import { buttonVariants } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export default function InstallmentsPage() {
-  const [open, setOpen] = useState(false)
-
   return (
     <>
       <PageHeader
         title="Parcelamentos"
         actions={
-          <Button variant="ghost" size="icon-sm" onClick={() => setOpen(true)}>
+          <Link
+            href="/transactions/new"
+            className={cn(buttonVariants({ variant: 'ghost', size: 'icon-sm' }))}
+          >
             <Plus className="size-4" />
-          </Button>
+          </Link>
         }
       />
       <div className="p-4">
         <InstallmentList />
       </div>
-
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom">
-          <SheetHeader>
-            <SheetTitle>Novo parcelamento</SheetTitle>
-          </SheetHeader>
-          <div className="px-4 pb-4">
-            <InstallmentGroupForm onSuccess={() => setOpen(false)} />
-          </div>
-        </SheetContent>
-      </Sheet>
     </>
   )
 }
