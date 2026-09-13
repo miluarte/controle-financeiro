@@ -1,7 +1,7 @@
 'use client'
 
 import { useCategories } from '@/hooks/use-categories'
-import { Badge } from '@/components/ui/badge'
+import { TokenIcon } from '@/components/shared/token-icon'
 
 export function CategoryBadge() {
   const { categories, loading, error } = useCategories()
@@ -12,9 +12,13 @@ export function CategoryBadge() {
   return (
     <div className="flex flex-wrap gap-2">
       {categories.map(cat => (
-        <Badge key={cat.id} variant="outline">
-          {cat.name}
-        </Badge>
+        <div
+          key={cat.id}
+          className="flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-sm"
+        >
+          <TokenIcon icon={cat.icon} color={cat.color} size="sm" />
+          <span>{cat.name}</span>
+        </div>
       ))}
     </div>
   )

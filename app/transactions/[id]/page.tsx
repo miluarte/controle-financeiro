@@ -9,7 +9,7 @@ export default async function TransactionDetailPage({ params }: Props) {
   const { id } = await params
   return (
     <>
-      <PageHeader title={id === 'new' ? 'Novo lançamento' : 'Editar lançamento'} back />
+      <PageHeader title={id === 'new' ? 'Nova transação' : 'Editar transação'} back />
       <div className="p-4">
         <TransactionForm id={id === 'new' ? undefined : id} />
       </div>

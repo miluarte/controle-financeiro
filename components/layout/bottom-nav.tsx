@@ -3,11 +3,10 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { LayoutDashboard, ArrowLeftRight, Wallet, CreditCard, Tag } from 'lucide-react'
+import { LayoutDashboard, Wallet, CreditCard, Tag } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Início', icon: LayoutDashboard },
-  { href: '/transactions', label: 'Lançamentos', icon: ArrowLeftRight },
   { href: '/accounts', label: 'Contas', icon: Wallet },
   { href: '/installments', label: 'Parcelas', icon: CreditCard },
   { href: '/categories', label: 'Categorias', icon: Tag },

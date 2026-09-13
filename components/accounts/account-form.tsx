@@ -126,7 +126,11 @@ export function AccountForm({ id }: AccountFormProps) {
 
           <div className="space-y-1.5">
             <Label htmlFor="type">Tipo</Label>
-            <Select value={type} onValueChange={v => setType(v as AccountType)}>
+            <Select
+              value={type}
+              onValueChange={v => setType(v as AccountType)}
+              items={ACCOUNT_TYPE_LABELS}
+            >
               <SelectTrigger id="type" className="w-full">
                 <SelectValue />
               </SelectTrigger>

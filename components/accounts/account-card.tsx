@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { TokenIcon } from '@/components/shared/token-icon'
 import type { Account } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 
@@ -19,14 +20,15 @@ export const ACCOUNT_TYPE_LABELS: Record<Account['type'], string> = {
 export function AccountCard({ account }: AccountCardProps) {
   return (
     <Card>
-      <CardContent className="flex items-center justify-between p-4">
-        <div>
-          <p className="font-medium">{account.name}</p>
-          <Badge variant="secondary" className="mt-1 text-xs">
+      <CardContent className="flex items-center gap-3 p-4">
+        <TokenIcon icon={account.icon} color={account.color} size="md" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium">{account.name}</p>
+          <Badge variant="secondary" className="mt-0.5 text-xs">
             {ACCOUNT_TYPE_LABELS[account.type]}
           </Badge>
         </div>
-        <p className="text-lg font-semibold">
+        <p className={`shrink-0 text-base font-semibold ${account.currentBalance < 0 ? 'text-destructive' : ''}`}>
           {formatCurrency(account.currentBalance)}
         </p>
       </CardContent>

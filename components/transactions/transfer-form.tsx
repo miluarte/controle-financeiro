@@ -36,6 +36,7 @@ export function TransferForm() {
   const [error, setError] = useState<string | null>(null)
 
   const active = accounts.filter(a => !a.archived)
+  const accountItems = Object.fromEntries(active.map(a => [a.id, a.name]))
 
   useEffect(() => {
     if (!fromAccountId && active.length > 0) setFromAccountId(active[0].id)
@@ -70,9 +71,12 @@ export function TransferForm() {
         installmentGroupId: null,
         installmentNumber: null,
         installmentTotal: null,
+        recurringGroupId: null,
+        purchaseDate: null,
+        merchant: null,
         notes: null,
       })
-      router.push('/transactions')
+      router.push('/dashboard')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erro ao transferir')
     } finally {
@@ -86,7 +90,11 @@ export function TransferForm() {
         <CardContent className="space-y-4 p-4">
           <div className="space-y-1.5">
             <Label htmlFor="fromAccount">De</Label>
-            <Select value={fromAccountId} onValueChange={v => setFromAccountId(v ?? '')}>
+            <Select
+              value={fromAccountId}
+              onValueChange={v => setFromAccountId(v ?? '')}
+              items={accountItems}
+            >
               <SelectTrigger id="fromAccount" className="w-full">
                 <SelectValue placeholder="Conta de origem" />
               </SelectTrigger>
@@ -100,7 +108,11 @@ export function TransferForm() {
 
           <div className="space-y-1.5">
             <Label htmlFor="toAccount">Para</Label>
-            <Select value={toAccountId} onValueChange={v => setToAccountId(v ?? '')}>
+            <Select
+              value={toAccountId}
+              onValueChange={v => setToAccountId(v ?? '')}
+              items={accountItems}
+            >
               <SelectTrigger id="toAccount" className="w-full">
                 <SelectValue placeholder="Conta de destino" />
               </SelectTrigger>
