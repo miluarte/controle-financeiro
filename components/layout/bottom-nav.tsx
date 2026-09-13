@@ -27,21 +27,34 @@ export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-[4.5rem] items-center justify-around border-t bg-background px-2">
+    <nav
+      className={cn(
+        'fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around',
+        'border-t border-border/60 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70',
+        'px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]',
+      )}
+    >
       {NAV_ITEMS.map(({ href, label, icon: Icon, activeIcon: ActiveIcon }) => {
         const active = pathname.startsWith(href)
         const IconComponent = active ? ActiveIcon : Icon
         return (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              'flex min-w-16 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-2.5 text-xs font-medium transition-colors',
-              active ? 'text-primary' : 'text-muted-foreground',
-            )}
-          >
-            <IconComponent className="h-6 w-6" />
-            {label}
+          <Link key={href} href={href} className="flex min-w-16 flex-1 flex-col items-center gap-1">
+            <span
+              className={cn(
+                'flex items-center justify-center rounded-full px-4 py-1 transition-colors',
+                active && 'bg-secondary',
+              )}
+            >
+              <IconComponent className={cn('h-6 w-6', active ? 'text-primary' : 'text-muted-foreground')} />
+            </span>
+            <span
+              className={cn(
+                'text-xs font-medium transition-colors',
+                active ? 'text-primary' : 'text-muted-foreground',
+              )}
+            >
+              {label}
+            </span>
           </Link>
         )
       })}
