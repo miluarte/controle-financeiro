@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { InstallmentGroup } from '@/lib/types'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, effectivePaidCount } from '@/lib/utils'
 
 interface InstallmentGroupCardProps {
   group: InstallmentGroup
@@ -17,7 +17,8 @@ const STATUS_LABELS: Record<InstallmentGroup['status'], string> = {
 }
 
 export function InstallmentGroupCard({ group, onClick }: InstallmentGroupCardProps) {
-  const remaining = group.installmentCount - group.paidCount
+  const paidCount = effectivePaidCount(group.paidCount, group.installmentCount, group.startDate)
+  const remaining = group.installmentCount - paidCount
 
   return (
     <button type="button" onClick={onClick} className="w-full text-left">
@@ -27,7 +28,7 @@ export function InstallmentGroupCard({ group, onClick }: InstallmentGroupCardPro
             <div className="min-w-0">
               <p className="truncate font-medium">{group.description}</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {group.paidCount}/{group.installmentCount} pagas ·{' '}
+                {paidCount}/{group.installmentCount} pagas ·{' '}
                 {formatCurrency(group.installmentAmount)}/mês
                 {group.status === 'active' && remaining > 0 && (
                   <> · <span className="text-foreground">{formatCurrency(group.installmentAmount * remaining)} restam</span></>

@@ -43,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR" className={`${geistSans.variable} h-full antialiased`}>
       <body className="h-full bg-background font-sans text-foreground">
-        <SerwistProvider swUrl="/serwist/sw.js">
+        <SerwistProvider swUrl="/serwist/sw.js" disable={process.env.NODE_ENV !== 'production'}>
           <AppShell>{children}</AppShell>
         </SerwistProvider>
       </body>
