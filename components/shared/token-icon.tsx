@@ -1,23 +1,23 @@
 'use client'
 
 import {
-  WalletMoneyIcon,
-  CardIcon,
-  BanknoteIcon,
-  MoneyBagIcon,
-  Buildings2Icon,
-  CupHotIcon,
-  ScooterIcon,
-  HomeIcon,
-  HeartPulseIcon,
-  BookIcon,
-  GamepadIcon,
-  TShirtIcon,
-  MenuDotsIcon,
-  SuitcaseIcon,
-  LaptopIcon,
-  GraphUpIcon,
-  AddCircleIcon,
+  WalletMoneyBoldDuotoneIcon,
+  CardBoldDuotoneIcon,
+  BanknoteBoldDuotoneIcon,
+  MoneyBagBoldDuotoneIcon,
+  BuildingsBoldDuotoneIcon,
+  CupHotBoldDuotoneIcon,
+  ScooterBoldDuotoneIcon,
+  HomeBoldDuotoneIcon,
+  HeartPulseBoldDuotoneIcon,
+  BookBoldDuotoneIcon,
+  GamepadBoldDuotoneIcon,
+  TShirtBoldDuotoneIcon,
+  MenuDotsBoldDuotoneIcon,
+  SuitcaseBoldDuotoneIcon,
+  LaptopBoldDuotoneIcon,
+  GraphUpBoldDuotoneIcon,
+  AddCircleBoldDuotoneIcon,
 } from '@solar-icons/react'
 import { cn } from '@/lib/utils'
 import type { ColorToken, IconToken } from '@/lib/constants'
@@ -25,23 +25,23 @@ import type { ColorToken, IconToken } from '@/lib/constants'
 type SolarIcon = React.ComponentType<{ className?: string; iconStyle?: string }>
 
 export const ICON_MAP: Record<IconToken, SolarIcon> = {
-  'wallet': WalletMoneyIcon,
-  'credit-card': CardIcon,
-  'banknote': BanknoteIcon,
-  'piggy-bank': MoneyBagIcon,
-  'building': Buildings2Icon,
-  'utensils': CupHotIcon,
-  'car': ScooterIcon,
-  'home': HomeIcon,
-  'heart-pulse': HeartPulseIcon,
-  'book': BookIcon,
-  'gamepad-2': GamepadIcon,
-  'shirt': TShirtIcon,
-  'ellipsis': MenuDotsIcon,
-  'briefcase': SuitcaseIcon,
-  'laptop': LaptopIcon,
-  'trending-up': GraphUpIcon,
-  'plus-circle': AddCircleIcon,
+  'wallet': WalletMoneyBoldDuotoneIcon,
+  'credit-card': CardBoldDuotoneIcon,
+  'banknote': BanknoteBoldDuotoneIcon,
+  'piggy-bank': MoneyBagBoldDuotoneIcon,
+  'building': BuildingsBoldDuotoneIcon,
+  'utensils': CupHotBoldDuotoneIcon,
+  'car': ScooterBoldDuotoneIcon,
+  'home': HomeBoldDuotoneIcon,
+  'heart-pulse': HeartPulseBoldDuotoneIcon,
+  'book': BookBoldDuotoneIcon,
+  'gamepad-2': GamepadBoldDuotoneIcon,
+  'shirt': TShirtBoldDuotoneIcon,
+  'ellipsis': MenuDotsBoldDuotoneIcon,
+  'briefcase': SuitcaseBoldDuotoneIcon,
+  'laptop': LaptopBoldDuotoneIcon,
+  'trending-up': GraphUpBoldDuotoneIcon,
+  'plus-circle': AddCircleBoldDuotoneIcon,
 }
 
 // Classes completas para garantir que o Tailwind inclua no bundle
@@ -72,7 +72,7 @@ interface TokenIconProps {
 }
 
 export function TokenIcon({ icon, color, size = 'md', className }: TokenIconProps) {
-  const Icon = (ICON_MAP[icon as IconToken] ?? WalletMoneyIcon) as SolarIcon
+  const Icon = (ICON_MAP[icon as IconToken] ?? WalletMoneyBoldDuotoneIcon) as SolarIcon
   const colorClass = COLOR_CLASSES[color as ColorToken] ?? COLOR_CLASSES.gray
   const s = SIZE[size] ?? SIZE.md
 

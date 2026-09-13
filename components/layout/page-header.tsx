@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { AltArrowLeftIcon } from '@solar-icons/react'
+import { AltArrowLeftBoldDuotoneIcon } from '@solar-icons/react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -19,7 +19,7 @@ export function PageHeader({ title, back, actions, className }: PageHeaderProps)
     <header className={cn('flex h-16 items-center gap-2 border-b bg-background px-4', className)}>
       {back && (
         <Button variant="ghost" size="icon" onClick={() => router.back()} className="-ml-2.5">
-          <AltArrowLeftIcon className="h-6 w-6" />
+          <AltArrowLeftBoldDuotoneIcon className="h-6 w-6" />
         </Button>
       )}
       <h1 className="flex-1 text-lg font-semibold">{title}</h1>
