@@ -52,7 +52,7 @@ export default function CategoriesPage() {
           <SheetHeader>
             <SheetTitle>Nova categoria</SheetTitle>
           </SheetHeader>
-          <div className="px-4 pb-4">
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
             <CategoryForm onSuccess={() => setCategorySheetOpen(false)} />
           </div>
         </SheetContent>
@@ -63,7 +63,7 @@ export default function CategoriesPage() {
           <SheetHeader>
             <SheetTitle>Nova meta de orçamento</SheetTitle>
           </SheetHeader>
-          <div className="px-4 pb-4">
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
             <BudgetGoalForm onSuccess={() => setGoalSheetOpen(false)} />
           </div>
         </SheetContent>
