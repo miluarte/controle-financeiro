@@ -13,6 +13,12 @@ export const installmentsApi = {
       data,
     ),
 
+  update: (data: { id: string; description?: string; categoryId?: string | null; accountId?: string }) =>
+    api.post<InstallmentGroup>('updateInstallmentGroup', data),
+
+  cancel: (groupId: string) =>
+    api.post<InstallmentGroup>('cancelInstallmentGroup', { groupId }),
+
   payOff: (groupId: string) =>
     api.post<InstallmentGroup>('payOffInstallments', { groupId }),
 }
