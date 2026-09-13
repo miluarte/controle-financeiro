@@ -32,11 +32,23 @@ export function useInstallments(accountId?: string) {
     return result
   }, [])
 
+  const update = useCallback(async (data: Parameters<typeof installmentsApi.update>[0]) => {
+    const group = await installmentsApi.update(data)
+    setGroups(prev => prev.map(g => g.id === group.id ? group : g))
+    return group
+  }, [])
+
+  const cancel = useCallback(async (groupId: string) => {
+    const group = await installmentsApi.cancel(groupId)
+    setGroups(prev => prev.map(g => g.id === group.id ? group : g))
+    return group
+  }, [])
+
   const payOff = useCallback(async (groupId: string) => {
     const group = await installmentsApi.payOff(groupId)
     setGroups(prev => prev.map(g => g.id === group.id ? group : g))
     return group
   }, [])
 
-  return { groups, loading, error, reload: load, create, payOff }
+  return { groups, loading, error, reload: load, create, update, cancel, payOff }
 }
