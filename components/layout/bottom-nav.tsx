@@ -3,13 +3,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { LayoutDashboard, Wallet, CreditCard, Tag } from 'lucide-react'
+import { WidgetIcon, WalletIcon, CardIcon, TagIcon } from '@solar-icons/react'
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Início', icon: LayoutDashboard },
-  { href: '/accounts', label: 'Contas', icon: Wallet },
-  { href: '/installments', label: 'Parcelas', icon: CreditCard },
-  { href: '/categories', label: 'Categorias', icon: Tag },
+  { href: '/dashboard', label: 'Início', icon: WidgetIcon },
+  { href: '/accounts', label: 'Contas', icon: WalletIcon },
+  { href: '/installments', label: 'Parcelas', icon: CardIcon },
+  { href: '/categories', label: 'Categorias', icon: TagIcon },
 ]
 
 export function BottomNav() {

@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { X } from 'lucide-react'
+import { CloseIcon } from '@solar-icons/react'
 import { useBudgetGoals } from '@/hooks/use-budget-goals'
 import { useCategories } from '@/hooks/use-categories'
 import { useTransactions } from '@/hooks/use-transactions'
@@ -46,7 +46,7 @@ export function BudgetGoalItem() {
               className="mt-0.5"
               onClick={() => { remove(goal.id).catch(() => {}) }}
             >
-              <X className="size-4" />
+              <CloseIcon className="size-4" />
             </Button>
           </div>
         )
