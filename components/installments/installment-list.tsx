@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useInstallments } from '@/hooks/use-installments'
+import { effectivePaidCount } from '@/lib/utils'
 import { InstallmentGroupCard } from './installment-group-card'
 import { InstallmentGroupEditForm } from './installment-group-edit-form'
 import {
@@ -12,19 +13,36 @@ import {
 } from '@/components/ui/sheet'
 import type { InstallmentGroup } from '@/lib/types'
 
-export function InstallmentList() {
+function hasInstallmentInMonth(group: InstallmentGroup, ym: string): boolean {
+  const start = new Date(group.startDate.slice(0, 10) + 'T12:00:00')
+  const [y, m] = ym.split('-').map(Number)
+  const monthIndex = (y - start.getFullYear()) * 12 + (m - 1 - start.getMonth())
+  const paid = effectivePaidCount(group.paidCount, group.installmentCount, group.startDate)
+  return monthIndex >= paid && monthIndex < group.installmentCount
+}
+
+interface InstallmentListProps {
+  selectedMonth?: string
+}
+
+export function InstallmentList({ selectedMonth }: InstallmentListProps) {
   const { groups, loading, error } = useInstallments()
   const [editing, setEditing] = useState<InstallmentGroup | null>(null)
 
   if (loading) return <p className="text-sm text-muted-foreground">Carregando...</p>
   if (error) return <p className="text-sm text-destructive">{error}</p>
-  if (groups.length === 0)
+
+  const visible = selectedMonth
+    ? groups.filter(g => g.status === 'active' && hasInstallmentInMonth(g, selectedMonth))
+    : groups
+
+  if (visible.length === 0)
     return <p className="text-sm text-muted-foreground">Nenhum parcelamento encontrado.</p>
 
   return (
     <>
       <div className="space-y-3">
-        {groups.map(group => (
+        {visible.map(group => (
           <InstallmentGroupCard
             key={group.id}
             group={group}

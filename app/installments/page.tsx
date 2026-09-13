@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/page-header'
-import { InstallmentList } from '@/components/installments/installment-list'
-import { InstallmentMonthlyChart } from '@/components/installments/installment-monthly-chart'
+import { InstallmentView } from '@/components/installments/installment-view'
 import { buttonVariants } from '@/components/ui/button'
 import { AddBoldDuotoneIcon } from '@solar-icons/react'
 import { cn } from '@/lib/utils'
@@ -21,8 +20,7 @@ export default function InstallmentsPage() {
         }
       />
       <div className="p-4">
-        <InstallmentMonthlyChart />
-        <InstallmentList />
+        <InstallmentView />
       </div>
     </>
   )
