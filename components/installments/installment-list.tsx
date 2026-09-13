@@ -38,7 +38,7 @@ export function InstallmentList() {
           <SheetHeader>
             <SheetTitle>Editar parcelamento</SheetTitle>
           </SheetHeader>
-          <div className="overflow-y-auto px-4 pb-6">
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">
             {editing && (
               <InstallmentGroupEditForm
                 group={editing}
