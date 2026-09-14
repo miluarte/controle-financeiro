@@ -125,6 +125,9 @@ export function TransactionForm({ id, initialTransaction, onSuccess }: Transacti
   const handleParceladoChange = (v: boolean) => { setParcelado(v); if (v) setRecorrente(false) }
   const handleRecorrenteChange = (v: boolean) => { setRecorrente(v); if (v) setParcelado(false) }
   useEffect(() => { if (type !== 'expense') setParcelado(false) }, [type])
+  useEffect(() => {
+    if (type !== 'expense') { setPurchaseDate(''); setMerchant('') }
+  }, [type])
 
   const done = () => (onSuccess ? onSuccess() : router.push('/dashboard'))
 
@@ -335,25 +338,29 @@ export function TransactionForm({ id, initialTransaction, onSuccess }: Transacti
             <CategoryPicker type={type} value={categoryId ?? undefined} onChange={setCategoryId} />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="purchaseDate">Data da compra <span className="text-muted-foreground">(opcional)</span></Label>
-            <Input
-              id="purchaseDate"
-              type="date"
-              value={purchaseDate}
-              onChange={e => setPurchaseDate(e.target.value)}
-            />
-          </div>
+          {type === 'expense' && (
+            <>
+              <div className="space-y-1.5">
+                <Label htmlFor="purchaseDate">Data da compra <span className="text-muted-foreground">(opcional)</span></Label>
+                <Input
+                  id="purchaseDate"
+                  type="date"
+                  value={purchaseDate}
+                  onChange={e => setPurchaseDate(e.target.value)}
+                />
+              </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="merchant">Local da compra <span className="text-muted-foreground">(opcional)</span></Label>
-            <Input
-              id="merchant"
-              value={merchant}
-              onChange={e => setMerchant(e.target.value)}
-              placeholder="Ex: Supermercado Pão de Açúcar"
-            />
-          </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="merchant">Local da compra <span className="text-muted-foreground">(opcional)</span></Label>
+                <Input
+                  id="merchant"
+                  value={merchant}
+                  onChange={e => setMerchant(e.target.value)}
+                  placeholder="Ex: Supermercado Pão de Açúcar"
+                />
+              </div>
+            </>
+          )}
 
           <div className="space-y-1.5">
             <Label htmlFor="notes">Notas</Label>
