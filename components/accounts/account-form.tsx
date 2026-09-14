@@ -110,6 +110,29 @@ export function AccountForm({ id }: AccountFormProps) {
     }
   }
 
+  async function handleRestore() {
+    if (!existing) return
+    setSubmitting(true)
+    setError(null)
+    try {
+      await update({
+        id: existing.id,
+        name: name.trim(),
+        type,
+        color: color ?? existing.color,
+        icon: icon ?? existing.icon,
+        creditLimit: type === 'credit_card' ? creditLimit : null,
+        closingDay: type === 'credit_card' && closingDay ? Number(closingDay) : null,
+        dueDay: type === 'credit_card' && dueDay ? Number(dueDay) : null,
+        archived: false,
+      })
+      router.push('/accounts')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erro ao restaurar conta')
+      setSubmitting(false)
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <Card>
@@ -206,13 +229,21 @@ export function AccountForm({ id }: AccountFormProps) {
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex gap-2">
-        <Button type="submit" disabled={submitting} className="flex-1">
-          {existing ? 'Salvar' : 'Criar conta'}
-        </Button>
-        {existing && !existing.archived && (
-          <Button type="button" variant="destructive" disabled={submitting} onClick={handleArchive}>
-            Arquivar
+        {existing?.archived ? (
+          <Button type="button" disabled={submitting} className="flex-1" onClick={handleRestore}>
+            Restaurar conta
           </Button>
+        ) : (
+          <>
+            <Button type="submit" disabled={submitting} className="flex-1">
+              {existing ? 'Salvar' : 'Criar conta'}
+            </Button>
+            {existing && (
+              <Button type="button" variant="destructive" disabled={submitting} onClick={handleArchive}>
+                Arquivar
+              </Button>
+            )}
+          </>
         )}
       </div>
     </form>

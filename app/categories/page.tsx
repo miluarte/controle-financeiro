@@ -6,6 +6,7 @@ import { CategoryBadge } from '@/components/categories/category-badge'
 import { CategoryForm } from '@/components/categories/category-form'
 import { BudgetGoalItem } from '@/components/budget/budget-goal-item'
 import { BudgetGoalForm } from '@/components/budget/budget-goal-form'
+import { RecurringGroupList } from '@/components/recurring/recurring-group-list'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -44,6 +45,12 @@ export default function CategoriesPage() {
             </Button>
           </div>
           <BudgetGoalItem />
+        </section>
+        <section>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Recorrências ativas
+          </h2>
+          <RecurringGroupList />
         </section>
       </div>
 

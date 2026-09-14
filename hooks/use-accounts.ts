@@ -1,46 +1,53 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import useSWR from 'swr'
+import { useCallback } from 'react'
 import type { Account } from '@/lib/types'
 import { accountsApi } from '@/lib/api/accounts'
 
+const KEY = ['getAccounts'] as const
+
+function normalizeArchived(raw: Account[]): Account[] {
+  // Google Sheets retorna booleanos como strings ("true"/"false").
+  return raw.map(a => ({
+    ...a,
+    archived: a.archived === true || String(a.archived).toLowerCase() === 'true',
+  }))
+}
+
 export function useAccounts() {
-  const [accounts, setAccounts] = useState<Account[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, error, isLoading, mutate } = useSWR<Account[]>(
+    KEY,
+    () => accountsApi.getAll().then(normalizeArchived),
+  )
 
-  const load = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const data = await accountsApi.getAll()
-      setAccounts(data)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro ao carregar contas')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => { load() }, [load])
+  const accounts = data ?? []
 
   const create = useCallback(async (data: Parameters<typeof accountsApi.create>[0]) => {
     const account = await accountsApi.create(data)
-    setAccounts(prev => [...prev, account])
+    mutate([...accounts, account], false)
     return account
-  }, [])
+  }, [accounts, mutate])
 
   const update = useCallback(async (data: Parameters<typeof accountsApi.update>[0]) => {
     const account = await accountsApi.update(data)
-    setAccounts(prev => prev.map(a => a.id === account.id ? account : a))
+    mutate(accounts.map(a => a.id === account.id ? account : a), false)
     return account
-  }, [])
+  }, [accounts, mutate])
 
   const archive = useCallback(async (id: string) => {
     const account = await accountsApi.archive(id)
-    setAccounts(prev => prev.map(a => a.id === account.id ? account : a))
+    mutate(accounts.map(a => a.id === account.id ? account : a), false)
     return account
-  }, [])
+  }, [accounts, mutate])
 
-  return { accounts, loading, error, reload: load, create, update, archive }
+  return {
+    accounts,
+    loading: isLoading,
+    error: error ? (error instanceof Error ? error.message : 'Erro ao carregar contas') : null,
+    reload: () => mutate(),
+    create,
+    update,
+    archive,
+  }
 }

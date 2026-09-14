@@ -1,34 +1,28 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import useSWR from 'swr'
+import { useCallback } from 'react'
 import type { Category } from '@/lib/types'
 import { categoriesApi } from '@/lib/api/categories'
 
+const KEY = ['getCategories'] as const
+
 export function useCategories() {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, error, isLoading, mutate } = useSWR<Category[]>(KEY, () => categoriesApi.getAll())
 
-  const load = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const data = await categoriesApi.getAll()
-      setCategories(data)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erro ao carregar categorias')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => { load() }, [load])
+  const categories = data ?? []
 
   const create = useCallback(async (data: Parameters<typeof categoriesApi.create>[0]) => {
     const category = await categoriesApi.create(data)
-    setCategories(prev => [...prev, category])
+    mutate([...categories, category], false)
     return category
-  }, [])
+  }, [categories, mutate])
 
-  return { categories, loading, error, reload: load, create }
+  return {
+    categories,
+    loading: isLoading,
+    error: error ? (error instanceof Error ? error.message : 'Erro ao carregar categorias') : null,
+    reload: () => mutate(),
+    create,
+  }
 }

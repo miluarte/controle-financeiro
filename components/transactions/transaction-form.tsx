@@ -133,7 +133,14 @@ export function TransactionForm({ id, initialTransaction, onSuccess }: Transacti
     if (type !== 'expense') { setPurchaseDate(''); setMerchant('') }
   }, [type])
 
-  const done = () => (onSuccess ? onSuccess() : router.push('/dashboard'))
+  const done = () => {
+    if (onSuccess) {
+      onSuccess()
+    } else {
+      // window.location força reload completo, garantindo dados frescos do backend
+      window.location.href = '/dashboard'
+    }
+  }
 
   if (id && !initialTransaction && loading) {
     return <p className="text-sm text-muted-foreground">Carregando...</p>
@@ -159,18 +166,49 @@ export function TransactionForm({ id, initialTransaction, onSuccess }: Transacti
           startDate: date,
         })
       } else if (recorrente && !isExisting) {
-        await recurringApi.create({
-          type,
-          description: description.trim(),
-          amount,
-          accountId,
-          categoryId,
-          frequency,
-          startDate: date,
-          endDate: endDate.trim() || null,
-          active: true,
-          notes: notes.trim() || null,
-        })
+        // Tenta criar o grupo recorrente, mas não bloqueia se falhar.
+        let recurringGroupId: string | null = null
+        let backendCreatedCurrentMonth = false
+        try {
+          const result = await recurringApi.create({
+            type,
+            description: description.trim(),
+            amount,
+            accountId,
+            categoryId,
+            frequency,
+            startDate: date,
+            endDate: endDate.trim() || null,
+            active: true,
+            notes: notes.trim() || null,
+          })
+          recurringGroupId = (result as any)?.group?.id ?? (result as any)?.id ?? null
+          backendCreatedCurrentMonth = Array.isArray((result as any)?.transactions)
+            && (result as any).transactions.some(
+              (tx: any) => String(tx.date ?? '').slice(0, 7) === currentMonth(),
+            )
+        } catch {
+          // Recorrência falhou — ainda criamos a transação do mês atual abaixo.
+        }
+        // Garante que o mês atual sempre apareça na lista.
+        if (!backendCreatedCurrentMonth) {
+          await create({
+            type,
+            amount,
+            description: description.trim(),
+            date,
+            accountId,
+            toAccountId: null,
+            categoryId,
+            installmentGroupId: null,
+            installmentNumber: null,
+            installmentTotal: null,
+            recurringGroupId,
+            purchaseDate: null,
+            merchant: null,
+            notes: notes.trim() || null,
+          })
+        }
       } else {
         const payload = {
           type,
