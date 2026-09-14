@@ -19,7 +19,7 @@ export default function InstallmentsPage() {
           </Link>
         }
       />
-      <div className="p-4">
+      <div className="space-y-4 p-4">
         <InstallmentView />
       </div>
     </>

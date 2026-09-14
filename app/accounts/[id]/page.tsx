@@ -10,7 +10,7 @@ export default async function AccountDetailPage({ params }: Props) {
   return (
     <>
       <PageHeader title={id === 'new' ? 'Nova conta' : 'Editar conta'} back />
-      <div className="p-4">
+      <div className="space-y-4 p-4">
         <AccountForm id={id === 'new' ? undefined : id} />
       </div>
     </>

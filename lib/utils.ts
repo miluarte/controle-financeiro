@@ -1,7 +1,8 @@
 export { cn } from "cn"
 
 export function formatCurrency(cents: number): string {
-  return (cents / 100).toLocaleString('pt-BR', {
+  const value = Number(cents)
+  return ((isNaN(value) ? 0 : value) / 100).toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',
   })

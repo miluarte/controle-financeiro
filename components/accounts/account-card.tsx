@@ -8,6 +8,7 @@ import { formatCurrency } from '@/lib/utils'
 
 interface AccountCardProps {
   account: Account
+  monthlyExpense?: number
 }
 
 export const ACCOUNT_TYPE_LABELS: Record<Account['type'], string> = {
@@ -17,9 +18,9 @@ export const ACCOUNT_TYPE_LABELS: Record<Account['type'], string> = {
   cash: 'Dinheiro',
 }
 
-export function AccountCard({ account }: AccountCardProps) {
+export function AccountCard({ account, monthlyExpense }: AccountCardProps) {
   return (
-    <Card>
+    <Card className="shadow-sm">
       <CardContent className="flex items-center gap-3 p-4">
         <TokenIcon icon={account.icon} color={account.color} size="md" />
         <div className="min-w-0 flex-1">
@@ -27,6 +28,11 @@ export function AccountCard({ account }: AccountCardProps) {
           <Badge variant="secondary" className="mt-0.5 text-xs">
             {ACCOUNT_TYPE_LABELS[account.type]}
           </Badge>
+          {monthlyExpense !== undefined && monthlyExpense > 0 && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              -{formatCurrency(monthlyExpense)} este mês
+            </p>
+          )}
         </div>
         <p className={`shrink-0 text-base font-semibold ${account.currentBalance < 0 ? 'text-destructive' : ''}`}>
           {formatCurrency(account.currentBalance)}

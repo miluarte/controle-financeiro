@@ -5,7 +5,7 @@ export default function AccountsPage() {
   return (
     <>
       <PageHeader title="Contas" />
-      <div className="p-4">
+      <div className="space-y-4 p-4">
         <AccountBalanceList />
       </div>
     </>
