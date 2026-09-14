@@ -29,9 +29,9 @@ export function BottomNav() {
   return (
     <nav
       className={cn(
-        'fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around',
-        'border-t border-border/60 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70',
-        'px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]',
+        'fixed inset-x-4 z-50 flex items-center justify-around',
+        'bottom-[max(1rem,calc(env(safe-area-inset-bottom)+0.5rem))]',
+        'rounded-full border border-border/60 bg-background/80 px-2 py-2 shadow-lg backdrop-blur-xl supports-[backdrop-filter]:bg-background/70',
       )}
     >
       {NAV_ITEMS.map(({ href, label, icon: Icon, activeIcon: ActiveIcon }) => {
