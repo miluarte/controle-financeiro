@@ -409,7 +409,7 @@ export function TransactionForm({ id, initialTransaction, onSuccess }: Transacti
           </div>
 
           <div className="space-y-1.5">
-            <Label>Categoria</Label>
+            <Label>Categoria <span className="text-muted-foreground">(opcional)</span></Label>
             <CategoryPicker type={type} value={categoryId ?? undefined} onChange={setCategoryId} />
           </div>
 
@@ -438,7 +438,7 @@ export function TransactionForm({ id, initialTransaction, onSuccess }: Transacti
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="notes">Notas</Label>
+            <Label htmlFor="notes">Notas <span className="text-muted-foreground">(opcional)</span></Label>
             <Textarea
               id="notes"
               value={notes}

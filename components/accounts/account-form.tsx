@@ -203,12 +203,12 @@ export function AccountForm({ id }: AccountFormProps) {
           {type === 'credit_card' && (
             <>
               <div className="space-y-1.5">
-                <Label htmlFor="creditLimit">Limite do cartão</Label>
+                <Label htmlFor="creditLimit">Limite do cartão <span className="text-muted-foreground">(opcional)</span></Label>
                 <CurrencyInput id="creditLimit" value={creditLimit} onChange={setCreditLimit} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="closingDay">Dia de fechamento</Label>
+                  <Label htmlFor="closingDay">Dia de fechamento <span className="text-muted-foreground">(opcional)</span></Label>
                   <Input
                     id="closingDay"
                     type="number"
@@ -219,7 +219,7 @@ export function AccountForm({ id }: AccountFormProps) {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="dueDay">Dia de vencimento</Label>
+                  <Label htmlFor="dueDay">Dia de vencimento <span className="text-muted-foreground">(opcional)</span></Label>
                   <Input
                     id="dueDay"
                     type="number"

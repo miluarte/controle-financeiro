@@ -1,8 +1,12 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useAllTransactions } from '@/hooks/use-all-transactions'
+import { useAccounts } from '@/hooks/use-accounts'
 import { useInstallments } from '@/hooks/use-installments'
-import { formatCurrency, effectivePaidCount } from '@/lib/utils'
+import { useRecurringGroups } from '@/hooks/use-recurring-groups'
+import { buildFaturaContext, isCountedInFatura, faturaMonthOf, faturaSignedAmount } from '@/lib/fatura'
+import { formatCurrency } from '@/lib/utils'
 import { AltArrowLeftBoldDuotoneIcon, AltArrowRightBoldDuotoneIcon } from '@solar-icons/react'
 
 const FULL_MONTH_NAMES = [
@@ -10,26 +14,6 @@ const FULL_MONTH_NAMES = [
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 const SHORT_MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
-
-function addMonths(dateStr: string, n: number): string {
-  // startDate às vezes vem como timestamp ISO completo da planilha
-  // (2026-09-10T00:00:00.000Z) em vez de só "2026-09-10" — pegar os
-  // 10 primeiros caracteres cobre os dois formatos.
-  //
-  // Aritmética por contagem de meses (ano*12+mês), não por Date.setMonth():
-  // setMonth() herda o dia do startDate, e estoura pro mês seguinte quando
-  // o destino tem menos dias que esse (ex.: início em 31/01 + 1 mês virava
-  // 03/03 em vez de fevereiro, porque fevereiro só tem 28 dias). Esse
-  // estouro desalinhava todos os meses seguintes do parcelamento e inflava
-  // o total de um mês às custas de outro. Mesmo método usado em
-  // installment-list.tsx (hasInstallmentInMonth) e installment-group-card.tsx
-  // (installmentNumberForMonth), que nunca tiveram esse bug.
-  const [year, month] = dateStr.slice(0, 10).split('-').map(Number)
-  const total = year * 12 + (month - 1) + n
-  const resultYear = Math.floor(total / 12)
-  const resultMonth = (total % 12) + 1
-  return `${resultYear}-${String(resultMonth).padStart(2, '0')}`
-}
 
 function shortMonthLabel(ym: string): string {
   const [, month] = ym.split('-')
@@ -57,7 +41,7 @@ function splitCurrency(value: number): { main: string; cents: string } {
 
 // Rótulo compacto do eixo, sem centavos: "R$ 3.441"
 function axisLabel(value: number): string {
-  return `R$ ${Math.round(value / 100).toLocaleString('pt-BR')}`
+  return `R$ ${Math.round(value / 100).toLocaleString('pt-BR')}`
 }
 
 const TRACK_HEIGHT = 132 // px
@@ -69,28 +53,32 @@ interface InstallmentMonthlyChartProps {
 }
 
 export function InstallmentMonthlyChart({ onMonthChange }: InstallmentMonthlyChartProps) {
-  const { groups, loading } = useInstallments()
+  const { transactions, loading: loadingTx } = useAllTransactions()
+  const { accounts, loading: loadingAccounts } = useAccounts()
+  const { groups: installmentGroups, loading: loadingInstallments } = useInstallments()
+  const { groups: recurringGroups, loading: loadingRecurring } = useRecurringGroups()
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
 
+  const loading = loadingTx || loadingAccounts || loadingInstallments || loadingRecurring
+
+  // Total por mês da fatura do cartão: soma parcelas, compras únicas e
+  // ocorrências de recorrência/conta fixa que caírem naquele mês — tudo já é
+  // transação real na planilha (parcelamento e recorrência geram as
+  // transações futuras inteiras na hora da criação), então basta somar por
+  // mês em vez de recalcular a partir do plano do grupo (ver lib/fatura.ts).
   const monthlyTotals = useMemo(() => {
+    if (loading) return {}
+    const ctx = buildFaturaContext(accounts, installmentGroups, recurringGroups)
     const totals: Record<string, number> = {}
 
-    for (const group of groups) {
-      if (group.status !== 'active') continue
-
-      const paidCount = effectivePaidCount(group.paidCount, group.installmentCount, group.startDate)
-      const remaining = group.installmentCount - paidCount
-      if (remaining <= 0) continue
-
-      // primeira parcela não paga = startDate + paidCount meses
-      for (let i = 0; i < remaining; i++) {
-        const ym = addMonths(group.startDate, paidCount + i)
-        totals[ym] = (totals[ym] ?? 0) + group.installmentAmount
-      }
+    for (const t of transactions) {
+      if (!isCountedInFatura(t, ctx)) continue
+      const ym = faturaMonthOf(t)
+      totals[ym] = (totals[ym] ?? 0) + faturaSignedAmount(t)
     }
 
     return totals
-  }, [groups])
+  }, [loading, transactions, accounts, installmentGroups, recurringGroups])
 
   const months = useMemo(() => Object.keys(monthlyTotals).sort(), [monthlyTotals])
 
