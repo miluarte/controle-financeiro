@@ -46,6 +46,7 @@ export function InstallmentList({ selectedMonth }: InstallmentListProps) {
           <InstallmentGroupCard
             key={group.id}
             group={group}
+            selectedMonth={selectedMonth}
             onClick={() => setEditing(group)}
           />
         ))}
