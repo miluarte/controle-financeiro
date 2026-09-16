@@ -1,4 +1,4 @@
-export type AccountType = 'checking' | 'savings' | 'credit_card' | 'cash'
+export type AccountType = 'checking' | 'savings' | 'credit_card' | 'cash' | 'loan'
 
 export interface Account {
   id: string
@@ -9,6 +9,8 @@ export interface Account {
   creditLimit: number | null
   closingDay: number | null
   dueDay: number | null
+  institution: string | null
+  availableCredit: number | null
   color: string
   icon: string
   archived: boolean
@@ -29,6 +31,8 @@ export interface Category {
 
 export type TransactionType = 'income' | 'expense' | 'transfer'
 
+export type PaymentMethod = 'pix' | 'debit' | 'boleto' | 'ted'
+
 export interface Transaction {
   id: string
   type: TransactionType
@@ -44,6 +48,7 @@ export interface Transaction {
   recurringGroupId: string | null
   purchaseDate: string | null
   merchant: string | null
+  paymentMethod: PaymentMethod | null
   notes: string | null
   createdAt: string
   updatedAt: string

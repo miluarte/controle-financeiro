@@ -22,8 +22,15 @@ import { useTransactions } from '@/hooks/use-transactions'
 import { useAccounts } from '@/hooks/use-accounts'
 import { installmentsApi } from '@/lib/api/installments'
 import { recurringApi } from '@/lib/api/recurring'
-import type { Transaction, TransactionType, RecurrenceFrequency } from '@/lib/types'
+import type { Transaction, TransactionType, RecurrenceFrequency, PaymentMethod } from '@/lib/types'
 import { currentMonth, formatCurrency } from '@/lib/utils'
+
+const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  pix:    'Pix',
+  debit:  'Débito',
+  boleto: 'Boleto',
+  ted:    'TED/DOC',
+}
 
 const FREQUENCY_LABELS: Record<RecurrenceFrequency, string> = {
   daily:    'Diário',
@@ -82,6 +89,7 @@ export function TransactionForm({ id, initialTransaction, onSuccess }: Transacti
   const [notes, setNotes]           = useState(() => tx?.notes ?? '')
   const [purchaseDate, setPurchaseDate] = useState(() => tx?.purchaseDate ?? '')
   const [merchant, setMerchant]     = useState(() => tx?.merchant ?? '')
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null)
   const [parcelado, setParcelado]   = useState(false)
   const [installmentCount, setInstallmentCount] = useState('2')
   const [recorrente, setRecorrente] = useState(false)
@@ -92,6 +100,9 @@ export function TransactionForm({ id, initialTransaction, onSuccess }: Transacti
 
   const count = Math.max(2, Number(installmentCount) || 2)
   const installmentAmount = amount > 0 ? Math.round(amount / count) : 0
+
+  const selectedAccount = useMemo(() => accounts.find(a => a.id === accountId), [accounts, accountId])
+  const showPaymentMethod = type === 'expense' && (selectedAccount?.type === 'checking' || selectedAccount?.type === 'savings')
 
   const isInstallmentTx = !!(existing?.installmentGroupId)
   const isRecurringTx = !!(existing?.recurringGroupId)
@@ -109,6 +120,7 @@ export function TransactionForm({ id, initialTransaction, onSuccess }: Transacti
     setNotes(fromId.notes ?? '')
     setPurchaseDate(fromId.purchaseDate ?? '')
     setMerchant(fromId.merchant ?? '')
+    setPaymentMethod(fromId.paymentMethod ?? null)
   }, [fromId, initialTransaction])
 
   // Conta padrão ao criar
@@ -206,6 +218,7 @@ export function TransactionForm({ id, initialTransaction, onSuccess }: Transacti
             recurringGroupId,
             purchaseDate: null,
             merchant: null,
+            paymentMethod: showPaymentMethod ? paymentMethod : null,
             notes: notes.trim() || null,
           })
         }
@@ -224,6 +237,7 @@ export function TransactionForm({ id, initialTransaction, onSuccess }: Transacti
           recurringGroupId: existing?.recurringGroupId ?? null,
           purchaseDate: purchaseDate.trim() || null,
           merchant: merchant.trim() || null,
+          paymentMethod: showPaymentMethod ? paymentMethod : null,
           notes: notes.trim() || null,
         }
         if (existing) {
@@ -369,6 +383,25 @@ export function TransactionForm({ id, initialTransaction, onSuccess }: Transacti
               </SelectContent>
             </Select>
           </div>
+
+          {showPaymentMethod && (
+            <div className="space-y-1.5">
+              <Label htmlFor="paymentMethod">Método de pagamento <span className="text-muted-foreground">(opcional)</span></Label>
+              <Select
+                value={paymentMethod ?? ''}
+                onValueChange={v => setPaymentMethod((v || null) as PaymentMethod | null)}
+              >
+                <SelectTrigger id="paymentMethod" className="w-full">
+                  <SelectValue placeholder="Selecionar método" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.entries(PAYMENT_METHOD_LABELS) as [PaymentMethod, string][]).map(([v, l]) => (
+                    <SelectItem key={v} value={v}>{l}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <Label htmlFor="date">{dateLabel}</Label>

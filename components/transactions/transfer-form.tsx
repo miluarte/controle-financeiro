@@ -17,6 +17,14 @@ import { CurrencyInput } from '@/components/shared/currency-input'
 import { useTransactions } from '@/hooks/use-transactions'
 import { useAccounts } from '@/hooks/use-accounts'
 import { currentMonth } from '@/lib/utils'
+import type { PaymentMethod } from '@/lib/types'
+
+const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  pix:    'Pix',
+  debit:  'Débito',
+  boleto: 'Boleto',
+  ted:    'TED/DOC',
+}
 
 function today(): string {
   return new Date().toISOString().slice(0, 10)
@@ -32,11 +40,14 @@ export function TransferForm() {
   const [amount, setAmount] = useState(0)
   const [date, setDate] = useState(today())
   const [description, setDescription] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const active = accounts.filter(a => !a.archived)
   const accountItems = Object.fromEntries(active.map(a => [a.id, a.name]))
+  const fromAccount = active.find(a => a.id === fromAccountId)
+  const showPaymentMethod = fromAccount?.type === 'checking' || fromAccount?.type === 'savings'
 
   useEffect(() => {
     if (!fromAccountId && active.length > 0) setFromAccountId(active[0].id)
@@ -74,6 +85,7 @@ export function TransferForm() {
         recurringGroupId: null,
         purchaseDate: null,
         merchant: null,
+        paymentMethod: showPaymentMethod ? paymentMethod : null,
         notes: null,
       })
       router.push('/dashboard')
@@ -133,6 +145,25 @@ export function TransferForm() {
             <Label htmlFor="date">Data</Label>
             <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} />
           </div>
+
+          {showPaymentMethod && (
+            <div className="space-y-1.5">
+              <Label htmlFor="paymentMethod">Método de pagamento <span className="text-muted-foreground">(opcional)</span></Label>
+              <Select
+                value={paymentMethod ?? ''}
+                onValueChange={v => setPaymentMethod((v || null) as PaymentMethod | null)}
+              >
+                <SelectTrigger id="paymentMethod" className="w-full">
+                  <SelectValue placeholder="Selecionar método" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.entries(PAYMENT_METHOD_LABELS) as [PaymentMethod, string][]).map(([v, l]) => (
+                    <SelectItem key={v} value={v}>{l}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <Label htmlFor="description">Descrição</Label>
