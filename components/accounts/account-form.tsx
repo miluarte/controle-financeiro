@@ -33,6 +33,7 @@ export function AccountForm({ id }: AccountFormProps) {
 
   const [name, setName] = useState('')
   const [type, setType] = useState<AccountType>('checking')
+  const [institution, setInstitution] = useState('')
   const [initialBalance, setInitialBalance] = useState(0)
   const [creditLimit, setCreditLimit] = useState(0)
   const [closingDay, setClosingDay] = useState('')
@@ -46,6 +47,7 @@ export function AccountForm({ id }: AccountFormProps) {
     if (!existing) return
     setName(existing.name)
     setType(existing.type)
+    setInstitution(existing.institution ?? '')
     setInitialBalance(existing.initialBalance)
     setCreditLimit(existing.creditLimit ?? 0)
     setClosingDay(existing.closingDay != null ? String(existing.closingDay) : '')
@@ -78,6 +80,7 @@ export function AccountForm({ id }: AccountFormProps) {
       const payload = {
         name: name.trim(),
         type,
+        institution: institution.trim() || null,
         creditLimit: type === 'credit_card' ? creditLimit : null,
         closingDay: type === 'credit_card' && closingDay ? Number(closingDay) : null,
         dueDay: type === 'credit_card' && dueDay ? Number(dueDay) : null,
@@ -119,6 +122,7 @@ export function AccountForm({ id }: AccountFormProps) {
         id: existing.id,
         name: name.trim(),
         type,
+        institution: institution.trim() || null,
         color: color ?? existing.color,
         icon: icon ?? existing.icon,
         creditLimit: type === 'credit_card' ? creditLimit : null,
@@ -167,6 +171,16 @@ export function AccountForm({ id }: AccountFormProps) {
             </Select>
           </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor="institution">Instituição <span className="text-muted-foreground">(opcional)</span></Label>
+            <Input
+              id="institution"
+              value={institution}
+              onChange={e => setInstitution(e.target.value)}
+              placeholder="Ex: Nubank, Itaú, Mercado Pago"
+            />
+          </div>
+
           {existing ? (
             <div className="space-y-1.5">
               <Label>Saldo atual</Label>
@@ -178,6 +192,11 @@ export function AccountForm({ id }: AccountFormProps) {
             <div className="space-y-1.5">
               <Label htmlFor="initialBalance">Saldo inicial</Label>
               <CurrencyInput id="initialBalance" value={initialBalance} onChange={setInitialBalance} />
+              {type === 'loan' && (
+                <p className="text-xs text-muted-foreground">
+                  Para empréstimo, informe como valor negativo: o quanto você deve hoje.
+                </p>
+              )}
             </div>
           )}
 
