@@ -139,7 +139,7 @@ export function InstallmentGroupForm({ onSuccess }: InstallmentGroupFormProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Categoria</Label>
+            <Label>Categoria <span className="text-muted-foreground">(opcional)</span></Label>
             <CategoryPicker type="expense" value={categoryId ?? undefined} onChange={setCategoryId} />
           </div>
 

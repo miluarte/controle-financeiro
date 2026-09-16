@@ -166,12 +166,12 @@ export function TransferForm() {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="description">Descrição</Label>
+            <Label htmlFor="description">Descrição <span className="text-muted-foreground">(opcional)</span></Label>
             <Input
               id="description"
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="Opcional"
+              placeholder="Ex: Reserva de emergência"
             />
           </div>
         </CardContent>

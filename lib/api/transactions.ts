@@ -2,6 +2,8 @@ import type { Transaction } from '../types'
 import { api } from './client'
 
 export const transactionsApi = {
+  getAll: () => api.get<Transaction[]>('getTransactions'),
+
   getByMonth: (month: string) =>
     api.get<Transaction[]>('getTransactions', { month }),
 
