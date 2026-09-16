@@ -15,9 +15,20 @@ function addMonths(dateStr: string, n: number): string {
   // startDate às vezes vem como timestamp ISO completo da planilha
   // (2026-09-10T00:00:00.000Z) em vez de só "2026-09-10" — pegar os
   // 10 primeiros caracteres cobre os dois formatos.
-  const d = new Date(dateStr.slice(0, 10) + 'T12:00:00')
-  d.setMonth(d.getMonth() + n)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  //
+  // Aritmética por contagem de meses (ano*12+mês), não por Date.setMonth():
+  // setMonth() herda o dia do startDate, e estoura pro mês seguinte quando
+  // o destino tem menos dias que esse (ex.: início em 31/01 + 1 mês virava
+  // 03/03 em vez de fevereiro, porque fevereiro só tem 28 dias). Esse
+  // estouro desalinhava todos os meses seguintes do parcelamento e inflava
+  // o total de um mês às custas de outro. Mesmo método usado em
+  // installment-list.tsx (hasInstallmentInMonth) e installment-group-card.tsx
+  // (installmentNumberForMonth), que nunca tiveram esse bug.
+  const [year, month] = dateStr.slice(0, 10).split('-').map(Number)
+  const total = year * 12 + (month - 1) + n
+  const resultYear = Math.floor(total / 12)
+  const resultMonth = (total % 12) + 1
+  return `${resultYear}-${String(resultMonth).padStart(2, '0')}`
 }
 
 function shortMonthLabel(ym: string): string {

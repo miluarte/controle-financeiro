@@ -19,7 +19,7 @@ type SolarIcon = React.ComponentType<{ className?: string }>
 const NAV_ITEMS: { href: string; label: string; icon: SolarIcon; activeIcon: SolarIcon }[] = [
   { href: '/dashboard',    label: 'Início',     icon: WidgetBoldDuotoneIcon, activeIcon: WidgetBoldIcon },
   { href: '/accounts',     label: 'Contas',     icon: WalletBoldDuotoneIcon, activeIcon: WalletBoldIcon },
-  { href: '/installments', label: 'Parcelas',   icon: CardBoldDuotoneIcon,   activeIcon: CardBoldIcon },
+  { href: '/installments', label: 'Faturas',    icon: CardBoldDuotoneIcon,   activeIcon: CardBoldIcon },
   { href: '/categories',   label: 'Categorias', icon: TagBoldDuotoneIcon,    activeIcon: TagBoldIcon },
 ]
 

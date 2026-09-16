@@ -9,7 +9,7 @@ export default function InstallmentsPage() {
   return (
     <>
       <PageHeader
-        title="Parcelamentos"
+        title="Faturas"
         actions={
           <Link
             href="/transactions/new"
