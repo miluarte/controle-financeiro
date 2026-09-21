@@ -16,6 +16,7 @@ export const ACCOUNT_TYPE_LABELS: Record<Account['type'], string> = {
   savings: 'Poupança',
   credit_card: 'Cartão de crédito',
   cash: 'Dinheiro',
+  loan: 'Empréstimo',
 }
 
 export function AccountCard({ account, monthlyExpense }: AccountCardProps) {
@@ -25,9 +26,17 @@ export function AccountCard({ account, monthlyExpense }: AccountCardProps) {
         <TokenIcon icon={account.icon} color={account.color} size="md" />
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{account.name}</p>
+          {account.institution && (
+            <p className="truncate text-xs text-muted-foreground">{account.institution}</p>
+          )}
           <Badge variant="secondary" className="mt-0.5 text-xs">
             {ACCOUNT_TYPE_LABELS[account.type]}
           </Badge>
+          {account.type === 'credit_card' && account.availableCredit != null && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Disponível: {formatCurrency(account.availableCredit)}
+            </p>
+          )}
           {monthlyExpense !== undefined && monthlyExpense > 0 && (
             <p className="mt-0.5 text-xs text-muted-foreground">
               -{formatCurrency(monthlyExpense)} este mês

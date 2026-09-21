@@ -3,6 +3,7 @@
 import type { Category, Transaction } from '@/lib/types'
 import { formatCurrency, formatDate, cn } from '@/lib/utils'
 import { TokenIcon } from '@/components/shared/token-icon'
+import { Badge } from '@/components/ui/badge'
 import { RepeatBoldDuotoneIcon } from '@solar-icons/react'
 
 interface TransactionItemProps {
@@ -33,6 +34,7 @@ export function TransactionItem({ transaction, category, onClick }: TransactionI
         <div className="flex items-center gap-1.5">
           <p className="truncate font-medium">{transaction.description}</p>
           {isRecurring && <RepeatBoldDuotoneIcon className="size-3.5 shrink-0 text-muted-foreground" />}
+          {transaction.paid && <Badge variant="success">Paga</Badge>}
         </div>
         <p className="text-xs text-muted-foreground">
           {formatDate(transaction.date)}
