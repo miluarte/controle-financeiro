@@ -39,7 +39,7 @@ export function effectivePaidCount(
   installmentCount: number,
   startDate: string,
 ): number {
-  const start = new Date(startDate.slice(0, 10))
+  const start = new Date(startDate.slice(0, 10) + 'T12:00:00')
   const now = new Date()
   const monthsElapsed =
     (now.getFullYear() - start.getFullYear()) * 12 +

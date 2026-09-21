@@ -2,16 +2,24 @@
 
 import { useState } from 'react'
 import { useInstallments } from '@/hooks/use-installments'
+import { useAllTransactions } from '@/hooks/use-all-transactions'
+import { useAccounts } from '@/hooks/use-accounts'
+import { useRecurringGroups } from '@/hooks/use-recurring-groups'
+import { useCategories } from '@/hooks/use-categories'
 import { effectivePaidCount } from '@/lib/utils'
+import { buildFaturaContext, isCardTransactionForFatura, faturaMonthOf } from '@/lib/fatura'
 import { InstallmentGroupCard } from './installment-group-card'
 import { InstallmentGroupEditForm } from './installment-group-edit-form'
+import { TransactionItem } from '@/components/transactions/transaction-item'
+import { TransactionForm } from '@/components/transactions/transaction-form'
+import { Separator } from '@/components/ui/separator'
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import type { InstallmentGroup } from '@/lib/types'
+import type { InstallmentGroup, Transaction } from '@/lib/types'
 
 function hasInstallmentInMonth(group: InstallmentGroup, ym: string): boolean {
   const start = new Date(group.startDate.slice(0, 10) + 'T12:00:00')
@@ -26,41 +34,110 @@ interface InstallmentListProps {
 }
 
 export function InstallmentList({ selectedMonth }: InstallmentListProps) {
-  const { groups, loading, error } = useInstallments()
-  const [editing, setEditing] = useState<InstallmentGroup | null>(null)
+  const { groups, loading: loadingGroups, error: errorGroups } = useInstallments()
+  const { transactions, loading: loadingTx, error: errorTx, reload: reloadTransactions } = useAllTransactions()
+  const { accounts, loading: loadingAccounts } = useAccounts()
+  const { groups: recurringGroups, loading: loadingRecurring } = useRecurringGroups()
+  const { categories } = useCategories()
+  const [editingGroup, setEditingGroup] = useState<InstallmentGroup | null>(null)
+  const [editingTx, setEditingTx] = useState<Transaction | null>(null)
+
+  const loading = loadingGroups || loadingTx || loadingAccounts || loadingRecurring
+  const error = errorGroups || errorTx
 
   if (loading) return <p className="text-sm text-muted-foreground">Carregando...</p>
   if (error) return <p className="text-sm text-destructive">{error}</p>
 
-  const visible = selectedMonth
+  const visibleGroups = selectedMonth
     ? groups.filter(g => g.status === 'active' && hasInstallmentInMonth(g, selectedMonth))
     : groups
 
-  if (visible.length === 0)
-    return <p className="text-sm text-muted-foreground">Nenhum parcelamento encontrado.</p>
+  // Compras únicas e ocorrências de recorrência/conta fixa do cartão nesse
+  // mês — parcelamentos ficam de fora daqui porque já aparecem agrupados
+  // acima, num card por grupo (não um por parcela). Mesmo filtro do total do
+  // gráfico (lib/fatura.ts), pra lista e soma nunca ficarem incoerentes entre si.
+  // Usa isCardTransactionForFatura (não isCountedInFatura) de propósito: uma
+  // compra já marcada como paga (Transaction.paid) sai da soma do gráfico,
+  // mas continua aqui na lista, com o badge "Paga" (ver TransactionItem) —
+  // é assim que ela "sai da fatura atual" sem sumir do front.
+  const otherTransactions = (() => {
+    if (!selectedMonth) return []
+    const ctx = buildFaturaContext(accounts, groups, recurringGroups)
+    return transactions.filter(t =>
+      !t.installmentGroupId &&
+      isCardTransactionForFatura(t, ctx) &&
+      faturaMonthOf(t) === selectedMonth,
+    )
+  })()
+
+  if (visibleGroups.length === 0 && otherTransactions.length === 0)
+    return <p className="text-sm text-muted-foreground">Nenhum lançamento encontrado.</p>
 
   return (
     <>
       <div className="space-y-3">
-        {visible.map(group => (
+        {visibleGroups.map(group => (
           <InstallmentGroupCard
             key={group.id}
             group={group}
-            onClick={() => setEditing(group)}
+            selectedMonth={selectedMonth}
+            onClick={() => setEditingGroup(group)}
           />
         ))}
+
+        {otherTransactions.length > 0 && (
+          <div className="divide-y rounded-xl border px-4">
+            {otherTransactions.map((tx, i) => (
+              <div key={tx.id}>
+                <TransactionItem
+                  transaction={tx}
+                  category={categories.find(c => c.id === tx.categoryId)}
+                  onClick={() => setEditingTx(tx)}
+                />
+                {i < otherTransactions.length - 1 && <Separator />}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      <Sheet open={!!editing} onOpenChange={open => { if (!open) setEditing(null) }}>
+      {/* Edição de parcelamento pode recriar as transações do grupo no backend
+          (ver InstallmentGroupEditForm) — recarrega a lista "all" de
+          transações ao fechar pra não deixar a fatura com dados velhos. */}
+      <Sheet
+        open={!!editingGroup}
+        onOpenChange={open => { if (!open) { setEditingGroup(null); reloadTransactions() } }}
+      >
         <SheetContent side="bottom">
           <SheetHeader>
             <SheetTitle>Editar parcelamento</SheetTitle>
           </SheetHeader>
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">
-            {editing && (
+            {editingGroup && (
               <InstallmentGroupEditForm
-                group={editing}
-                onSuccess={() => setEditing(null)}
+                group={editingGroup}
+                onSuccess={() => setEditingGroup(null)}
+              />
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* TransactionForm só atualiza o cache do mês corrente (useTransactions);
+          recarrega "all" ao fechar pra fatura refletir a edição/exclusão. */}
+      <Sheet
+        open={!!editingTx}
+        onOpenChange={open => { if (!open) { setEditingTx(null); reloadTransactions() } }}
+      >
+        <SheetContent side="bottom">
+          <SheetHeader>
+            <SheetTitle>Editar transação</SheetTitle>
+          </SheetHeader>
+          <div className="overflow-y-auto px-4 pb-6">
+            {editingTx && (
+              <TransactionForm
+                initialTransaction={editingTx}
+                onSuccess={() => setEditingTx(null)}
               />
             )}
           </div>

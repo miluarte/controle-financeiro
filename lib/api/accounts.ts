@@ -4,7 +4,7 @@ import { api } from './client'
 export const accountsApi = {
   getAll: () => api.get<Account[]>('getAccounts'),
 
-  create: (data: Omit<Account, 'id' | 'createdAt' | 'currentBalance'>) =>
+  create: (data: Omit<Account, 'id' | 'createdAt' | 'currentBalance' | 'availableCredit'>) =>
     api.post<Account>('createAccount', data),
 
   update: (data: Partial<Account> & { id: string }) =>
