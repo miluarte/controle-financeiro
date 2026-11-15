@@ -33,6 +33,8 @@ Tokens em `app/globals.css`: cores do sistema iOS (`--background` systemGroupedB
 
 Liquid Glass: utilitários `glass` e `glass-strong` (vidro translúcido com desfoque, borda clara e brilho no topo, tokens `--glass-*`). Usados na barra de abas flutuante em cápsula (aba ativa com "lente" `bg-glass-lens`), nos botões circulares de vidro (`GlassButton`) e na folha modal flutuante (`Sheet side="bottom"`). Controles em cápsula (botão grande, controle segmentado, chips); listas agrupadas com `rounded-3xl`.
 
+`IosViewportFix` (`components/shared/ios-viewport-fix.tsx`, em `app/providers.tsx`): no iPhone com o app na Tela de Início, dá uma rolagem mínima ao abrir e ao voltar ao app, porque o Safari calcula a altura errada até a primeira rolagem e a barra de abas fica alta.
+
 Campos de número inteiro (dia, parcelas) usam `components/shared/number-field.tsx`, nunca `<input type="number">` com clamp no onChange (impede apagar no iPhone). Valores em dinheiro usam `CurrencyInput`.
 
 Componentes em `components/ios/`: `ListGroup`, `ListRow`, `FormRow`, `SegmentedControl`, `LargeTitleHeader`, `GlassButton`. Variantes: `Button` `plain`/`nav`, `Input` `bare`/`display`. Modal: botão fechar de vidro | título | ação em cápsula preenchida.

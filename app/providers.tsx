@@ -4,6 +4,7 @@ import { SWRConfig } from 'swr'
 import { SessionProvider } from '@/components/auth/session-provider'
 import { MonthProvider } from '@/components/shared/month-provider'
 import { ThemeSync } from '@/components/shared/theme-sync'
+import { IosViewportFix } from '@/components/shared/ios-viewport-fix'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -17,6 +18,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <SessionProvider>
         <MonthProvider>
           <ThemeSync />
+          <IosViewportFix />
           {children}
         </MonthProvider>
       </SessionProvider>
