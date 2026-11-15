@@ -37,13 +37,13 @@ Não implementar nesta fase: a camada analítica (metas financeiras com simulaç
 
 `lib/supabase/client.ts` cria o cliente `supabase-js` (URL e chave publicável têm valor padrão no código, sobrescritos por `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`). Os módulos `lib/api/*.ts` mantêm as mesmas assinaturas de antes e convertem snake_case do banco para os tipos camelCase de `lib/types.ts` via `lib/supabase/mappers.ts`.
 
-Multiusuário: cada usuário tem conta própria (Supabase Auth, e-mail e senha) e só vê os próprios dados. Toda tabela tem `user_id` e política RLS `user_id = auth.uid()`. `AuthGate` (`components/auth/`) mostra o login quando não há sessão. Conta nova recebe as categorias padrão via trigger `on_auth_user_created`.
+Modelo de dados: o da especificação funcional v1.0 (seção 6), documentado em `docs/banco-de-dados.md` (mapa spec → colunas, decisões, RPCs, testes). Multiusuário com família e cartões compartilhados; privacidade garantida por RLS.
 
-Saldo de conta não é armazenado: a view `accounts_with_balance` calcula `current_balance` e `available_credit` a partir das transações (conta comum conta só data <= hoje; cartão conta também futuras, exceto de grupo quitado/cancelado/desativado). Parcelamento e recorrência são criados por RPC (`create_installment_group`, `update_installment_group`, `create_recurring_group`), que geram as transações numa operação só.
+**Atenção:** a camada `lib/api/*.ts` e as telas ainda usam o modelo antigo (accounts, recurring_groups etc.), que foi removido do banco. O front precisa ser refeito para o modelo novo antes de funcionar.
 
 ## Estado atual (registrar aqui conforme evolui, não deixar desatualizado)
 
-Backend migrado para Supabase (2026-11-15), com login e dados isolados por usuário. Dados da planilha Troco-Controle-Financeiro estão no schema privado `import` (tabela `import.raw`); a função `import.load_for(email)` copia tudo para a conta indicada. Pendente: rodar após a dona do projeto criar a conta no app.
+Backend migrado para Supabase (2026-11-15), com login e dados isolados por usuário. Dados da planilha Troco-Controle-Financeiro estão no schema privado `import` (tabela `import.raw`); a função `import.load_for(email, card_days)` copia tudo para a conta indicada no modelo novo (contas viram carteiras, saldo inicial vira receita). Pendente: rodar após a dona do projeto criar a conta.
 
 Prontos: tipos (`lib/types.ts`), cliente de API (`lib/api/client.ts`), hooks de dados (`hooks/use-*.ts`), componentes de exibição/lista (cards, badges, listas).
 
