@@ -1,13 +1,10 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { AddLinearIcon } from '@solar-icons/react'
-import { BillFormSheet } from '@/components/bills/bill-form-sheet'
 import { BillOccurrenceSheet } from '@/components/bills/bill-occurrence-sheet'
 import { BillsMonthCard } from '@/components/bills/bills-month-card'
 import { DueBadge } from '@/components/bills/due-badge'
 import { InvoiceSheet, type InvoiceRef } from '@/components/bills/invoice-sheet'
-import { GlassButton } from '@/components/ios/glass-button'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
@@ -30,13 +27,13 @@ export default function BillsPage() {
   const { totals, paid: paidInvoices } = useInvoices(month)
   const { wallets } = useOwnWallets()
   const { categories } = useCategories()
-  const [creating, setCreating] = useState(false)
   const [openBill, setOpenBill] = useState<BillOccurrence | null>(null)
   const [openInvoice, setOpenInvoice] = useState<InvoiceRef | null>(null)
   const catById = new Map(categories.map(c => [c.id, c]))
 
   const items = useMemo<Item[]>(() => {
-    const list: Item[] = occurrences.map(o => ({ kind: 'bill', due: o.dueDate, amount: o.amount, paid: !!o.paidAt, o }))
+    const list: Item[] = occurrences.filter(o => o.bill.type === 'expense')
+      .map(o => ({ kind: 'bill', due: o.dueDate, amount: o.amount, paid: !!o.paidAt, o }))
     // CON-8: a fatura de cada cartão que vence neste mês entra junto com as contas
     for (const w of wallets.filter(w => w.type === 'credit' && w.active)) {
       const ref = invoiceRefDueIn(w, month)
@@ -49,6 +46,8 @@ export default function BillsPage() {
     return list.sort((a, b) => a.due.localeCompare(b.due))
   }, [occurrences, wallets, totals, paidInvoices, month])
 
+  // receitas fixas ficam num grupo à parte e não entram no total de contas
+  const incomes = occurrences.filter(o => o.bill.type === 'income')
   const total = items.reduce((s, i) => s + i.amount, 0)
   const paid = items.filter(i => i.paid).reduce((s, i) => s + i.amount, 0)
 
@@ -56,22 +55,21 @@ export default function BillsPage() {
     <>
       <LargeTitleHeader
         title="Contas"
-        actions={<>
-          <MonthSelector />
-          <GlassButton aria-label="Nova conta" onClick={() => setCreating(true)}><AddLinearIcon /></GlassButton>
-        </>}
+        actions={<MonthSelector />}
       />
       <div className="space-y-7 px-4 pt-2">
         <BillsMonthCard total={total} paid={paid} count={items.length} />
 
         {loading ? (
           <p className="text-subheadline text-muted-foreground">Carregando…</p>
-        ) : items.length === 0 ? (
+        ) : items.length === 0 && incomes.length === 0 ? (
           <div className="py-10 text-center">
             <p className="text-headline">Nenhuma conta em {monthName(month)}</p>
-            <p className="text-subheadline text-muted-foreground">Toque no + no topo da tela para adicionar</p>
+            <p className="text-subheadline text-muted-foreground">Toque no + na barra de baixo para adicionar</p>
           </div>
         ) : (
+          <>
+          {items.length > 0 && (
           <ListGroup header={`Este mês · ${items.length}`}>
             {items.map(i => {
               if (i.kind === 'invoice') {
@@ -102,9 +100,28 @@ export default function BillsPage() {
               )
             })}
           </ListGroup>
+          )}
+          {incomes.length > 0 && (
+            <ListGroup header={`A receber · ${formatCurrency(incomes.reduce((s, o) => s + o.amount, 0))}`}>
+              {incomes.map(o => {
+                const cat = o.bill.categoryId ? catById.get(o.bill.categoryId) : undefined
+                return (
+                  <ListRow
+                    key={o.id}
+                    onClick={() => setOpenBill(o)}
+                    leading={<TokenIcon icon={cat?.icon ?? 'ellipsis'} color={cat?.color ?? 'gray'} />}
+                    title={o.bill.name}
+                    subtitle={<span className="flex items-center gap-1.5">Dia {formatDate(o.dueDate).slice(0, 5)} <DueBadge dueDate={o.dueDate} paid={!!o.paidAt} income /></span>}
+                    trailing={<span className="text-body font-semibold tabular-nums text-success">+{formatCurrency(o.amount)}</span>}
+                    chevron
+                  />
+                )
+              })}
+            </ListGroup>
+          )}
+          </>
         )}
       </div>
-      <BillFormSheet open={creating} onOpenChange={setCreating} />
       <BillOccurrenceSheet occurrence={openBill} onClose={() => setOpenBill(null)} />
       <InvoiceSheet invoice={openInvoice} onClose={() => setOpenInvoice(null)} />
     </>

@@ -4,6 +4,7 @@ import { toBillOccurrence } from '../supabase/mappers'
 
 function toRow(b: Partial<BillInput>) {
   const r: Record<string, unknown> = {}
+  if (b.type !== undefined) r.type = b.type
   if (b.name !== undefined) r.name = b.name
   if (b.amount !== undefined) r.amount = b.amount
   if (b.dueDay !== undefined) r.due_day = b.dueDay

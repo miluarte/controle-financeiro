@@ -117,9 +117,12 @@ Deno.serve(async req => {
     if (due(userId, 'bill_due', '09:00')) {
       const before = settings.get(`${userId}:bill_due`)?.days_before ?? 2
       const { data: occ } = await supabase.from('bill_occurrences')
-        .select('id, amount, due_date, bills(name)').eq('user_id', userId).is('paid_at', null)
+        .select('id, amount, due_date, bills(name, type)').eq('user_id', userId).is('paid_at', null)
         .in('due_date', [now.date, addDays(now.date, before)])
       for (const o of occ ?? []) {
+        // receita fixa não vence: não avisa
+        // deno-lint-ignore no-explicit-any
+        if ((o as any).bills?.type === 'income') continue
         const today = o.due_date === now.date
         if (await once(userId, 'bill_due', `${o.id}:${o.due_date === now.date ? 0 : before}`)) {
           // deno-lint-ignore no-explicit-any

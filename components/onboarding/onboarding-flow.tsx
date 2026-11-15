@@ -124,7 +124,7 @@ export function OnboardingFlow() {
 
         {step === 'done' && (
           <OnboardingStep icon={<StepIcon><CheckCircleLinearIcon /></StepIcon>} title="Tudo pronto"
-            text="Toque no + na Home para registrar o primeiro gasto. Tudo o que você configurou aqui pode ser mudado em Config." />
+            text="Toque no + na barra de baixo para registrar o primeiro gasto. Tudo o que você configurou aqui pode ser mudado em Config." />
         )}
       </div>
 

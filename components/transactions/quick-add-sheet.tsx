@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { AddLinearIcon, CloseLinearIcon } from '@solar-icons/react'
+import { CloseLinearIcon } from '@solar-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { FormRow } from '@/components/ios/form-row'
 import { GlassButton } from '@/components/ios/glass-button'
 import { ListGroup } from '@/components/ios/list-group'
@@ -26,23 +26,29 @@ import { useSession } from '@/hooks/use-session'
 import type { Wallet } from '@/lib/types'
 import { todayIso } from '@/lib/utils'
 
-type Mode = 'expense' | 'income' | 'save'
+export type QuickAddMode = 'expense' | 'income' | 'save'
+type Mode = QuickAddMode
 type SaveDirection = 'apply' | 'redeem'
 
 function walletLabel(w: Wallet) {
   return w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name
 }
 
-// 5.3: registro rápido de Gasto, Receita e Guardar.
-export function QuickAddSheet() {
+// 5.3: registro rápido de Gasto, Receita e Guardar. Abre pelo + da barra de abas (AddMenu).
+interface QuickAddSheetProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  initialMode?: Mode
+}
+
+export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: QuickAddSheetProps) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
   const { profile } = useProfile()
   const refreshMonth = useRefresh()
   const { session } = useSession()
 
-  const [open, setOpen] = useState(false)
-  const [mode, setMode] = useState<Mode>('expense')
+  const [mode, setMode] = useState<Mode>(initialMode)
   const [saveDirection, setSaveDirection] = useState<SaveDirection>('apply')
   const [amount, setAmount] = useState(0)
   const [date, setDate] = useState(todayIso)
@@ -122,7 +128,7 @@ export function QuickAddSheet() {
       }
       await refreshMonth()
       reset()
-      setOpen(false)
+      onOpenChange(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível registrar.')
     } finally {
@@ -138,14 +144,7 @@ export function QuickAddSheet() {
   const modeTitle = mode === 'expense' ? 'Novo gasto' : mode === 'income' ? 'Nova receita' : 'Guardar'
 
   return (
-    <Sheet open={open} onOpenChange={o => { setOpen(o); if (!o) reset() }}>
-      <SheetTrigger
-        render={
-          <GlassButton aria-label="Registrar">
-            <AddLinearIcon />
-          </GlassButton>
-        }
-      />
+    <Sheet open={open} onOpenChange={o => { onOpenChange(o); if (!o) reset() }}>
       <SheetContent side="bottom" showCloseButton={false} className="gap-0">
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           {/* barra do modal no iOS 26: fechar (vidro) | título | confirmar (cápsula preenchida) */}

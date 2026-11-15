@@ -14,17 +14,27 @@ import { useCategories } from '@/hooks/use-categories'
 import { useMonth } from '@/hooks/use-month'
 import { useRefresh } from '@/hooks/use-refresh'
 import { billsApi } from '@/lib/api/bills'
+import type { BillType } from '@/lib/types'
 
 // CON-3, CON-4, CON-5: nova conta (fixa, recorrente ou parcelada).
-export function BillFormSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+// Com type="income" vira receita fixa (salário, aluguel recebido): mesma série mensal, mas a pagar vira a receber.
+interface BillFormSheetProps {
+  open: boolean
+  onOpenChange: (o: boolean) => void
+  type?: BillType
+}
+
+export function BillFormSheet({ open, onOpenChange, type = 'expense' }: BillFormSheetProps) {
   return (
-    <ModalSheet open={open} onOpenChange={onOpenChange} title="Nova conta" formId="new-bill" actionLabel="Salvar">
-      {open && <BillForm onDone={() => onOpenChange(false)} />}
+    <ModalSheet open={open} onOpenChange={onOpenChange} title={type === 'income' ? 'Nova receita fixa' : 'Nova conta'}
+      formId="new-bill" actionLabel="Salvar">
+      {open && <BillForm type={type} onDone={() => onOpenChange(false)} />}
     </ModalSheet>
   )
 }
 
-function BillForm({ onDone }: { onDone: () => void }) {
+function BillForm({ type, onDone }: { type: BillType; onDone: () => void }) {
+  const income = type === 'income'
   const { month } = useMonth()
   const { categories } = useCategories()
   const refresh = useRefresh()
@@ -42,12 +52,12 @@ function BillForm({ onDone }: { onDone: () => void }) {
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
-    if (!name.trim()) { setError('Dê um nome para a conta.'); return }
+    if (!name.trim()) { setError(income ? 'Dê um nome para a receita.' : 'Dê um nome para a conta.'); return }
     if (amount <= 0) { setError('Informe o valor.'); return }
     if (installments && (current < 1 || total < current)) { setError('Confira as parcelas.'); return }
     try {
       await billsApi.create({
-        name: name.trim(), amount, dueDay, dueNextMonth, categoryId,
+        type, name: name.trim(), amount, dueDay, dueNextMonth: income ? false : dueNextMonth, categoryId,
         recurring: recurring || installments,
         startMonth: `${startMonth}-01`,
         installmentCurrent: installments ? current : null,
@@ -64,27 +74,33 @@ function BillForm({ onDone }: { onDone: () => void }) {
       <CurrencyInput id="bill-amount" aria-label="Valor" variant="display" value={amount} onChange={setAmount} />
       <ListGroup>
         <FormRow label="Nome" htmlFor="bill-name">
-          <Input id="bill-name" variant="bare" value={name} onChange={e => setName(e.target.value)} placeholder="Aluguel, internet…" className="text-right" />
+          <Input id="bill-name" variant="bare" value={name} onChange={e => setName(e.target.value)} placeholder={income ? 'Salário, aluguel…' : 'Aluguel, internet…'} className="text-right" />
         </FormRow>
-        <FormRow label="Dia do vencimento" htmlFor="bill-day">
+        <FormRow label={income ? 'Dia de receber' : 'Dia do vencimento'} htmlFor="bill-day">
           <NumberField id="bill-day" min={1} max={31} value={dueDay} onChange={setDueDay} className="w-16 text-right" />
         </FormRow>
         <FormRow label="Mês de referência" htmlFor="bill-month">
           <Input id="bill-month" type="month" variant="bare" value={startMonth}
             onChange={e => setStartMonth(e.target.value || month)} className="w-auto text-right" />
         </FormRow>
-        <FormRow label="Vence no mês seguinte">
-          <Switch checked={dueNextMonth} onCheckedChange={setDueNextMonth} />
-        </FormRow>
+        {!income && (
+          <FormRow label="Vence no mês seguinte">
+            <Switch checked={dueNextMonth} onCheckedChange={setDueNextMonth} />
+          </FormRow>
+        )}
       </ListGroup>
 
-      <ListGroup footer="Repetindo, a conta aparece sozinha todo mês. Parcelada, a parcela avança a cada mês até o fim.">
+      <ListGroup footer={income
+        ? 'Repetindo, a receita aparece sozinha todo mês em Contas, em "A receber".'
+        : 'Repetindo, a conta aparece sozinha todo mês. Parcelada, a parcela avança a cada mês até o fim.'}>
         <FormRow label="Repetir nos próximos meses">
           <Switch checked={recurring || installments} disabled={installments} onCheckedChange={setRecurring} />
         </FormRow>
-        <FormRow label="Parcelada">
-          <Switch checked={installments} onCheckedChange={setInstallments} />
-        </FormRow>
+        {!income && (
+          <FormRow label="Parcelada">
+            <Switch checked={installments} onCheckedChange={setInstallments} />
+          </FormRow>
+        )}
         {installments && (
           <>
             <FormRow label="Parcela atual" htmlFor="bill-current">
@@ -99,7 +115,7 @@ function BillForm({ onDone }: { onDone: () => void }) {
 
       <ListGroup header="Categoria">
         <li className="flex flex-wrap gap-2 p-3">
-          {categories.filter(c => c.type === 'expense').map(c => (
+          {categories.filter(c => c.type === type).map(c => (
             <ChoiceChip key={c.id} selected={categoryId === c.id} onClick={() => setCategoryId(categoryId === c.id ? null : c.id)} className="pl-1">
               <TokenIcon active={categoryId === c.id} icon={c.icon} color={c.color} size="sm" />{c.name}
             </ChoiceChip>

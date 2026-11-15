@@ -125,8 +125,11 @@ export interface CategoryInput {
   class: 'essential' | 'desire' | null
 }
 
+export type BillType = 'expense' | 'income'
+
 export interface Bill {
   id: string
+  type: BillType
   name: string
   amount: number
   dueDay: number
@@ -140,6 +143,7 @@ export interface Bill {
 }
 
 export interface BillInput {
+  type: BillType
   name: string
   amount: number
   dueDay: number

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { AddMenu } from './add-menu'
 import {
   BillListLinearIcon,
   BillListBoldIcon,
@@ -25,13 +26,14 @@ const NAV_ITEMS: { href: string; label: string; icon: SolarIcon; activeIcon: Sol
 ]
 
 // Barra de abas Liquid Glass (iOS 26): cápsula de vidro flutuante, aba ativa marcada por uma
-// "lente" de vidro mais densa, ícone preenchido e na cor principal.
+// "lente" de vidro mais densa, ícone preenchido e na cor principal. Ao lado, o botão + (AddMenu).
+// Fica presa ao fundo do AppShell (que ocupa a tela toda), sem position fixed.
 export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-6 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-      <div className="glass flex h-tabbar w-full max-w-sm items-stretch gap-1 rounded-full p-1">
+    <nav className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex justify-center gap-3 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="glass pointer-events-auto flex h-tabbar max-w-sm flex-1 items-stretch gap-1 rounded-full p-1">
         {NAV_ITEMS.map(({ href, label, icon: Icon, activeIcon: ActiveIcon, also }) => {
           const active = [href, ...(also ?? [])].some(p => pathname.startsWith(p))
           const IconComponent = active ? ActiveIcon : Icon
@@ -51,6 +53,7 @@ export function BottomNav() {
           )
         })}
       </div>
+      <div className="pointer-events-auto"><AddMenu /></div>
     </nav>
   )
 }

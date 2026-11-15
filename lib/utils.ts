@@ -7,7 +7,7 @@ const twMerge = extendTailwindMerge({
   extend: {
     theme: {
       text: ["large-title", "title1", "title2", "title3", "headline", "body", "callout", "subheadline", "footnote", "caption1", "caption2"],
-      spacing: ["row", "tabbar"],
+      spacing: ["row", "tabbar", "app"],
       radius: ["glass"],
     },
   },

@@ -112,6 +112,7 @@ export function toBill(r: Row): Bill {
     id: r.id,
     name: r.name,
     amount: num(r.amount),
+    type: r.type === 'income' ? 'income' : 'expense',
     dueDay: num(r.due_day),
     dueNextMonth: !!r.due_next_month,
     categoryId: r.category_id ?? null,

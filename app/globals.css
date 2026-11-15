@@ -53,6 +53,7 @@
   /* Alturas padrão de controles do iOS */
   --spacing-row: 2.75rem;
   --spacing-tabbar: 3.875rem;
+  --spacing-app: var(--app-height);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -94,6 +95,9 @@
 }
 
 :root {
+  /* altura útil da tela, atualizada pelo IosViewportFix */
+  --app-height: 100dvh;
+
   /* Cores do sistema iOS (modo claro) */
   --background: #f2f2f7;          /* systemGroupedBackground */
   --foreground: #000000;          /* label */

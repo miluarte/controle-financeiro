@@ -33,7 +33,9 @@ Tokens em `app/globals.css`: cores do sistema iOS (`--background` systemGroupedB
 
 Liquid Glass: utilitários `glass` e `glass-strong` (vidro translúcido com desfoque, borda clara e brilho no topo, tokens `--glass-*`). Usados na barra de abas flutuante em cápsula (aba ativa com "lente" `bg-glass-lens`), nos botões circulares de vidro (`GlassButton`) e na folha modal flutuante (`Sheet side="bottom"`). Controles em cápsula (botão grande, controle segmentado, chips); listas agrupadas com `rounded-3xl`.
 
-`IosViewportFix` (`components/shared/ios-viewport-fix.tsx`, em `app/providers.tsx`): no iPhone com o app na Tela de Início, dá uma rolagem mínima ao abrir e ao voltar ao app, porque o Safari calcula a altura errada até a primeira rolagem e a barra de abas fica alta.
+Estrutura da tela: a página não rola. `AppShell` ocupa a tela toda (`h-app`, variável `--app-height` medida pelo `IosViewportFix` em `components/shared/ios-viewport-fix.tsx`) e só o `<main>` rola; a barra de abas fica presa ao fundo do shell, sem `position: fixed`. Motivo: no iPhone com o app na Tela de Início, o Safari calcula errado a altura ao abrir e a barra fixa ficava alta. No modo instalado, em pé, a altura usada é a da tela (`screen.height`).
+
+Botão + (`components/layout/add-menu.tsx`) fica ao lado da barra de abas e abre um menu (`components/ui/dropdown-menu.tsx`, vidro): Gasto, Receita, Guardar (abrem o `QuickAddSheet` já no tipo) e, em "Todo mês", Conta fixa e Receita fixa (`BillFormSheet type`). É o único ponto de adicionar lançamentos e contas.
 
 Campos de número inteiro (dia, parcelas) usam `components/shared/number-field.tsx`, nunca `<input type="number">` com clamp no onChange (impede apagar no iPhone). Valores em dinheiro usam `CurrencyInput`.
 
@@ -55,6 +57,7 @@ Front v1 completo (2026-11-15), publicado na main (Vercel):
 - Abas (NAV-1): Contas (`/bills`), Home (`/home`), Análise (`/analysis`), Config (`/config`). Seletor de mês compartilhado (`MonthProvider`, `MonthSelector`).
 - Home: saudação, saldo do mês (caixa), ocultar valores, primeiros passos (o passo do toque duplo foi trocado por "cadastrar um cartão" até as automações existirem), últimas transações, botão + (registro rápido de Gasto/Receita/Guardar, parcelas no crédito).
 - Transações (`/transactions`, via "Ver todas"): busca, filtro, resumo, edição e exclusão (parcela ou compra inteira).
+- Receita fixa (2026-11-18): `bills.type` = `expense` ou `income`. Receita fixa aparece em Contas no grupo "A receber" (fora do total de contas); "Marcar como recebida" gera receita (`pay_bill_occurrence`), nunca em cartão de crédito. Não gera aviso de vencimento.
 - Contas: contas fixas/recorrentes/parceladas (`bills` + `bill_occurrences`, geradas por `ensure_bill_occurrences`), pagar gerando gasto, desfazer, editar só este mês ou a série, encerrar; fatura de cada cartão que vence no mês, com compras e pagamento (`pay_invoice`). Regras de fatura no cliente em `lib/invoice.ts`.
 - Análise: orçamento do mês, ritmo (gráfico SVG próprio), resta e livre por dia, comparação com o mês anterior até o mesmo dia, gastos por categoria com meta (`category_goals`), categorias sem gasto recolhidas, histórico de 6 meses. Cálculos em `lib/analysis.ts`.
 - Config: perfil (nome, cor do avatar), tema (claro/escuro/automático via `data-theme` no html), categorias (`/config/categories`: criar, renomear, ícone, cor, classe, reordenar, arquivar, excluir), carteiras (`/config/wallets`: tipos, acabamento com prévia, fechamento/vencimento, limite, fatura atual e próxima, padrão, arquivar, excluir), moeda padrão, saldo acumulado, exportar/importar CSV (`lib/csv.ts`, prévia, mapeamento e duplicadas), sair e excluir conta. Sobre (novidades, versão) e feedback foram removidos a pedido (2026-11-16).
