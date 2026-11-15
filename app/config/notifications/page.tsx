@@ -71,7 +71,7 @@ export default function NotificationsPage() {
             </Button>
             {state === 'on' && (
               <Button variant="secondary" size="lg" className="w-full" disabled={busy}
-                onClick={async () => { await sendTest(); setMessage('Teste enviado. Ele chega em até 10 minutos.') }}>
+                onClick={async () => { await sendTest(); setMessage('Teste enviado. Deve chegar em alguns segundos.') }}>
                 Enviar teste
               </Button>
             )}

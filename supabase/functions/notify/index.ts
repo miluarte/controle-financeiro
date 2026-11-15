@@ -1,5 +1,5 @@
 // Troco: envio de notificações push (spec 5.13 e 5.7.9).
-// Chamada a cada 10 minutos pelo pg_cron (cabeçalho x-cron-secret).
+// Chamada a cada 10 minutos pelo pg_cron e, na hora, quando entra aviso na fila (cabeçalho x-cron-secret).
 // 1. Envia a fila (eventos da família e testes).
 // 2. Avisos agendados por usuário: contas a vencer, lembrete de registro, resumo da semana,
 //    alertas de orçamento e lembrete de acerto quando a fatura de um cartão compartilhado fecha.
@@ -88,11 +88,21 @@ Deno.serve(async req => {
     }
   }
 
-  // 1. fila de eventos
-  const { data: queue } = await supabase.from('notification_queue').select('*').is('sent_at', null).order('created_at').limit(200)
-  for (const q of queue ?? []) {
+  // 1. fila de eventos. Cada aviso é "reservado" (sent_at) antes de enviar, para que dois
+  //    disparos simultâneos (trigger imediato e agendamento) não mandem o mesmo aviso duas vezes.
+  const { data: queue } = await supabase.from('notification_queue').select('id').is('sent_at', null).order('created_at').limit(200)
+  for (const { id } of queue ?? []) {
+    const { data: claimed } = await supabase.from('notification_queue')
+      .update({ sent_at: new Date().toISOString() }).eq('id', id).is('sent_at', null).select('*')
+    const q = claimed?.[0]
+    if (!q) continue
     if (q.kind === 'test' || enabled(q.user_id, q.kind)) await push(q.user_id, q.title, q.body, q.url ?? '/home')
-    await supabase.from('notification_queue').update({ sent_at: new Date().toISOString() }).eq('id', q.id)
+  }
+
+  // disparo imediato (trigger da fila): só a fila
+  const payload = await req.json().catch(() => ({}))
+  if (payload?.queue_only) {
+    return new Response(JSON.stringify({ ok: true, sent }), { headers: { 'Content-Type': 'application/json' } })
   }
 
   // 2. avisos agendados (só para quem tem aparelho cadastrado)
