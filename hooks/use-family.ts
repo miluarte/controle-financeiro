@@ -17,3 +17,8 @@ export function useMyDebts() {
   const { data } = useSWR(['my-debts'], () => familyApi.myDebts())
   return data ?? []
 }
+
+export function useSettlements(walletId: string) {
+  const { data } = useSWR(['settlements', walletId], () => familyApi.settlements(walletId))
+  return data ?? []
+}

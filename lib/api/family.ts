@@ -1,4 +1,4 @@
-import type { CardDebt, Family, FamilyMember } from '../types'
+import type { CardDebt, Family, FamilyMember, Settlement } from '../types'
 import { supabase, unwrap } from '../supabase/client'
 
 // 5.7: família e cartões compartilhados. Escritas sensíveis passam pelas RPCs do banco.
@@ -67,4 +67,33 @@ export const familyApi = {
       settled: Number(r.settled),
       open: Number(r.open),
     })),
+
+  // 5.7.8: acertos de um cartão (o RLS mostra só os meus, como devedor ou titular).
+  settlements: async (walletId: string): Promise<Settlement[]> => {
+    const rows = unwrap(await supabase.from('settlements').select('*').eq('wallet_id', walletId).order('created_at', { ascending: false }))
+    return rows.map(r => ({
+      id: r.id, walletId: r.wallet_id, debtorId: r.debtor_id, holderId: r.holder_id,
+      invoiceRef: r.invoice_ref, amount: Number(r.amount), status: r.status,
+      reportedAt: r.reported_at, confirmedAt: r.confirmed_at,
+    }))
+  },
+
+  reportSettlement: async (walletId: string, invoiceRef: string, amount: number, fromWalletId: string, date: string) => {
+    unwrap(await supabase.rpc('report_settlement', {
+      p_wallet: walletId, p_invoice_ref: invoiceRef, p_amount: amount, p_from_wallet: fromWalletId, p_date: date,
+    }))
+  },
+  confirmSettlement: async (id: string, toWalletId: string) => {
+    unwrap(await supabase.rpc('confirm_settlement', { p_settlement: id, p_to_wallet: toWalletId }))
+  },
+  rejectSettlement: async (id: string) => { unwrap(await supabase.rpc('reject_settlement', { p_settlement: id })) },
+  cancelSettlement: async (id: string) => { unwrap(await supabase.rpc('cancel_settlement', { p_settlement: id })) },
+
+  // ATR-5: dividir compra à vista entre pessoas (partes somando o valor total).
+  splitPurchase: async (transactionId: string, parts: { userId: string; amount: number }[]) => {
+    unwrap(await supabase.rpc('split_purchase', {
+      p_transaction: transactionId,
+      p_parts: parts.map(p => ({ user_id: p.userId, amount: p.amount })),
+    }))
+  },
 }

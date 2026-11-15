@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { ModalSheet } from '@/components/ios/modal-sheet'
@@ -12,8 +13,8 @@ import { formatCurrency } from '@/lib/utils'
 
 // ATR-2: "De quem é essa compra?" (titular). ATR-4: vale para as parcelas em aberto.
 export function AssignSheet({
-  transaction, people, me, onClose,
-}: { transaction: Transaction | null; people: FamilyMember[]; me?: string; onClose: () => void }) {
+  transaction, people, me, onClose, onSplit,
+}: { transaction: Transaction | null; people: FamilyMember[]; me?: string; onClose: () => void; onSplit?: (t: Transaction) => void }) {
   const refresh = useRefresh()
   const [error, setError] = useState<string | null>(null)
 
@@ -41,6 +42,11 @@ export function AssignSheet({
             ))}
           </ListGroup>
           {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+          {onSplit && !transaction.installmentGroupId && people.length > 1 && (
+            <Button type="button" variant="secondary" size="lg" className="w-full" onClick={() => onSplit(transaction)}>
+              Dividir entre pessoas
+            </Button>
+          )}
         </>
       )}
     </ModalSheet>

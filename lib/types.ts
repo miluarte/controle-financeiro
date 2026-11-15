@@ -211,3 +211,15 @@ export interface CardDebt {
   settled: number
   open: number
 }
+
+export interface Settlement {
+  id: string
+  walletId: string
+  debtorId: string
+  holderId: string
+  invoiceRef: string
+  amount: number
+  status: 'open' | 'reported' | 'confirmed'
+  reportedAt: string | null
+  confirmedAt: string | null
+}

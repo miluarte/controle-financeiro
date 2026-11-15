@@ -12,14 +12,17 @@ import { TransactionItem } from '@/components/transactions/transaction-item'
 import { WalletFormSheet } from '@/components/wallets/wallet-form-sheet'
 import { useCategories } from '@/hooks/use-categories'
 import { useInvoices } from '@/hooks/use-data'
-import { useFamily, useFamilyMembers } from '@/hooks/use-family'
+import { useFamily, useFamilyMembers, useSettlements } from '@/hooks/use-family'
 import { useProfile } from '@/hooks/use-profile'
 import { useSession } from '@/hooks/use-session'
 import { transactionsApi } from '@/lib/api/transactions'
 import { invoiceDueDate, openInvoiceRef } from '@/lib/invoice'
-import type { FamilyMember, OwnWallet, Transaction } from '@/lib/types'
-import { formatCurrency, formatDate, todayIso } from '@/lib/utils'
+import type { FamilyMember, OwnWallet, Settlement, Transaction } from '@/lib/types'
+import { formatCurrency, formatDate, monthName, todayIso } from '@/lib/utils'
+import { ListRow } from '@/components/ios/list-row'
 import { AssignSheet } from './assign-sheet'
+import { ConfirmSettlementSheet } from './confirm-settlement-sheet'
+import { SplitSheet } from './split-sheet'
 import { InvoiceNavigator } from './invoice-navigator'
 import { ShareCardGroup } from './share-card-group'
 
@@ -38,6 +41,9 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
   const [paying, setPaying] = useState<InvoiceRef | null>(null)
   const [assigning, setAssigning] = useState<Transaction | null>(null)
   const [editing, setEditing] = useState<Transaction | null>(null)
+  const [splitting, setSplitting] = useState<Transaction | null>(null)
+  const [confirming, setConfirming] = useState<Settlement | null>(null)
+  const settlements = useSettlements(wallet.id)
   const { totals, paid } = useInvoices(today.slice(0, 7))
   const { data: purchases } = useSWR(['invoice-tx', wallet.id, ref], () => transactionsApi.getByInvoice(wallet.id, `${ref}-01`))
   const me = session?.user.id
@@ -52,6 +58,9 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
   const total = list.reduce((s, t) => s + t.amount, 0)
   const byPerson = new Map<string, number>()
   for (const t of list) byPerson.set(t.owner, (byPerson.get(t.owner) ?? 0) + t.amount)
+  const settledBy = new Map<string, number>()
+  for (const st of settlements) if (st.status === 'confirmed' && st.invoiceRef.slice(0, 7) === ref) settledBy.set(st.debtorId, (settledBy.get(st.debtorId) ?? 0) + st.amount)
+  const reported = settlements.filter(st => st.status === 'reported')
   const paidAt = paid.find(p => p.walletId === wallet.id && p.refMonth.slice(0, 7) === ref)?.paidAt ?? null
   const closed = ref < openRef
   const shared = wallet.shareScope !== 'none'
@@ -81,7 +90,10 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
               return (
                 <li key={id} className="flex items-center gap-2">
                   <MemberAvatar name={p?.name ?? 'M'} color={p?.avatarColor ?? 'gray'} size="sm" />
-                  <span className="flex-1 text-subheadline">{nameOf(id)}</span>
+                  <span className="flex-1 text-subheadline">
+                    {nameOf(id)}
+                    {settledBy.get(id) ? <span className="text-footnote text-success"> · {formatCurrency(settledBy.get(id)!)} acertado</span> : null}
+                  </span>
                   <span className="text-subheadline font-semibold tabular-nums">{formatCurrency(v)}</span>
                 </li>
               )
@@ -95,6 +107,17 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
           </Button>
         )}
       </section>
+
+      {reported.length > 0 && (
+        <ListGroup header="Pagamentos para confirmar">
+          {reported.map(st => (
+            <ListRow key={st.id} onClick={() => setConfirming(st)} chevron
+              leading={<MemberAvatar name={nameOf(st.debtorId)} color={people.find(p => p.userId === st.debtorId)?.avatarColor ?? 'gray'} />}
+              title={`${nameOf(st.debtorId)} pagou ${formatCurrency(st.amount)}`}
+              subtitle={`Fatura de ${monthName(st.invoiceRef.slice(0, 7))}`} />
+          ))}
+        </ListGroup>
+      )}
 
       {wallet.spendingLimit ? (
         <section className="space-y-2 rounded-3xl bg-grouped p-4">
@@ -122,7 +145,10 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
       <Button variant="secondary" size="lg" className="w-full" onClick={() => setEditingCard(true)}>Editar cartão</Button>
 
       <InvoiceSheet invoice={paying} onClose={() => setPaying(null)} />
-      <AssignSheet transaction={assigning} people={people} me={me} onClose={() => setAssigning(null)} />
+      <AssignSheet transaction={assigning} people={people} me={me} onClose={() => setAssigning(null)}
+        onSplit={t => { setAssigning(null); setSplitting(t) }} />
+      <SplitSheet transaction={splitting} people={people} me={me} onClose={() => setSplitting(null)} />
+      <ConfirmSettlementSheet settlement={confirming} debtorName={confirming ? nameOf(confirming.debtorId) : ''} onClose={() => setConfirming(null)} />
       <TransactionEditSheet transaction={editing} onClose={() => setEditing(null)} />
       <WalletFormSheet open={editingCard} wallet={wallet} onClose={() => setEditingCard(false)} />
     </div>

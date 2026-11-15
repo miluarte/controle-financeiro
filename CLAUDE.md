@@ -71,6 +71,9 @@ Família e cartões (2026-11-16):
 - `/config/family`: criar, entrar com código (pendente até aprovar), aprovar/recusar, remover, sair, novo código, pausar entradas. API em `lib/api/family.ts`.
 - `/cards/[id]`: detalhe do cartão. Titular (`OwnerCardView`): fatura por mês, divisão por pessoa, limite usado, compras, "De quem é essa compra?" (`assign_purchase`), compartilhar (Ninguém/Todos/Escolher). Membro (`MemberCardView`): "Você deve", próxima fatura, em aberto, já comprometido, só as próprias compras.
 - Home mostra "A receber de membros" e "Você deve a …" (`FamilyBalances`).
+- Acerto (5.7.8): membro toca "Paguei a …" (`SettlementSheet`, RPC `report_settlement`: registra saída `settlement_payment` sem gerar gasto e deixa o acerto `reported`); titular confirma (`ConfirmSettlementSheet`, `confirm_settlement`: entra receita na categoria Reembolso e o acerto vira `confirmed`) ou recusa (`reject_settlement`); membro pode cancelar enquanto aguarda (`cancel_settlement`). Escrita em `settlements` só por essas RPCs.
+- Divisão de compra (ATR-5): titular, na compra à vista, "Dividir entre pessoas" (`SplitSheet`, RPC `split_purchase`): igual, por valor ou por %. A parte de outra pessoa fica sem categoria (categorias são de cada um).
+- Cada etapa gera aviso push para a outra pessoa (fila `notification_queue`).
 
 Notificações push (2026-11-16):
 - Edge Function `notify` (`supabase/functions/notify`), chamada a cada 10 min pelo pg_cron via pg_net com `x-cron-secret` (avisos por horário) e na hora por trigger em `notification_queue` (eventos e teste, `queue_only`). Cada aviso da fila é reservado antes do envio para não duplicar. Envia a fila `notification_queue` (eventos da família por trigger, teste) e avisos agendados com dedupe em `notification_log`: contas a vencer, lembrete de registro, resumo de domingo, orçamento 80%/100%, fatura de cartão compartilhado fechada.
@@ -81,7 +84,7 @@ Pendente (spec, seção 8):
 - Fila de pendentes e automações (toque duplo, Apple Pay, notificação do banco) com tokens.
 - Face ID, backup periódico.
 - Login por código de 6 dígitos (ACE-1): hoje é e-mail e senha.
-- v3: foto de nota fiscal, replanejar metas, acertos entre membros, divisão de compra, alertas inteligentes.
+- v3: foto de nota fiscal, replanejar metas. (Acertos, divisão de compra e alertas de orçamento já feitos.)
 
 ## Sobre o AGENTS.md deste repositório
 
