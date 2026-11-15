@@ -55,28 +55,22 @@ Front no modelo novo (2026-11-15): login (`components/auth/`), Home (`app/home`:
 
 ## Estado atual (registrar aqui conforme evolui, não deixar desatualizado)
 
-Backend migrado para Supabase (2026-11-15), com login e dados isolados por usuário. Dados da planilha Troco-Controle-Financeiro estão no schema privado `import` (tabela `import.raw`); a função `import.load_for(email, card_days)` copia tudo para a conta indicada no modelo novo (contas viram carteiras, saldo inicial vira receita). Pendente: rodar após a dona do projeto criar a conta.
+Backend: Supabase no modelo da spec (2026-11-15). Dados da planilha Troco-Controle-Financeiro estão no schema privado `import` (`import.raw`); `import.load_for(email, card_days)` copia para a conta indicada (contas viram carteiras, saldo inicial vira receita). Pendente: rodar depois que a dona do projeto criar a conta e informar fechamento/vencimento dos cartões Madrinha e Mãe.
 
-Próximas telas da v1 (spec seção 8): Transações (busca, filtro), Carteiras, Categorias, Contas e fatura, Análise.
+Front v1 completo (2026-11-15), publicado na main (Vercel):
+- Abas (NAV-1): Contas (`/bills`), Home (`/home`), Análise (`/analysis`), Config (`/config`). Seletor de mês compartilhado (`MonthProvider`, `MonthSelector`).
+- Home: saudação, saldo do mês (caixa), ocultar valores, primeiros passos (o passo do toque duplo foi trocado por "cadastrar um cartão" até as automações existirem), últimas transações, botão + (registro rápido de Gasto/Receita/Guardar, parcelas no crédito).
+- Transações (`/transactions`, via "Ver todas"): busca, filtro, resumo, edição e exclusão (parcela ou compra inteira).
+- Contas: contas fixas/recorrentes/parceladas (`bills` + `bill_occurrences`, geradas por `ensure_bill_occurrences`), pagar gerando gasto, desfazer, editar só este mês ou a série, encerrar; fatura de cada cartão que vence no mês, com compras e pagamento (`pay_invoice`). Regras de fatura no cliente em `lib/invoice.ts`.
+- Análise: orçamento do mês, ritmo (gráfico SVG próprio), resta e livre por dia, comparação com o mês anterior até o mesmo dia, gastos por categoria com meta (`category_goals`), categorias sem gasto recolhidas, histórico de 6 meses. Cálculos em `lib/analysis.ts`.
+- Config: perfil (nome, cor do avatar), tema (claro/escuro/automático via `data-theme` no html), categorias (`/config/categories`: criar, renomear, ícone, cor, classe, reordenar, arquivar, excluir), carteiras (`/config/wallets`: tipos, acabamento com prévia, fechamento/vencimento, limite, fatura atual e próxima, padrão, arquivar, excluir), moeda padrão, saldo acumulado, exportar/importar CSV (`lib/csv.ts`, prévia, mapeamento e duplicadas), novidades, versão, feedback, sair e excluir conta.
 
-Formulários — todos construídos (2026-09-12):
-- `AccountForm`: nome, tipo, saldo inicial (só na criação), campos de cartão de crédito condicionais (limite, dia de fechamento, dia de vencimento), cor, ícone, arquivar.
-- `TransactionForm`: tipo receita/despesa (tabs), valor, descrição, data, conta, categoria, notas. Edição e exclusão inclusas. Edição busca a transação na lista do mês atual (`useTransactions`) — não existe `getTransactionById` no backend, então só é possível editar uma transação que já esteja carregada no mês corrente.
-- `TransferForm`: conta de origem, conta de destino, valor, data, descrição. Nova rota `/transactions/transfer`, linkada a partir do `QuickActionBar`.
-- `CategoryForm`: nome, tipo, ícone, cor. Só criação (backend não tem `updateCategory`/`deleteCategory`). Acionado por um Sheet na página de Categorias.
-- `BudgetGoalForm`: categoria (despesa), limite mensal, recorrente ou mês específico. Acionado por um Sheet na página de Categorias. `BudgetGoalItem` agora calcula o gasto real do mês por categoria (antes estava fixo em 0) e permite excluir a meta.
-- `InstallmentGroupForm`: descrição, valor total, número de parcelas (calcula o valor de cada parcela), cartão/conta, categoria, data da primeira parcela. Acionado por um Sheet na página de Parcelamentos.
-- `MonthlySummaryCard`: calcula total que entrou, total que saiu e saldo do mês a partir das transações do mês atual (`useTransactions`). Não existe endpoint de resumo mensal no backend — o cálculo é feito no cliente. `openingBalance`/`closingBalance` (fechamento mensal automático) ainda não têm um endpoint dedicado; ficam pendentes.
-
-Componentes novos de apoio, sem equivalente no shadcn instalado, criados como componentes isolados próprios (seguindo a regra deste arquivo): `components/ui/textarea.tsx`, `components/ui/switch.tsx`, `components/shared/currency-input.tsx` (input monetário controlado em centavos), `components/shared/color-picker.tsx` e `components/shared/icon-picker.tsx` (usam `COLOR_TOKENS`/`ICON_TOKENS`).
-
-PWA (2026-09-12): app instalável via `serwist`/`@serwist/turbopack` (Next 16 roda em Turbopack, então a integração é essa e não o `@serwist/next` clássico baseado em webpack). `app/manifest.ts` gera o manifest (ícones em `public/icons/`, gerados a partir das cores do tema — `--primary`/`--primary-foreground`). `app/sw.ts` é o service worker (precache + `defaultCache` do Serwist); `app/serwist/[path]/route.ts` expõe o bundle em `/serwist/sw.js`; `SerwistProvider` (`app/layout.tsx`) registra o worker no client. `app/~offline/page.tsx` é a página de fallback quando uma rota ainda não cacheada é aberta sem rede. Isso cobre "instalar como app" e cache básico das rotas já visitadas — não é um rearquitetamento para localStorage/client-only: os dados continuem vindo do backend Apps Script via `lib/api/client.ts`, sem mudança de arquitetura.
-
-Pendente:
-- Fechamento mensal automático (saldo final de um mês virar saldo inicial do seguinte) — agora pode ser uma view/função SQL no Supabase, ainda não existe.
-- Lógica de fatura de cartão para parcelas (quando o saldo é de fato afetado) — decisão em aberto, documentada no próprio `Code.gs`.
-- Hospedagem: Vercel (projeto `troco-controle-financeiro`), deploy automático a partir do GitHub.
-- Filtros de lançamentos (`TransactionFilters`) continuam placeholder.
+Pendente (v2 e v3 da spec, seção 8):
+- Família e cartões compartilhados (o banco já suporta; faltam as telas).
+- Fila de pendentes, automações (toque duplo, Apple Pay, notificação) com Edge Functions e tokens.
+- Push de notificações, Face ID, backup periódico.
+- Login por código de 6 dígitos (ACE-1): hoje é e-mail e senha.
+- v3: foto de nota fiscal, replanejar metas, acertos entre membros, divisão de compra, alertas inteligentes.
 
 ## Sobre o AGENTS.md deste repositório
 

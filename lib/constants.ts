@@ -23,3 +23,25 @@ export const WALLET_TYPE_ICON: Record<string, IconToken> = {
   cash: 'banknote',
   other: 'piggy-bank',
 }
+
+// CAR-3: acabamentos do cartão
+export const WALLET_FINISHES = [
+  { value: 'black', label: 'Preto' },
+  { value: 'graphite', label: 'Grafite' },
+  { value: 'gray', label: 'Cinza' },
+  { value: 'silver', label: 'Prata' },
+  { value: 'white', label: 'Branco' },
+  { value: 'purple', label: 'Roxo' },
+  { value: 'blue', label: 'Azul' },
+  { value: 'green', label: 'Verde' },
+  { value: 'red', label: 'Vermelho' },
+  { value: 'gold', label: 'Dourado' },
+] as const
+
+export const WALLET_TYPES = [
+  { value: 'pix', label: 'Pix' },
+  { value: 'debit', label: 'Débito' },
+  { value: 'credit', label: 'Crédito' },
+  { value: 'cash', label: 'Dinheiro' },
+  { value: 'other', label: 'Outro' },
+] as const

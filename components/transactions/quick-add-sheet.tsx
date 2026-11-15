@@ -14,7 +14,7 @@ import { CurrencyInput } from '@/components/shared/currency-input'
 import { TokenIcon } from '@/components/shared/token-icon'
 import { useCategories } from '@/hooks/use-categories'
 import { useProfile } from '@/hooks/use-profile'
-import { useRefreshMonth } from '@/hooks/use-refresh-month'
+import { useRefresh } from '@/hooks/use-refresh'
 import { useWallets } from '@/hooks/use-wallets'
 import { transactionsApi } from '@/lib/api/transactions'
 import { WALLET_TYPE_ICON } from '@/lib/constants'
@@ -33,7 +33,7 @@ export function QuickAddSheet() {
   const { categories } = useCategories()
   const { wallets } = useWallets()
   const { profile } = useProfile()
-  const refreshMonth = useRefreshMonth()
+  const refreshMonth = useRefresh()
 
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<Mode>('expense')

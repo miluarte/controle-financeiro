@@ -1,11 +1,24 @@
-import type { NewTransaction } from '../types'
+import type { NewTransaction, Transaction } from '../types'
 import { supabase, unwrap } from '../supabase/client'
 import { toTransaction } from '../supabase/mappers'
 import { monthRange } from '../utils'
 
+function toRow(t: Partial<NewTransaction>) {
+  const r: Record<string, unknown> = {}
+  if (t.type !== undefined) r.type = t.type
+  if (t.amount !== undefined) r.amount = t.amount
+  if (t.date !== undefined) r.date = t.date
+  if (t.categoryId !== undefined) r.category_id = t.categoryId
+  if (t.walletId !== undefined) r.wallet_id = t.walletId
+  if (t.place !== undefined) r.place = t.place
+  if (t.description !== undefined) r.description = t.description
+  if (t.source !== undefined) r.source = t.source
+  return r
+}
+
 export const transactionsApi = {
-  // Lançamentos do mês que são meus (atribuídos a mim). O titular de um cartão
-  // compartilhado também recebe as compras de membros pelo RLS; aqui elas ficam de fora.
+  // Lançamentos do mês que são meus (atribuídos a mim). Compras de membros nos meus
+  // cartões chegam pelo RLS, mas não entram aqui (5.7.7).
   getByMonth: async (month: string, userId: string) => {
     const { start, endExclusive } = monthRange(month)
     const rows = unwrap(
@@ -17,20 +30,40 @@ export const transactionsApi = {
     return rows.map(toTransaction)
   },
 
-  create: async (t: NewTransaction) => {
-    const row = unwrap(
-      await supabase.from('transactions').insert({
-        type: t.type,
-        amount: t.amount,
-        date: t.date,
-        category_id: t.categoryId,
-        wallet_id: t.walletId,
-        place: t.place,
-        description: t.description,
-      }).select('*').single(),
-    )
-    return toTransaction(row)
+  // Todas as minhas (exportação CSV e detecção de duplicadas na importação).
+  getAllMine: async (userId: string) => {
+    const all: Transaction[] = []
+    for (let from = 0; ; from += 1000) {
+      const rows = unwrap(
+        await supabase.from('transactions').select('*').eq('assigned_to', userId)
+          .order('date').range(from, from + 999),
+      )
+      all.push(...rows.map(toTransaction))
+      if (rows.length < 1000) break
+    }
+    return all
   },
+
+  // Compras de um cartão numa fatura (todas que eu posso ver).
+  getByInvoice: async (walletId: string, invoiceRef: string) => {
+    const rows = unwrap(
+      await supabase.from('transactions').select('*')
+        .eq('wallet_id', walletId).eq('invoice_ref', invoiceRef).eq('type', 'expense').eq('status', 'confirmed')
+        .order('date', { ascending: false }),
+    )
+    return rows.map(toTransaction)
+  },
+
+  create: async (t: NewTransaction) =>
+    toTransaction(unwrap(await supabase.from('transactions').insert(toRow(t)).select('*').single())),
+
+  createMany: async (list: NewTransaction[]) => {
+    if (list.length === 0) return
+    unwrap(await supabase.from('transactions').insert(list.map(toRow)))
+  },
+
+  update: async (id: string, t: Partial<NewTransaction>) =>
+    toTransaction(unwrap(await supabase.from('transactions').update(toRow(t)).eq('id', id).select('*').single())),
 
   createInstallments: async (args: {
     walletId: string; categoryId: string | null; total: number; installments: number
@@ -48,5 +81,11 @@ export const transactionsApi = {
 
   remove: async (id: string) => {
     unwrap(await supabase.from('transactions').delete().eq('id', id))
+  },
+
+  // Exclui todas as parcelas ainda não lançadas de uma compra parcelada.
+  removeInstallmentGroup: async (groupId: string) => {
+    unwrap(await supabase.from('transactions').delete().eq('installment_group_id', groupId))
+    unwrap(await supabase.from('installment_groups').delete().eq('id', groupId))
   },
 }

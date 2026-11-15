@@ -11,6 +11,7 @@ interface TransactionDayListProps {
   transactions: Transaction[]
   emptyTitle?: string
   emptyText?: string
+  onSelect?: (t: Transaction) => void
 }
 
 // TRA-1: lista agrupada por dia, um grupo do iOS por dia.
@@ -18,6 +19,7 @@ export function TransactionDayList({
   transactions,
   emptyTitle = 'Nenhuma transação',
   emptyText = 'Nenhum gasto registrado neste mês',
+  onSelect,
 }: TransactionDayListProps) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
@@ -50,6 +52,7 @@ export function TransactionDayList({
               transaction={t}
               category={t.categoryId ? catById.get(t.categoryId) : undefined}
               wallet={t.walletId ? walletById.get(t.walletId) : undefined}
+              onClick={onSelect ? () => onSelect(t) : undefined}
             />
           ))}
         </ListGroup>

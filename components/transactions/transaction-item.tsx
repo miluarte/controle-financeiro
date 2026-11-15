@@ -5,7 +5,7 @@ import { TokenIcon } from '@/components/shared/token-icon'
 import type { Category, Transaction, Wallet } from '@/lib/types'
 import { cn, formatCurrency } from '@/lib/utils'
 
-const TYPE_LABEL: Record<Transaction['type'], string> = {
+export const TYPE_LABEL: Record<Transaction['type'], string> = {
   expense: 'Gasto',
   income: 'Receita',
   save_apply: 'Guardado',
@@ -20,9 +20,10 @@ interface TransactionItemProps {
   transaction: Transaction
   category?: Category
   wallet?: Wallet
+  onClick?: () => void
 }
 
-export function TransactionItem({ transaction: t, category, wallet }: TransactionItemProps) {
+export function TransactionItem({ transaction: t, category, wallet, onClick }: TransactionItemProps) {
   const title = t.place || t.description || category?.name || TYPE_LABEL[t.type]
   const walletName = wallet?.name ?? t.walletNameSnapshot
   const installment = t.installmentN && t.installmentsTotal ? `${t.installmentN} de ${t.installmentsTotal}` : null
@@ -31,6 +32,7 @@ export function TransactionItem({ transaction: t, category, wallet }: Transactio
 
   return (
     <ListRow
+      onClick={onClick}
       leading={
         <TokenIcon
           icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')}

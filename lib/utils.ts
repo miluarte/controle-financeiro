@@ -17,11 +17,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+// NAV-4: moeda padrão do perfil (definida pelo ThemeSync ao carregar o perfil).
+let currency = 'BRL'
+export function setCurrency(code: string) {
+  currency = code || 'BRL'
+}
+
 export function formatCurrency(cents: number): string {
   const value = Number(cents)
   return ((isNaN(value) ? 0 : value) / 100).toLocaleString('pt-BR', {
     style: 'currency',
-    currency: 'BRL',
+    currency,
   })
 }
 
@@ -71,4 +77,37 @@ export function greeting(): string {
   if (h < 12) return 'Bom dia'
   if (h < 18) return 'Boa tarde'
   return 'Boa noite'
+}
+
+// Soma meses a um "AAAA-MM".
+export function addMonths(month: string, delta: number): string {
+  const [y, m] = month.split('-').map(Number)
+  const d = new Date(y, m - 1 + delta, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+export function daysInMonth(month: string): number {
+  const [y, m] = month.split('-').map(Number)
+  return new Date(y, m, 0).getDate()
+}
+
+// "nov" ou "novembro"
+export function monthName(month: string, style: 'short' | 'long' = 'long'): string {
+  const [y, m] = month.split('-').map(Number)
+  return new Date(y, m - 1, 1).toLocaleString('pt-BR', { month: style }).replace('.', '')
+}
+
+// Valor digitado em reais ("12,50") para centavos, sem passar por número decimal.
+export function parseCents(text: string): number | null {
+  const clean = text.replace(/[^\d,.-]/g, '').trim()
+  if (!clean) return null
+  const negative = clean.startsWith('-')
+  const [intPart, decPart = ''] = clean.replace('-', '').replace(/\.(?=\d{3}(\D|$))/g, '').split(/[,.]/)
+  const cents = Number(intPart || '0') * 100 + Number((decPart + '00').slice(0, 2))
+  return Number.isFinite(cents) ? (negative ? -cents : cents) : null
+}
+
+
+export function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }

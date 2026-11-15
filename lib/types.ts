@@ -49,6 +49,9 @@ export type TransactionType =
 export interface Transaction {
   id: string
   type: TransactionType
+  installmentGroupId: string | null
+  billId: string | null
+  toWalletId: string | null
   amount: number
   date: string
   categoryId: string | null
@@ -64,13 +67,14 @@ export interface Transaction {
 }
 
 export interface NewTransaction {
-  type: 'expense' | 'income' | 'save_apply' | 'save_redeem'
+  type: 'expense' | 'income' | 'save_apply' | 'save_redeem' | 'invoice_payment'
   amount: number
   date: string
   categoryId: string | null
   walletId: string | null
   place: string | null
   description: string | null
+  source?: string
 }
 
 export interface MonthSummary {
@@ -87,4 +91,94 @@ export interface MonthSummary {
   budget: number | null
   receivableFromMembers: number
   pendingCount: number
+}
+
+export interface WalletInput {
+  name: string
+  type: WalletType
+  finish: string
+  closingDay: number | null
+  dueDay: number | null
+  spendingLimit: number | null
+}
+
+export interface OwnWallet extends Wallet {
+  spendingLimit: number | null
+  closingDayInclusive: boolean
+}
+
+export interface CategoryInput {
+  type: CategoryType
+  name: string
+  icon: string
+  color: string
+  class: 'essential' | 'desire' | null
+}
+
+export interface Bill {
+  id: string
+  name: string
+  amount: number
+  dueDay: number
+  dueNextMonth: boolean
+  categoryId: string | null
+  recurring: boolean
+  startMonth: string
+  installmentCurrent: number | null
+  installmentsTotal: number | null
+  active: boolean
+}
+
+export interface BillInput {
+  name: string
+  amount: number
+  dueDay: number
+  dueNextMonth: boolean
+  categoryId: string | null
+  recurring: boolean
+  startMonth: string
+  installmentCurrent: number | null
+  installmentsTotal: number | null
+}
+
+export interface BillOccurrence {
+  id: string
+  billId: string
+  refMonth: string
+  installmentN: number | null
+  amount: number
+  dueDate: string
+  paidAt: string | null
+  transactionId: string | null
+  bill: Bill
+}
+
+export interface InvoiceTotal {
+  walletId: string
+  invoiceRef: string
+  assignedTo: string
+  total: number
+  purchases: number
+}
+
+export interface Invoice {
+  walletId: string
+  refMonth: string
+  paidAt: string | null
+}
+
+export interface CategorySpending {
+  categoryId: string
+  name: string
+  class: 'essential' | 'desire' | null
+  total: number
+  transactions: number
+  goal: number | null
+}
+
+export interface MonthHistory {
+  month: string
+  spending: number
+  income: number
+  saved: number
 }
