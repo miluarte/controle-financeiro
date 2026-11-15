@@ -1,112 +1,90 @@
-export type AccountType = 'checking' | 'savings' | 'credit_card' | 'cash' | 'loan'
+// Tipos do front no modelo da especificação v1.0 (docs/banco-de-dados.md).
+// Valores monetários sempre em centavos.
 
-export interface Account {
+export type Theme = 'light' | 'dark' | 'system'
+
+export interface Profile {
   id: string
   name: string
-  type: AccountType
-  initialBalance: number
-  currentBalance: number
-  creditLimit: number | null
-  closingDay: number | null
-  dueDay: number | null
-  institution: string | null
-  availableCredit: number | null
-  color: string
-  icon: string
-  archived: boolean
-  createdAt: string
+  avatarColor: string
+  currency: string
+  theme: Theme
+  carryOverBalance: boolean
+  monthlyIncome: number | null
+  defaultWalletId: string | null
+  onboardingDismissed: boolean
 }
 
-export type CategoryType = 'income' | 'expense'
+export type WalletType = 'pix' | 'debit' | 'credit' | 'cash' | 'other'
+
+export interface Wallet {
+  id: string
+  name: string
+  type: WalletType
+  finish: string
+  closingDay: number | null
+  dueDay: number | null
+  active: boolean
+  sortOrder: number
+  // cartão de outra pessoa da família, compartilhado comigo
+  ownerName: string | null
+}
+
+export type CategoryType = 'expense' | 'income'
 
 export interface Category {
   id: string
-  name: string
   type: CategoryType
+  name: string
   icon: string
   color: string
-  isDefault: boolean
-  createdAt: string
+  class: 'essential' | 'desire' | null
+  sortOrder: number
+  active: boolean
 }
 
-export type TransactionType = 'income' | 'expense' | 'transfer'
-
-export type PaymentMethod = 'pix' | 'debit' | 'boleto' | 'ted'
+export type TransactionType =
+  | 'expense' | 'income' | 'save_apply' | 'save_redeem' | 'invoice_payment' | 'settlement_payment'
 
 export interface Transaction {
   id: string
   type: TransactionType
   amount: number
-  description: string
   date: string
-  accountId: string
-  toAccountId: string | null
   categoryId: string | null
-  installmentGroupId: string | null
-  installmentNumber: number | null
-  installmentTotal: number | null
-  recurringGroupId: string | null
-  purchaseDate: string | null
-  merchant: string | null
-  paymentMethod: PaymentMethod | null
-  paid: boolean
-  notes: string | null
-  createdAt: string
-  updatedAt: string
+  walletId: string | null
+  walletNameSnapshot: string | null
+  place: string | null
+  description: string | null
+  installmentN: number | null
+  installmentsTotal: number | null
+  invoiceRef: string | null
+  source: string
+  status: 'confirmed' | 'pending'
 }
 
-export type RecurrenceFrequency = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'yearly'
-
-export interface RecurringGroup {
-  id: string
-  type: 'income' | 'expense'
-  description: string
+export interface NewTransaction {
+  type: 'expense' | 'income' | 'save_apply' | 'save_redeem'
   amount: number
-  accountId: string
+  date: string
   categoryId: string | null
-  frequency: RecurrenceFrequency
-  startDate: string
-  endDate: string | null
-  active: boolean
-  notes: string | null
-  createdAt: string
+  walletId: string | null
+  place: string | null
+  description: string | null
 }
 
-export type InstallmentGroupStatus = 'active' | 'paid_off' | 'cancelled'
-
-export interface InstallmentGroup {
-  id: string
-  description: string
-  totalAmount: number
-  installmentCount: number
-  installmentAmount: number
-  accountId: string
-  categoryId: string | null
-  startDate: string
-  status: InstallmentGroupStatus
-  paidCount: number
-  createdAt: string
-}
-
-export interface BudgetGoal {
-  id: string
-  categoryId: string
-  monthlyLimit: number
-  month: string | null
-  isRecurring: boolean
-  createdAt: string
-}
-
-export interface MonthlySummary {
-  month: string
-  totalIncome: number
-  totalExpense: number
+export interface MonthSummary {
+  income: number
+  spending: number
+  expenseCount: number
+  cashExpense: number
+  saved: number
+  redeemed: number
+  invoicePaid: number
   balance: number
   openingBalance: number
-  closingBalance: number
-  accountBalances: Record<string, number>
+  totalSaved: number
+  budget: number | null
+  receivableFromMembers: number
+  pendingCount: number
 }
-
-export type ApiResponse<T> =
-  | { success: true; data: T }
-  | { success: false; error: string }

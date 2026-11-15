@@ -4,23 +4,18 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
-  WidgetBoldDuotoneIcon,
-  WidgetBoldIcon,
-  WalletBoldDuotoneIcon,
-  WalletBoldIcon,
-  CardBoldDuotoneIcon,
-  CardBoldIcon,
-  TagBoldDuotoneIcon,
-  TagBoldIcon,
+  Home2BoldDuotoneIcon,
+  Home2BoldIcon,
+  SettingsBoldDuotoneIcon,
+  SettingsBoldIcon,
 } from '@solar-icons/react'
 
 type SolarIcon = React.ComponentType<{ className?: string }>
 
+// NAV-1 prevê Contas, Home, Análise e Config. Contas e Análise entram quando as telas existirem.
 const NAV_ITEMS: { href: string; label: string; icon: SolarIcon; activeIcon: SolarIcon }[] = [
-  { href: '/dashboard',    label: 'Início',     icon: WidgetBoldDuotoneIcon, activeIcon: WidgetBoldIcon },
-  { href: '/accounts',     label: 'Contas',     icon: WalletBoldDuotoneIcon, activeIcon: WalletBoldIcon },
-  { href: '/installments', label: 'Faturas',    icon: CardBoldDuotoneIcon,   activeIcon: CardBoldIcon },
-  { href: '/categories',   label: 'Categorias', icon: TagBoldDuotoneIcon,    activeIcon: TagBoldIcon },
+  { href: '/home',   label: 'Home',   icon: Home2BoldDuotoneIcon,    activeIcon: Home2BoldIcon },
+  { href: '/config', label: 'Config', icon: SettingsBoldDuotoneIcon, activeIcon: SettingsBoldIcon },
 ]
 
 export function BottomNav() {

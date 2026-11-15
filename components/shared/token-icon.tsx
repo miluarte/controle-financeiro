@@ -18,6 +18,9 @@ import {
   LaptopBoldDuotoneIcon,
   GraphUpBoldDuotoneIcon,
   AddCircleBoldDuotoneIcon,
+  RepeatBoldDuotoneIcon,
+  UndoLeftBoldDuotoneIcon,
+  GiftBoldDuotoneIcon,
 } from '@solar-icons/react'
 import { cn } from '@/lib/utils'
 import type { ColorToken, IconToken } from '@/lib/constants'
@@ -42,6 +45,9 @@ export const ICON_MAP: Record<IconToken, SolarIcon> = {
   'laptop': LaptopBoldDuotoneIcon,
   'trending-up': GraphUpBoldDuotoneIcon,
   'plus-circle': AddCircleBoldDuotoneIcon,
+  'repeat': RepeatBoldDuotoneIcon,
+  'undo': UndoLeftBoldDuotoneIcon,
+  'gift': GiftBoldDuotoneIcon,
 }
 
 // Classes completas para garantir que o Tailwind inclua no bundle

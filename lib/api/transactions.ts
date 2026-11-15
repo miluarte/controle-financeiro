@@ -1,54 +1,52 @@
-import type { Transaction } from '../types'
+import type { NewTransaction } from '../types'
 import { supabase, unwrap } from '../supabase/client'
-import { fromTransaction, toTransaction } from '../supabase/mappers'
-
-function monthRange(month: string) {
-  const [y, m] = month.split('-').map(Number)
-  const next = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`
-  return { start: `${month}-01`, endExclusive: `${next}-01` }
-}
+import { toTransaction } from '../supabase/mappers'
+import { monthRange } from '../utils'
 
 export const transactionsApi = {
-  getAll: async () => {
-    const rows = unwrap(await supabase.from('transactions').select('*').order('date', { ascending: false }))
-    return rows.map(toTransaction)
-  },
-
-  getByMonth: async (month: string) => {
+  // Lançamentos do mês que são meus (atribuídos a mim). O titular de um cartão
+  // compartilhado também recebe as compras de membros pelo RLS; aqui elas ficam de fora.
+  getByMonth: async (month: string, userId: string) => {
     const { start, endExclusive } = monthRange(month)
     const rows = unwrap(
       await supabase.from('transactions').select('*')
+        .eq('assigned_to', userId).eq('status', 'confirmed')
         .gte('date', start).lt('date', endExclusive)
-        .order('date', { ascending: false }),
+        .order('date', { ascending: false }).order('created_at', { ascending: false }),
     )
     return rows.map(toTransaction)
   },
 
-  getByAccount: async (accountId: string, startDate: string, endDate: string) => {
-    const rows = unwrap(
-      await supabase.from('transactions').select('*')
-        .or(`account_id.eq.${accountId},to_account_id.eq.${accountId}`)
-        .gte('date', startDate).lte('date', endDate)
-        .order('date', { ascending: false }),
-    )
-    return rows.map(toTransaction)
-  },
-
-  create: async (data: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const row = unwrap(await supabase.from('transactions').insert(fromTransaction(data)).select('*').single())
-    return toTransaction(row)
-  },
-
-  update: async (data: Partial<Transaction> & { id: string }) => {
-    const { id, ...rest } = data
+  create: async (t: NewTransaction) => {
     const row = unwrap(
-      await supabase.from('transactions').update(fromTransaction(rest)).eq('id', id).select('*').single(),
+      await supabase.from('transactions').insert({
+        type: t.type,
+        amount: t.amount,
+        date: t.date,
+        category_id: t.categoryId,
+        wallet_id: t.walletId,
+        place: t.place,
+        description: t.description,
+      }).select('*').single(),
     )
     return toTransaction(row)
   },
 
-  delete: async (id: string) => {
+  createInstallments: async (args: {
+    walletId: string; categoryId: string | null; total: number; installments: number
+    firstDate: string; place: string | null
+  }) => {
+    unwrap(await supabase.rpc('create_installment_purchase', {
+      p_wallet: args.walletId,
+      p_category: args.categoryId,
+      p_total: args.total,
+      p_installments: args.installments,
+      p_first_date: args.firstDate,
+      p_place: args.place,
+    }))
+  },
+
+  remove: async (id: string) => {
     unwrap(await supabase.from('transactions').delete().eq('id', id))
-    return { id }
   },
 }

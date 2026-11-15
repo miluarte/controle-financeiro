@@ -39,13 +39,13 @@ Não implementar nesta fase: a camada analítica (metas financeiras com simulaç
 
 Modelo de dados: o da especificação funcional v1.0 (seção 6), documentado em `docs/banco-de-dados.md` (mapa spec → colunas, decisões, RPCs, testes). Multiusuário com família e cartões compartilhados; privacidade garantida por RLS.
 
-**Atenção:** a camada `lib/api/*.ts` e as telas ainda usam o modelo antigo (accounts, recurring_groups etc.), que foi removido do banco. O front precisa ser refeito para o modelo novo antes de funcionar.
+Front no modelo novo (2026-11-15): login (`components/auth/`), Home (`app/home`: saudação, saldo do mês via RPC `month_summary`, últimas transações, botão + com registro rápido de Gasto/Receita/Guardar e parcelamento no crédito) e Config (`app/config`: perfil e sair). As telas do modelo antigo (contas, faturas, categorias, transações) foram removidas; estão no histórico do Git até `aca1cd9`.
 
 ## Estado atual (registrar aqui conforme evolui, não deixar desatualizado)
 
 Backend migrado para Supabase (2026-11-15), com login e dados isolados por usuário. Dados da planilha Troco-Controle-Financeiro estão no schema privado `import` (tabela `import.raw`); a função `import.load_for(email, card_days)` copia tudo para a conta indicada no modelo novo (contas viram carteiras, saldo inicial vira receita). Pendente: rodar após a dona do projeto criar a conta.
 
-Prontos: tipos (`lib/types.ts`), cliente de API (`lib/api/client.ts`), hooks de dados (`hooks/use-*.ts`), componentes de exibição/lista (cards, badges, listas).
+Próximas telas da v1 (spec seção 8): Transações (busca, filtro), Carteiras, Categorias, Contas e fatura, Análise.
 
 Formulários — todos construídos (2026-09-12):
 - `AccountForm`: nome, tipo, saldo inicial (só na criação), campos de cartão de crédito condicionais (limite, dia de fechamento, dia de vencimento), cor, ícone, arquivar.

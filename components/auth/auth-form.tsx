@@ -10,8 +10,15 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 type Mode = 'signin' | 'signup'
 
+const ERROR_PT: Record<string, string> = {
+  'Invalid login credentials': 'E-mail ou senha incorretos.',
+  'Email not confirmed': 'Confirme seu e-mail pelo link que enviamos antes de entrar.',
+  'User already registered': 'Já existe uma conta com este e-mail. Use Entrar.',
+}
+
 export function AuthForm() {
   const [mode, setMode] = useState<Mode>('signin')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -22,6 +29,7 @@ export function AuthForm() {
     e.preventDefault()
     setError(null)
     setInfo(null)
+    if (mode === 'signup' && !name.trim()) { setError('Informe seu nome.'); return }
     if (!email.trim()) { setError('Informe o e-mail.'); return }
     if (password.length < 6) { setError('A senha precisa ter pelo menos 6 caracteres.'); return }
 
@@ -34,7 +42,7 @@ export function AuthForm() {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
-          options: { emailRedirectTo: window.location.origin },
+          options: { emailRedirectTo: window.location.origin, data: { name: name.trim() } },
         })
         if (error) throw error
         if (!data.session) {
@@ -44,7 +52,7 @@ export function AuthForm() {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao entrar'
-      setError(message === 'Invalid login credentials' ? 'E-mail ou senha incorretos.' : message)
+      setError(ERROR_PT[message] ?? message)
     } finally {
       setSubmitting(false)
     }
@@ -64,6 +72,13 @@ export function AuthForm() {
                 <TabsTrigger value="signup" className="flex-1">Criar conta</TabsTrigger>
               </TabsList>
             </Tabs>
+
+            {mode === 'signup' && (
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome</Label>
+                <Input id="name" autoComplete="given-name" value={name} onChange={e => setName(e.target.value)} />
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>

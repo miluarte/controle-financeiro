@@ -1,59 +1,46 @@
 'use client'
 
-import type { Category, Transaction } from '@/lib/types'
-import { formatCurrency, formatDate, cn } from '@/lib/utils'
 import { TokenIcon } from '@/components/shared/token-icon'
-import { Badge } from '@/components/ui/badge'
-import { RepeatBoldDuotoneIcon } from '@solar-icons/react'
+import type { Category, Transaction, Wallet } from '@/lib/types'
+import { cn, formatCurrency } from '@/lib/utils'
+
+const TYPE_LABEL: Record<Transaction['type'], string> = {
+  expense: 'Gasto',
+  income: 'Receita',
+  save_apply: 'Guardado',
+  save_redeem: 'Resgate',
+  invoice_payment: 'Pagamento de fatura',
+  settlement_payment: 'Acerto',
+}
+
+const INFLOW = new Set<Transaction['type']>(['income', 'save_redeem'])
 
 interface TransactionItemProps {
   transaction: Transaction
   category?: Category
-  onClick?: () => void
+  wallet?: Wallet
 }
 
-export function TransactionItem({ transaction, category, onClick }: TransactionItemProps) {
-  const isIncome = transaction.type === 'income'
-  const isTransfer = transaction.type === 'transfer'
-  const isInstallment = transaction.installmentNumber !== null && transaction.installmentTotal !== null
-  const isRecurring = !!transaction.recurringGroupId
+export function TransactionItem({ transaction: t, category, wallet }: TransactionItemProps) {
+  const title = t.place || t.description || category?.name || TYPE_LABEL[t.type]
+  const walletName = wallet?.name ?? t.walletNameSnapshot
+  const installment = t.installmentN && t.installmentsTotal ? `${t.installmentN} de ${t.installmentsTotal}` : null
+  const subtitle = [category?.name ?? TYPE_LABEL[t.type], walletName, installment].filter(Boolean).join(' · ')
+  const inflow = INFLOW.has(t.type)
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full items-center gap-3 py-3 text-left"
-    >
-      {category ? (
-        <TokenIcon icon={category.icon} color={category.color} size="md" />
-      ) : (
-        <div className="size-9 shrink-0 rounded-full bg-muted" />
-      )}
-
+    <li className="flex items-center gap-3 py-2">
+      <TokenIcon
+        icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')}
+        color={category?.color ?? 'gray'}
+      />
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5">
-          <p className="truncate font-medium">{transaction.description}</p>
-          {isRecurring && <RepeatBoldDuotoneIcon className="size-3.5 shrink-0 text-muted-foreground" />}
-          {transaction.paid && <Badge variant="success">Paga</Badge>}
-        </div>
-        <p className="text-xs text-muted-foreground">
-          {formatDate(transaction.date)}
-          {isInstallment && ` · Parcela ${transaction.installmentNumber}/${transaction.installmentTotal}`}
-          {category && ` · ${category.name}`}
-        </p>
+        <p className="truncate font-medium">{title}</p>
+        <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
       </div>
-
-      <p
-        className={cn(
-          'shrink-0 font-semibold',
-          isIncome && 'text-green-600',
-          !isIncome && !isTransfer && 'text-red-600',
-          isTransfer && 'text-blue-600',
-        )}
-      >
-        {isIncome ? '+' : isTransfer ? '' : '-'}
-        {formatCurrency(transaction.amount)}
+      <p className={cn('shrink-0 font-semibold', inflow && 'text-success')}>
+        {inflow ? '+' : '-'} {formatCurrency(t.amount)}
       </p>
-    </button>
+    </li>
   )
 }
