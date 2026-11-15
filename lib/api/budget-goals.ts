@@ -1,16 +1,32 @@
 import type { BudgetGoal } from '../types'
-import { api } from './client'
+import { supabase, unwrap } from '../supabase/client'
+import { fromBudgetGoal, toBudgetGoal } from '../supabase/mappers'
 
 export const budgetGoalsApi = {
-  getByMonth: (month: string) =>
-    api.get<BudgetGoal[]>('getBudgetGoals', { month }),
+  getByMonth: async (month: string) => {
+    const rows = unwrap(
+      await supabase.from('budget_goals').select('*')
+        .or(`is_recurring.eq.true,month.eq.${month}`)
+        .order('created_at'),
+    )
+    return rows.map(toBudgetGoal)
+  },
 
-  create: (data: Omit<BudgetGoal, 'id' | 'createdAt'>) =>
-    api.post<BudgetGoal>('createBudgetGoal', data),
+  create: async (data: Omit<BudgetGoal, 'id' | 'createdAt'>) => {
+    const row = unwrap(await supabase.from('budget_goals').insert(fromBudgetGoal(data)).select('*').single())
+    return toBudgetGoal(row)
+  },
 
-  update: (data: Partial<BudgetGoal> & { id: string }) =>
-    api.post<BudgetGoal>('updateBudgetGoal', data),
+  update: async (data: Partial<BudgetGoal> & { id: string }) => {
+    const { id, ...rest } = data
+    const row = unwrap(
+      await supabase.from('budget_goals').update(fromBudgetGoal(rest)).eq('id', id).select('*').single(),
+    )
+    return toBudgetGoal(row)
+  },
 
-  delete: (id: string) =>
-    api.post<{ id: string }>('deleteBudgetGoal', { id }),
+  delete: async (id: string) => {
+    unwrap(await supabase.from('budget_goals').delete().eq('id', id))
+    return { id }
+  },
 }

@@ -4,6 +4,7 @@ import { SerwistProvider } from '@serwist/turbopack/react'
 import './globals.css'
 import { AppShell } from '@/components/layout/app-shell'
 import { Providers } from './providers'
+import { AuthGate } from '@/components/auth/auth-gate'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -46,7 +47,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="h-full bg-background font-sans text-foreground">
         <SerwistProvider swUrl="/serwist/sw.js" disable={process.env.NODE_ENV !== 'production'}>
           <Providers>
-            <AppShell>{children}</AppShell>
+            <AuthGate>
+              <AppShell>{children}</AppShell>
+            </AuthGate>
           </Providers>
         </SerwistProvider>
       </body>

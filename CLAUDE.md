@@ -5,7 +5,7 @@ Sistema de controle financeiro pessoal, uso individual, web app com foco exclusi
 ## Stack
 
 Frontend: Next.js (App Router), shadcn/ui, Tailwind.
-Backend: Google Apps Script, com Google Sheets como banco de dados. É um projeto Google separado, fora deste repositório.
+Backend: Supabase (Postgres + Auth), projeto `troco-controle-financeiro`. Schema versionado em `supabase/migrations/`. O backend antigo (Apps Script + Google Sheets) foi substituído em 2026-11-15; `Claude outputs/Code.gs` fica só como referência histórica.
 
 ## Regras de código, sem exceção
 
@@ -35,13 +35,15 @@ Não implementar nesta fase: a camada analítica (metas financeiras com simulaç
 
 ## Comunicação com o backend
 
-`NEXT_PUBLIC_API_URL` (em `.env.local`) aponta pra URL do Web App do Apps Script, já publicado e funcionando. `lib/api/client.ts` implementa o padrão de despachar por `action` via query string (GET) ou corpo (POST).
+`lib/supabase/client.ts` cria o cliente `supabase-js` (URL e chave publicável têm valor padrão no código, sobrescritos por `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`). Os módulos `lib/api/*.ts` mantêm as mesmas assinaturas de antes e convertem snake_case do banco para os tipos camelCase de `lib/types.ts` via `lib/supabase/mappers.ts`.
 
-Frontend e backend não estão no mesmo domínio. CORS resolvido enviando `Content-Type: text/plain;charset=utf-8` no POST, evitando o preflight que o Apps Script Web App trata mal.
+Multiusuário: cada usuário tem conta própria (Supabase Auth, e-mail e senha) e só vê os próprios dados. Toda tabela tem `user_id` e política RLS `user_id = auth.uid()`. `AuthGate` (`components/auth/`) mostra o login quando não há sessão. Conta nova recebe as categorias padrão via trigger `on_auth_user_created`.
+
+Saldo de conta não é armazenado: a view `accounts_with_balance` calcula `current_balance` e `available_credit` a partir das transações (conta comum conta só data <= hoje; cartão conta também futuras, exceto de grupo quitado/cancelado/desativado). Parcelamento e recorrência são criados por RPC (`create_installment_group`, `update_installment_group`, `create_recurring_group`), que geram as transações numa operação só.
 
 ## Estado atual (registrar aqui conforme evolui, não deixar desatualizado)
 
-Backend implantado e funcionando (Apps Script "Troco Backend", planilha Troco-Controle-Financeiro). Núcleo técnico de ponta a ponta confirmado (frontend → backend → planilha).
+Backend migrado para Supabase (2026-11-15), com login e dados isolados por usuário. Dados da planilha Troco-Controle-Financeiro importados para a conta da dona do projeto.
 
 Prontos: tipos (`lib/types.ts`), cliente de API (`lib/api/client.ts`), hooks de dados (`hooks/use-*.ts`), componentes de exibição/lista (cards, badges, listas).
 
@@ -59,9 +61,9 @@ Componentes novos de apoio, sem equivalente no shadcn instalado, criados como co
 PWA (2026-09-12): app instalável via `serwist`/`@serwist/turbopack` (Next 16 roda em Turbopack, então a integração é essa e não o `@serwist/next` clássico baseado em webpack). `app/manifest.ts` gera o manifest (ícones em `public/icons/`, gerados a partir das cores do tema — `--primary`/`--primary-foreground`). `app/sw.ts` é o service worker (precache + `defaultCache` do Serwist); `app/serwist/[path]/route.ts` expõe o bundle em `/serwist/sw.js`; `SerwistProvider` (`app/layout.tsx`) registra o worker no client. `app/~offline/page.tsx` é a página de fallback quando uma rota ainda não cacheada é aberta sem rede. Isso cobre "instalar como app" e cache básico das rotas já visitadas — não é um rearquitetamento para localStorage/client-only: os dados continuem vindo do backend Apps Script via `lib/api/client.ts`, sem mudança de arquitetura.
 
 Pendente:
-- Fechamento mensal automático (saldo final de um mês virar saldo inicial do seguinte) — precisa de lógica nova no backend, ainda não existe.
+- Fechamento mensal automático (saldo final de um mês virar saldo inicial do seguinte) — agora pode ser uma view/função SQL no Supabase, ainda não existe.
 - Lógica de fatura de cartão para parcelas (quando o saldo é de fato afetado) — decisão em aberto, documentada no próprio `Code.gs`.
-- Hospedagem do frontend Next.js — ainda não decidida.
+- Hospedagem: Vercel (projeto `troco-controle-financeiro`), deploy automático a partir do GitHub.
 - Filtros de lançamentos (`TransactionFilters`) continuam placeholder.
 
 ## Sobre o AGENTS.md deste repositório
