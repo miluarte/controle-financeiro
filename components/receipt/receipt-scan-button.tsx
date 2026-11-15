@@ -9,17 +9,20 @@ import { readReceipt, type ReceiptResult } from '@/lib/receipt'
 export function ReceiptScanButton({ onRead }: { onRead: (result: ReceiptResult, image: Blob) => void }) {
   const input = useRef<HTMLInputElement>(null)
   const [reading, setReading] = useState(false)
+  const [status, setStatus] = useState('Lendo a nota…')
   const [error, setError] = useState<string | null>(null)
 
   async function handleFile(file: File | undefined) {
     if (!file) return
-    setReading(true); setError(null)
+    setReading(true); setError(null); setStatus('Lendo a nota…')
     try {
-      const { result, image } = await readReceipt(file)
+      const { result, image } = await readReceipt(file, setStatus)
       if (!result.amount) setError('Não consegui achar o total nesta foto. Tente outra mais nítida ou digite o valor.')
       onRead(result, image)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não foi possível ler a nota.')
+      setError(err instanceof Error && err.message !== 'gemini-timeout'
+        ? `Não foi possível ler a nota: ${err.message}`
+        : 'Não foi possível ler a nota. Tente de novo ou digite os dados.')
     } finally {
       setReading(false)
       if (input.current) input.current.value = ''
@@ -30,7 +33,7 @@ export function ReceiptScanButton({ onRead }: { onRead: (result: ReceiptResult, 
     <div className="space-y-1.5">
       <Button type="button" variant="secondary" className="w-full rounded-full" disabled={reading} onClick={() => input.current?.click()}>
         <CameraLinearIcon className="size-5" />
-        {reading ? 'Lendo a nota…' : 'Ler nota fiscal'}
+        {reading ? status : 'Ler nota fiscal'}
       </Button>
       <p className="px-4 text-center text-footnote text-muted-foreground">
         {error ?? 'Dica: cubra o CPF antes de fotografar. A foto não fica guardada, a menos que você escolha.'}

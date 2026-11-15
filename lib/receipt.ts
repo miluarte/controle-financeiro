@@ -17,8 +17,25 @@ export interface ReceiptResult {
 }
 
 // Reduz a foto para no máximo 1600 px e JPEG, para caber no envio e ler mais rápido.
+async function loadImage(file: File): Promise<CanvasImageSource & { width: number; height: number }> {
+  try {
+    return await createImageBitmap(file)
+  } catch {
+    // alguns formatos/versões do Safari não aceitam createImageBitmap: usa <img>
+    const url = URL.createObjectURL(file)
+    try {
+      const img = new Image()
+      img.src = url
+      await img.decode()
+      return img
+    } finally {
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    }
+  }
+}
+
 export async function prepareImage(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file)
+  const bitmap = await loadImage(file)
   const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height))
   const canvas = document.createElement('canvas')
   canvas.width = Math.round(bitmap.width * scale)
@@ -35,11 +52,21 @@ async function toBase64(blob: Blob): Promise<string> {
   return btoa(s)
 }
 
+// Desiste da etapa se passar do tempo, com mensagem clara.
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms)
+    promise.then(v => { clearTimeout(timer); resolve(v) }, e => { clearTimeout(timer); reject(e) })
+  })
+}
+
+export type ReceiptStatus = (text: string) => void
+
 async function readWithGemini(image: Blob): Promise<ReceiptResult | null> {
   try {
-    const { data, error } = await supabase.functions.invoke('ler-nota', {
+    const { data, error } = await withTimeout(supabase.functions.invoke('ler-nota', {
       body: { image: await toBase64(image), mimeType: 'image/jpeg' },
-    })
+    }), 25_000, 'gemini-timeout')
     if (error || !data?.ok || !data.amount) return null
     return { ...data, source: 'gemini' }
   } catch {
@@ -48,9 +75,20 @@ async function readWithGemini(image: Blob): Promise<ReceiptResult | null> {
 }
 
 // Reserva: OCR local e regras simples para achar total, data e nome da loja.
-async function readWithOcr(image: Blob): Promise<ReceiptResult> {
+async function readWithOcr(image: Blob, onStatus?: ReceiptStatus): Promise<ReceiptResult> {
+  onStatus?.('Preparando o leitor do celular…')
   const { default: Tesseract } = await import('tesseract.js')
-  const { data } = await Tesseract.recognize(image, 'por')
+  const { data } = await withTimeout(
+    Tesseract.recognize(image, 'por', {
+      logger: m => {
+        const pct = Math.round((m.progress ?? 0) * 100)
+        if (m.status?.includes('traineddata') || m.status?.includes('loading')) onStatus?.(`Baixando o leitor (só na primeira vez)… ${pct}%`)
+        else if (m.status === 'recognizing text') onStatus?.(`Lendo a nota… ${pct}%`)
+      },
+    }),
+    120_000,
+    'A leitura no celular demorou demais. Confira a internet e tente de novo, ou digite os dados.',
+  )
   const lines = data.text.split('\n').map(l => l.trim()).filter(Boolean)
 
   const money = /(\d{1,3}(?:\.\d{3})*,\d{2})/g
@@ -72,9 +110,11 @@ async function readWithOcr(image: Blob): Promise<ReceiptResult> {
   return { amount, place: place?.slice(0, 60) ?? null, date: date && date <= todayIso() ? date : null, items: [], categoryId: null, source: 'ocr' }
 }
 
-export async function readReceipt(file: File): Promise<{ result: ReceiptResult; image: Blob }> {
+export async function readReceipt(file: File, onStatus?: ReceiptStatus): Promise<{ result: ReceiptResult; image: Blob }> {
+  onStatus?.('Preparando a foto…')
   const image = await prepareImage(file)
-  const result = (await readWithGemini(image)) ?? (await readWithOcr(image))
+  onStatus?.('Lendo a nota…')
+  const result = (await readWithGemini(image)) ?? (await readWithOcr(image, onStatus))
   return { result, image }
 }
 
