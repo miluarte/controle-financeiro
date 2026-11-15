@@ -1,4 +1,21 @@
-export { cn } from "cn"
+import { clsx, type ClassValue } from "clsx"
+import { extendTailwindMerge } from "tailwind-merge"
+
+// tailwind-merge precisa conhecer os tokens de tipografia e espaçamento do tema iOS
+// (app/globals.css). Sem isso, "text-headline" é tratado como cor e apaga "text-primary-foreground".
+const twMerge = extendTailwindMerge({
+  extend: {
+    theme: {
+      text: ["large-title", "title1", "title2", "title3", "headline", "body", "callout", "subheadline", "footnote", "caption1", "caption2"],
+      spacing: ["row", "tabbar"],
+      radius: ["glass"],
+    },
+  },
+})
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
 
 export function formatCurrency(cents: number): string {
   const value = Number(cents)

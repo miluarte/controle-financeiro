@@ -33,11 +33,17 @@ Fechamento mensal: saldo final de um mês vira saldo inicial do seguinte.
 
 Não implementar nesta fase: a camada analítica (metas financeiras com simulação de impacto, custo de deslocamento por veículo, custo por uso de assinatura). Ela tem modelo de dados próprio, documentado à parte, e entra numa fase seguinte.
 
-## Design (padrão iOS)
+## Design (iOS 26, Liquid Glass)
 
-O visual segue o iOS (2026-11-15). Tokens em `app/globals.css`: cores do sistema da Apple (`--tint` systemBlue, `--background` systemGroupedBackground, `--grouped`, `--separator`, `--fill`, `--bar`, `--segment`), escala tipográfica do Dynamic Type (`text-large-title`, `text-title1..3`, `text-headline`, `text-body`, `text-subheadline`, `text-footnote`, `text-caption1/2`), alturas `h-row` (44pt) e `h-tabbar`. Fonte do sistema (SF). Modo escuro automático por `prefers-color-scheme`.
+Cor principal: preto (no modo escuro, branco). Logo: a imagem oficial em `public/favicon_io/apple-touch-icon.png` via `components/shared/app-logo.tsx`; não trocar.
 
-Componentes iOS isolados em `components/ios/`: `ListGroup` e `ListRow` (lista agrupada com separador recuado), `FormRow` (linha de formulário rótulo + campo), `SegmentedControl`, `LargeTitleHeader`. Variantes novas: `Button` `plain`/`nav` (botões de barra de navegação), `Input` `bare`/`display`. A folha de baixo (`Sheet side="bottom"`) tem puxador e cantos arredondados; formulários modais usam Cancelar | título | ação no topo. Barra de abas de largura total com desfoque e área segura. Sempre usar esses componentes e tokens em telas novas.
+Tokens em `app/globals.css`: cores do sistema iOS (`--background` systemGroupedBackground, `--grouped`, `--separator`, `--fill`, `--segment`), `--tint`/`--primary` preto, escala Dynamic Type (`text-large-title`, `text-title1..3`, `text-headline`, `text-body`, `text-subheadline`, `text-footnote`, `text-caption1/2`), `h-row` (44pt), `h-tabbar`, `rounded-glass`. Fonte do sistema (SF). Modo escuro automático por `prefers-color-scheme`.
+
+Liquid Glass: utilitários `glass` e `glass-strong` (vidro translúcido com desfoque, borda clara e brilho no topo, tokens `--glass-*`). Usados na barra de abas flutuante em cápsula (aba ativa com "lente" `bg-glass-lens`), nos botões circulares de vidro (`GlassButton`) e na folha modal flutuante (`Sheet side="bottom"`). Controles em cápsula (botão grande, controle segmentado, chips); listas agrupadas com `rounded-3xl`.
+
+Componentes em `components/ios/`: `ListGroup`, `ListRow`, `FormRow`, `SegmentedControl`, `LargeTitleHeader`, `GlassButton`. Variantes: `Button` `plain`/`nav`, `Input` `bare`/`display`. Modal: botão fechar de vidro | título | ação em cápsula preenchida.
+
+`cn` (`lib/utils.ts`) usa tailwind-merge estendido com os tokens acima. Ao criar token de fonte/espaçamento/raio novo, registrar ali, senão o merge descarta classes.
 
 ## Comunicação com o backend
 

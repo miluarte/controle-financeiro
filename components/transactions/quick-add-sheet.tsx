@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { AddCircleBoldDuotoneIcon } from '@solar-icons/react'
+import { AddBoldDuotoneIcon, CloseBoldDuotoneIcon } from '@solar-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { FormRow } from '@/components/ios/form-row'
+import { GlassButton } from '@/components/ios/glass-button'
 import { ListGroup } from '@/components/ios/list-group'
 import { SegmentedControl } from '@/components/ios/segmented-control'
 import { ChoiceChip } from '@/components/shared/choice-chip'
@@ -114,22 +115,22 @@ export function QuickAddSheet() {
     <Sheet open={open} onOpenChange={o => { setOpen(o); if (!o) reset() }}>
       <SheetTrigger
         render={
-          <Button variant="plain" size="icon" aria-label="Registrar">
-            <AddCircleBoldDuotoneIcon className="size-8" />
-          </Button>
+          <GlassButton aria-label="Registrar">
+            <AddBoldDuotoneIcon />
+          </GlassButton>
         }
       />
-      <SheetContent side="bottom" showCloseButton={false} className="gap-0 bg-background">
+      <SheetContent side="bottom" showCloseButton={false} className="gap-0">
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-          {/* barra de navegação do modal: Cancelar | título | Registrar */}
-          <div className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center px-2">
-            <SheetClose render={<Button type="button" variant="plain" size="nav" className="justify-self-start" />}>
-              Cancelar
+          {/* barra do modal no iOS 26: fechar (vidro) | título | confirmar (cápsula preenchida) */}
+          <div className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center px-3 pt-1 pb-2">
+            <SheetClose render={<GlassButton type="button" aria-label="Cancelar" className="justify-self-start" />}>
+              <CloseBoldDuotoneIcon />
             </SheetClose>
             <SheetTitle className="text-headline font-semibold">{modeTitle}</SheetTitle>
-            <Button type="submit" variant="plain" size="nav" className="justify-self-end font-semibold" disabled={!canSubmit}>
+            <GlassButton type="submit" size="capsule" tone="prominent" className="justify-self-end font-semibold" disabled={!canSubmit}>
               {submitting ? 'Salvando…' : 'Registrar'}
-            </Button>
+            </GlassButton>
           </div>
 
           <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-2 pb-6">

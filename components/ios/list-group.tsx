@@ -14,7 +14,7 @@ export function ListGroup({ header, footer, className, children, ...props }: Lis
       {header && (
         <h2 className="px-4 text-footnote uppercase text-muted-foreground">{header}</h2>
       )}
-      <ul className="overflow-hidden rounded-xl bg-grouped">{children}</ul>
+      <ul className="overflow-hidden rounded-3xl bg-grouped">{children}</ul>
       {footer && <p className="px-4 text-footnote text-muted-foreground">{footer}</p>}
     </section>
   )

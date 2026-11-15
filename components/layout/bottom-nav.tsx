@@ -18,14 +18,14 @@ const NAV_ITEMS: { href: string; label: string; icon: SolarIcon; activeIcon: Sol
   { href: '/config', label: 'Config', icon: SettingsBoldDuotoneIcon, activeIcon: SettingsBoldIcon },
 ]
 
-// Barra de abas do iOS: largura total, fundo translúcido com desfoque, hairline no topo,
-// ícone + rótulo pequeno, aba ativa na cor de destaque e ícone preenchido.
+// Barra de abas Liquid Glass (iOS 26): cápsula de vidro flutuante, aba ativa marcada por uma
+// "lente" de vidro mais densa, ícone preenchido e na cor principal.
 export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-separator bg-bar pb-[env(safe-area-inset-bottom)] backdrop-blur-xl">
-      <div className="flex h-tabbar items-stretch">
+    <nav className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-6 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="glass flex h-tabbar w-full max-w-sm items-stretch gap-1 rounded-full p-1">
         {NAV_ITEMS.map(({ href, label, icon: Icon, activeIcon: ActiveIcon }) => {
           const active = pathname.startsWith(href)
           const IconComponent = active ? ActiveIcon : Icon
@@ -35,12 +35,12 @@ export function BottomNav() {
               href={href}
               aria-current={active ? 'page' : undefined}
               className={cn(
-                'flex flex-1 flex-col items-center justify-center gap-0.5 pt-1',
-                active ? 'text-tint' : 'text-muted-foreground',
+                'flex flex-1 flex-col items-center justify-center gap-0.5 rounded-full transition-colors active:scale-95',
+                active ? 'bg-glass-lens text-tint' : 'text-foreground/70',
               )}
             >
-              <IconComponent className="size-7" />
-              <span className="text-caption2 font-medium">{label}</span>
+              <IconComponent className="size-6" />
+              <span className="text-caption2 font-semibold">{label}</span>
             </Link>
           )
         })}

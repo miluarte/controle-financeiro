@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Select as SelectPrimitive } from "@base-ui/react/select"
-import { cn } from "cn"
+import { cn } from "@/lib/utils"
 import { AltArrowDownBoldDuotoneIcon, AltArrowUpBoldDuotoneIcon, CheckCircleBoldDuotoneIcon } from "@solar-icons/react"
 
 const Select = SelectPrimitive.Root

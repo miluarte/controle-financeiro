@@ -25,7 +25,7 @@ export function BalanceCard({ month }: { month: string }) {
   const show = (v: number) => (hidden ? HIDDEN : formatCurrency(v))
 
   return (
-    <section className="rounded-xl bg-grouped p-4">
+    <section className="rounded-3xl bg-grouped p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-subheadline text-muted-foreground">Saldo de {monthLabel(month)}</p>
@@ -36,7 +36,7 @@ export function BalanceCard({ month }: { month: string }) {
         <button
           type="button"
           onClick={toggle}
-          className="flex size-11 shrink-0 items-center justify-center text-tint active:opacity-50"
+          className="flex size-11 shrink-0 items-center justify-center text-muted-foreground active:opacity-50"
           aria-label={hidden ? 'Mostrar valores' : 'Ocultar valores'}
         >
           {hidden ? <EyeClosedBoldDuotoneIcon className="size-6" /> : <EyeBoldDuotoneIcon className="size-6" />}

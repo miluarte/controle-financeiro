@@ -1,13 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { WalletMoneyBoldDuotoneIcon } from '@solar-icons/react'
 import { supabase } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { SegmentedControl } from '@/components/ios/segmented-control'
+import { AppLogo } from '@/components/shared/app-logo'
 
 type Mode = 'signin' | 'signup'
 
@@ -62,9 +62,7 @@ export function AuthForm() {
   return (
     <div className="flex min-h-dvh flex-col justify-center px-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
-        <div className="flex size-20 items-center justify-center rounded-2xl bg-tint text-primary-foreground shadow-sm">
-          <WalletMoneyBoldDuotoneIcon className="size-11" />
-        </div>
+        <AppLogo size="lg" />
         <div>
           <h1 className="text-large-title font-bold">Troco</h1>
           <p className="text-subheadline text-muted-foreground">Seu dinheiro, mês a mês.</p>
