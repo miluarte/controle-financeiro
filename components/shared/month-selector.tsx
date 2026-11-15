@@ -1,6 +1,6 @@
 'use client'
 
-import { AltArrowLeftBoldDuotoneIcon, AltArrowRightBoldDuotoneIcon } from '@solar-icons/react'
+import { AltArrowLeftLinearIcon, AltArrowRightLinearIcon } from '@solar-icons/react'
 import { useMonth } from '@/hooks/use-month'
 import { addMonths, currentMonth, monthName } from '@/lib/utils'
 
@@ -14,7 +14,7 @@ export function MonthSelector() {
     <div className="glass flex h-11 items-center rounded-full px-1">
       <button type="button" aria-label="Mês anterior" onClick={() => setMonth(addMonths(month, -1))}
         className="flex size-9 items-center justify-center rounded-full active:bg-fill">
-        <AltArrowLeftBoldDuotoneIcon className="size-5" />
+        <AltArrowLeftLinearIcon className="size-5" />
       </button>
       <button type="button" onClick={() => setMonth(currentMonth())} aria-label="Voltar para o mês atual"
         className="min-w-12 text-center text-subheadline font-semibold tabular-nums">
@@ -22,7 +22,7 @@ export function MonthSelector() {
       </button>
       <button type="button" aria-label="Próximo mês" onClick={() => setMonth(addMonths(month, 1))}
         className="flex size-9 items-center justify-center rounded-full active:bg-fill">
-        <AltArrowRightBoldDuotoneIcon className="size-5" />
+        <AltArrowRightLinearIcon className="size-5" />
       </button>
     </div>
   )

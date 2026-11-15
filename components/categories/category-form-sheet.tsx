@@ -81,7 +81,7 @@ function Form({ c, siblings, onDone }: { c: Category; siblings: Category[]; onDo
         <li className="flex flex-wrap gap-2 p-3">
           {ICON_TOKENS.map(i => (
             <ChoiceChip key={i} selected={icon === i} onClick={() => setIcon(i)} className="px-1" aria-label={i}>
-              <TokenIcon icon={i} color={color} size="sm" />
+              <TokenIcon active={icon === i} icon={i} color={color} size="sm" />
             </ChoiceChip>
           ))}
         </li>
@@ -91,7 +91,7 @@ function Form({ c, siblings, onDone }: { c: Category; siblings: Category[]; onDo
         <li className="flex flex-wrap gap-2 p-3">
           {COLOR_TOKENS.map(k => (
             <ChoiceChip key={k} selected={color === k} onClick={() => setColor(k)} className="px-1" aria-label={k}>
-              <TokenIcon icon={icon} color={k} size="sm" />
+              <TokenIcon active={color === k} icon={icon} color={k} size="sm" />
             </ChoiceChip>
           ))}
         </li>

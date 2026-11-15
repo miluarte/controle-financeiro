@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { AddBoldDuotoneIcon } from '@solar-icons/react'
+import { AddLinearIcon } from '@solar-icons/react'
 import { BillFormSheet } from '@/components/bills/bill-form-sheet'
 import { BillOccurrenceSheet } from '@/components/bills/bill-occurrence-sheet'
 import { BillsMonthCard } from '@/components/bills/bills-month-card'
@@ -58,7 +58,7 @@ export default function BillsPage() {
         title="Contas"
         actions={<>
           <MonthSelector />
-          <GlassButton aria-label="Nova conta" onClick={() => setCreating(true)}><AddBoldDuotoneIcon /></GlassButton>
+          <GlassButton aria-label="Nova conta" onClick={() => setCreating(true)}><AddLinearIcon /></GlassButton>
         </>}
       />
       <div className="space-y-7 px-4 pt-2">

@@ -13,7 +13,7 @@ export function WalletPicker({
     <li className="flex flex-wrap gap-2 p-3">
       {wallets.map(w => (
         <ChoiceChip key={w.id} selected={value === w.id} onClick={() => onChange(w.id)} className="pl-1">
-          <TokenIcon icon={WALLET_TYPE_ICON[w.type] ?? 'wallet'} color="gray" size="sm" />
+          <TokenIcon active={value === w.id} icon={WALLET_TYPE_ICON[w.type] ?? 'wallet'} color="gray" size="sm" />
           {w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name}
         </ChoiceChip>
       ))}

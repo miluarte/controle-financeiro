@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { DownloadMinimalisticBoldDuotoneIcon, UploadMinimalisticBoldDuotoneIcon } from '@solar-icons/react'
+import { DownloadMinimalisticLinearIcon, UploadMinimalisticLinearIcon } from '@solar-icons/react'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { useAllCategories, useOwnWallets } from '@/hooks/use-data'
@@ -36,9 +36,9 @@ export function DataGroup() {
   return (
     <>
       <ListGroup header="Dados">
-        <ListRow leading={<DownloadMinimalisticBoldDuotoneIcon className="size-6 text-muted-foreground" />}
+        <ListRow leading={<DownloadMinimalisticLinearIcon className="size-6 text-muted-foreground" />}
           title={exporting ? 'Exportando…' : 'Exportar transações (CSV)'} onClick={exporting ? undefined : exportCsv} />
-        <ListRow leading={<UploadMinimalisticBoldDuotoneIcon className="size-6 text-muted-foreground" />}
+        <ListRow leading={<UploadMinimalisticLinearIcon className="size-6 text-muted-foreground" />}
           title="Importar transações (CSV)" chevron onClick={() => setImporting(true)} />
       </ListGroup>
       <CsvImportSheet open={importing} onOpenChange={setImporting} />

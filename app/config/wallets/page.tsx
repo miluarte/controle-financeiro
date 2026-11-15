@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { AddBoldDuotoneIcon } from '@solar-icons/react'
+import { AddLinearIcon } from '@solar-icons/react'
 import { GlassButton } from '@/components/ios/glass-button'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { ListGroup } from '@/components/ios/list-group'
@@ -45,7 +45,7 @@ export default function WalletsPage() {
   return (
     <>
       <LargeTitleHeader back title="Carteiras" actions={
-        <GlassButton aria-label="Adicionar meio de pagamento" onClick={() => setCreating(true)}><AddBoldDuotoneIcon /></GlassButton>
+        <GlassButton aria-label="Adicionar meio de pagamento" onClick={() => setCreating(true)}><AddLinearIcon /></GlassButton>
       } />
       <div className="space-y-7 px-4 pt-2">
         {cards.length > 0 && (

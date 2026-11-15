@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChatRoundDotsBoldDuotoneIcon } from '@solar-icons/react'
+import { ChatRoundDotsLinearIcon } from '@solar-icons/react'
 import { Textarea } from '@/components/ui/textarea'
 import { GlassButton } from '@/components/ios/glass-button'
 import { ListGroup } from '@/components/ios/list-group'
@@ -29,7 +29,7 @@ export function FeedbackButton() {
   return (
     <>
       <GlassButton aria-label="Enviar feedback" onClick={() => { setOpen(true); setSent(false); setError(null) }}>
-        <ChatRoundDotsBoldDuotoneIcon />
+        <ChatRoundDotsLinearIcon />
       </GlassButton>
       <ModalSheet open={open} onOpenChange={setOpen} title="Feedback" formId="feedback" actionLabel="Enviar" actionDisabled={!text.trim()}>
         {sent ? (

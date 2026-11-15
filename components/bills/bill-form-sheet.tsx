@@ -105,7 +105,7 @@ function BillForm({ onDone }: { onDone: () => void }) {
         <li className="flex flex-wrap gap-2 p-3">
           {categories.filter(c => c.type === 'expense').map(c => (
             <ChoiceChip key={c.id} selected={categoryId === c.id} onClick={() => setCategoryId(categoryId === c.id ? null : c.id)} className="pl-1">
-              <TokenIcon icon={c.icon} color={c.color} size="sm" />{c.name}
+              <TokenIcon active={categoryId === c.id} icon={c.icon} color={c.color} size="sm" />{c.name}
             </ChoiceChip>
           ))}
         </li>

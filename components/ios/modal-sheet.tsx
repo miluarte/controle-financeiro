@@ -1,6 +1,6 @@
 'use client'
 
-import { CloseBoldDuotoneIcon } from '@solar-icons/react'
+import { CloseLinearIcon } from '@solar-icons/react'
 import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { GlassButton } from './glass-button'
 
@@ -24,7 +24,7 @@ export function ModalSheet({
       <SheetContent side="bottom" showCloseButton={false} className="gap-0">
         <div className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center px-3 pt-1 pb-2">
           <SheetClose render={<GlassButton type="button" aria-label="Fechar" className="justify-self-start" />}>
-            <CloseBoldDuotoneIcon />
+            <CloseLinearIcon />
           </SheetClose>
           <SheetTitle className="text-headline font-semibold">{title}</SheetTitle>
           {formId && actionLabel ? (

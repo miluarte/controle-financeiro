@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { AltArrowLeftBoldDuotoneIcon } from '@solar-icons/react'
+import { AltArrowLeftLinearIcon } from '@solar-icons/react'
 import { GlassButton } from './glass-button'
 import { cn } from '@/lib/utils'
 
@@ -21,7 +21,7 @@ export function LargeTitleHeader({ title, eyebrow, actions, back, className }: L
       <div className="flex h-11 items-center gap-2">
         {back && (
           <GlassButton aria-label="Voltar" onClick={() => router.back()}>
-            <AltArrowLeftBoldDuotoneIcon />
+            <AltArrowLeftLinearIcon />
           </GlassButton>
         )}
         <div className="ml-auto flex items-center gap-2">{actions}</div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { EyeBoldDuotoneIcon, EyeClosedBoldDuotoneIcon } from '@solar-icons/react'
+import { EyeLinearIcon, EyeClosedLinearIcon } from '@solar-icons/react'
 import { useMonthSummary } from '@/hooks/use-month-summary'
 import { cn, formatCurrency, monthLabel } from '@/lib/utils'
 
@@ -39,7 +39,7 @@ export function BalanceCard({ month }: { month: string }) {
           className="flex size-11 shrink-0 items-center justify-center text-muted-foreground active:opacity-50"
           aria-label={hidden ? 'Mostrar valores' : 'Ocultar valores'}
         >
-          {hidden ? <EyeClosedBoldDuotoneIcon className="size-6" /> : <EyeBoldDuotoneIcon className="size-6" />}
+          {hidden ? <EyeClosedLinearIcon className="size-6" /> : <EyeLinearIcon className="size-6" />}
         </button>
       </div>
       {summary && (

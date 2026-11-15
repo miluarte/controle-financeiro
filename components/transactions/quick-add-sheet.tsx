@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { AddBoldDuotoneIcon, CloseBoldDuotoneIcon } from '@solar-icons/react'
+import { AddLinearIcon, CloseLinearIcon } from '@solar-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
@@ -116,7 +116,7 @@ export function QuickAddSheet() {
       <SheetTrigger
         render={
           <GlassButton aria-label="Registrar">
-            <AddBoldDuotoneIcon />
+            <AddLinearIcon />
           </GlassButton>
         }
       />
@@ -125,7 +125,7 @@ export function QuickAddSheet() {
           {/* barra do modal no iOS 26: fechar (vidro) | título | confirmar (cápsula preenchida) */}
           <div className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center px-3 pt-1 pb-2">
             <SheetClose render={<GlassButton type="button" aria-label="Cancelar" className="justify-self-start" />}>
-              <CloseBoldDuotoneIcon />
+              <CloseLinearIcon />
             </SheetClose>
             <SheetTitle className="text-headline font-semibold">{modeTitle}</SheetTitle>
             <GlassButton type="submit" size="capsule" tone="prominent" className="justify-self-end font-semibold" disabled={!canSubmit}>
@@ -208,7 +208,7 @@ export function QuickAddSheet() {
                 <li className="flex flex-wrap gap-2 p-3">
                   {visibleCategories.map(c => (
                     <ChoiceChip key={c.id} selected={categoryId === c.id} onClick={() => setCategoryId(c.id)} className="pl-1">
-                      <TokenIcon icon={c.icon} color={c.color} size="sm" />
+                      <TokenIcon active={categoryId === c.id} icon={c.icon} color={c.color} size="sm" />
                       {c.name}
                     </ChoiceChip>
                   ))}
@@ -223,7 +223,7 @@ export function QuickAddSheet() {
                     .filter(w => mode !== 'save' || w.type !== 'credit')
                     .map(w => (
                       <ChoiceChip key={w.id} selected={walletId === w.id} onClick={() => setWalletId(w.id)} className="pl-1">
-                        <TokenIcon icon={WALLET_TYPE_ICON[w.type] ?? 'wallet'} color="gray" size="sm" />
+                        <TokenIcon active={walletId === w.id} icon={WALLET_TYPE_ICON[w.type] ?? 'wallet'} color="gray" size="sm" />
                         {walletLabel(w)}
                       </ChoiceChip>
                     ))}

@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { cn } from "@/lib/utils"
-import { AltArrowDownBoldDuotoneIcon, AltArrowUpBoldDuotoneIcon, CheckCircleBoldDuotoneIcon } from "@solar-icons/react"
+import { AltArrowDownLinearIcon, AltArrowUpLinearIcon, CheckCircleLinearIcon } from "@solar-icons/react"
 
 const Select = SelectPrimitive.Root
 
@@ -48,7 +48,7 @@ function SelectTrigger({
       {children}
       <SelectPrimitive.Icon
         render={
-          <AltArrowDownBoldDuotoneIcon className="pointer-events-none size-4 text-muted-foreground" />
+          <AltArrowDownLinearIcon className="pointer-events-none size-4 text-muted-foreground" />
         }
       />
     </SelectPrimitive.Trigger>
@@ -129,7 +129,7 @@ function SelectItem({
           <span className="pointer-events-none absolute right-2 flex size-4 items-center justify-center" />
         }
       >
-        <CheckCircleBoldDuotoneIcon className="pointer-events-none" />
+        <CheckCircleLinearIcon className="pointer-events-none" />
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   )
@@ -161,7 +161,7 @@ function SelectScrollUpButton({
       )}
       {...props}
     >
-      <AltArrowUpBoldDuotoneIcon
+      <AltArrowUpLinearIcon
       />
     </SelectPrimitive.ScrollUpArrow>
   )
@@ -180,7 +180,7 @@ function SelectScrollDownButton({
       )}
       {...props}
     >
-      <AltArrowDownBoldDuotoneIcon
+      <AltArrowDownLinearIcon
       />
     </SelectPrimitive.ScrollDownArrow>
   )

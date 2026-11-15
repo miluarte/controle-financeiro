@@ -99,7 +99,7 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
           <li className="flex flex-wrap gap-2 p-3">
             {categories.filter(c => c.type === catType).map(c => (
               <ChoiceChip key={c.id} selected={categoryId === c.id} onClick={() => setCategoryId(c.id)} className="pl-1">
-                <TokenIcon icon={c.icon} color={c.color} size="sm" />{c.name}
+                <TokenIcon active={categoryId === c.id} icon={c.icon} color={c.color} size="sm" />{c.name}
               </ChoiceChip>
             ))}
           </li>
@@ -111,7 +111,7 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
           <li className="flex flex-wrap gap-2 p-3">
             {wallets.map(w => (
               <ChoiceChip key={w.id} selected={walletId === w.id} onClick={() => setWalletId(w.id)} className="pl-1">
-                <TokenIcon icon={WALLET_TYPE_ICON[w.type] ?? 'wallet'} color="gray" size="sm" />
+                <TokenIcon active={walletId === w.id} icon={WALLET_TYPE_ICON[w.type] ?? 'wallet'} color="gray" size="sm" />
                 {w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name}
               </ChoiceChip>
             ))}

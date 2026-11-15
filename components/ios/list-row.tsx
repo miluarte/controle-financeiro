@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
-import { AltArrowRightBoldDuotoneIcon } from '@solar-icons/react'
+import { AltArrowRightLinearIcon } from '@solar-icons/react'
 import { cn } from '@/lib/utils'
 
 // Linha de lista do iOS: ícone à esquerda, título e subtítulo, valor à direita, seta opcional.
@@ -51,7 +51,7 @@ export function ListRow({
           {subtitle && <span className="block truncate text-subheadline text-muted-foreground">{subtitle}</span>}
         </span>
         {trailing && <span className="shrink-0 text-muted-foreground">{trailing}</span>}
-        {chevron && <AltArrowRightBoldDuotoneIcon className="size-4 shrink-0 text-muted-foreground" />}
+        {chevron && <AltArrowRightLinearIcon className="size-4 shrink-0 text-muted-foreground" />}
       </span>
     </>
   )

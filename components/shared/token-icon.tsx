@@ -1,26 +1,46 @@
 'use client'
 
 import {
-  WalletMoneyBoldDuotoneIcon,
-  CardBoldDuotoneIcon,
-  BanknoteBoldDuotoneIcon,
-  MoneyBagBoldDuotoneIcon,
-  BuildingsBoldDuotoneIcon,
-  CupHotBoldDuotoneIcon,
-  ScooterBoldDuotoneIcon,
-  HomeBoldDuotoneIcon,
-  HeartPulseBoldDuotoneIcon,
-  BookBoldDuotoneIcon,
-  GamepadBoldDuotoneIcon,
-  TShirtBoldDuotoneIcon,
-  MenuDotsBoldDuotoneIcon,
-  SuitcaseBoldDuotoneIcon,
-  LaptopBoldDuotoneIcon,
-  GraphUpBoldDuotoneIcon,
-  AddCircleBoldDuotoneIcon,
-  RepeatBoldDuotoneIcon,
-  UndoLeftBoldDuotoneIcon,
-  GiftBoldDuotoneIcon,
+  WalletMoneyLinearIcon,
+  CardLinearIcon,
+  BanknoteLinearIcon,
+  MoneyBagLinearIcon,
+  BuildingsLinearIcon,
+  CupHotLinearIcon,
+  ScooterLinearIcon,
+  HomeLinearIcon,
+  HeartPulseLinearIcon,
+  BookLinearIcon,
+  GamepadLinearIcon,
+  TShirtLinearIcon,
+  MenuDotsLinearIcon,
+  SuitcaseLinearIcon,
+  LaptopLinearIcon,
+  GraphUpLinearIcon,
+  AddCircleLinearIcon,
+  RepeatLinearIcon,
+  UndoLeftLinearIcon,
+  GiftLinearIcon,
+  WalletMoneyBoldIcon,
+  CardBoldIcon,
+  BanknoteBoldIcon,
+  MoneyBagBoldIcon,
+  BuildingsBoldIcon,
+  CupHotBoldIcon,
+  ScooterBoldIcon,
+  HomeBoldIcon,
+  HeartPulseBoldIcon,
+  BookBoldIcon,
+  GamepadBoldIcon,
+  TShirtBoldIcon,
+  MenuDotsBoldIcon,
+  SuitcaseBoldIcon,
+  LaptopBoldIcon,
+  GraphUpBoldIcon,
+  AddCircleBoldIcon,
+  RepeatBoldIcon,
+  UndoLeftBoldIcon,
+  GiftBoldIcon,
 } from '@solar-icons/react'
 import { cn } from '@/lib/utils'
 import type { ColorToken, IconToken } from '@/lib/constants'
@@ -28,26 +48,50 @@ import type { ColorToken, IconToken } from '@/lib/constants'
 type SolarIcon = React.ComponentType<{ className?: string; iconStyle?: string }>
 
 export const ICON_MAP: Record<IconToken, SolarIcon> = {
-  'wallet': WalletMoneyBoldDuotoneIcon,
-  'credit-card': CardBoldDuotoneIcon,
-  'banknote': BanknoteBoldDuotoneIcon,
-  'piggy-bank': MoneyBagBoldDuotoneIcon,
-  'building': BuildingsBoldDuotoneIcon,
-  'utensils': CupHotBoldDuotoneIcon,
-  'car': ScooterBoldDuotoneIcon,
-  'home': HomeBoldDuotoneIcon,
-  'heart-pulse': HeartPulseBoldDuotoneIcon,
-  'book': BookBoldDuotoneIcon,
-  'gamepad-2': GamepadBoldDuotoneIcon,
-  'shirt': TShirtBoldDuotoneIcon,
-  'ellipsis': MenuDotsBoldDuotoneIcon,
-  'briefcase': SuitcaseBoldDuotoneIcon,
-  'laptop': LaptopBoldDuotoneIcon,
-  'trending-up': GraphUpBoldDuotoneIcon,
-  'plus-circle': AddCircleBoldDuotoneIcon,
-  'repeat': RepeatBoldDuotoneIcon,
-  'undo': UndoLeftBoldDuotoneIcon,
-  'gift': GiftBoldDuotoneIcon,
+  'wallet': WalletMoneyLinearIcon,
+  'credit-card': CardLinearIcon,
+  'banknote': BanknoteLinearIcon,
+  'piggy-bank': MoneyBagLinearIcon,
+  'building': BuildingsLinearIcon,
+  'utensils': CupHotLinearIcon,
+  'car': ScooterLinearIcon,
+  'home': HomeLinearIcon,
+  'heart-pulse': HeartPulseLinearIcon,
+  'book': BookLinearIcon,
+  'gamepad-2': GamepadLinearIcon,
+  'shirt': TShirtLinearIcon,
+  'ellipsis': MenuDotsLinearIcon,
+  'briefcase': SuitcaseLinearIcon,
+  'laptop': LaptopLinearIcon,
+  'trending-up': GraphUpLinearIcon,
+  'plus-circle': AddCircleLinearIcon,
+  'repeat': RepeatLinearIcon,
+  'undo': UndoLeftLinearIcon,
+  'gift': GiftLinearIcon,
+}
+
+// Variante preenchida, para item selecionado (regra do projeto: ativo = Bold)
+export const ICON_MAP_ACTIVE: Record<IconToken, SolarIcon> = {
+  'wallet': WalletMoneyBoldIcon,
+  'credit-card': CardBoldIcon,
+  'banknote': BanknoteBoldIcon,
+  'piggy-bank': MoneyBagBoldIcon,
+  'building': BuildingsBoldIcon,
+  'utensils': CupHotBoldIcon,
+  'car': ScooterBoldIcon,
+  'home': HomeBoldIcon,
+  'heart-pulse': HeartPulseBoldIcon,
+  'book': BookBoldIcon,
+  'gamepad-2': GamepadBoldIcon,
+  'shirt': TShirtBoldIcon,
+  'ellipsis': MenuDotsBoldIcon,
+  'briefcase': SuitcaseBoldIcon,
+  'laptop': LaptopBoldIcon,
+  'trending-up': GraphUpBoldIcon,
+  'plus-circle': AddCircleBoldIcon,
+  'repeat': RepeatBoldIcon,
+  'undo': UndoLeftBoldIcon,
+  'gift': GiftBoldIcon,
 }
 
 // Classes completas para garantir que o Tailwind inclua no bundle
@@ -74,11 +118,13 @@ interface TokenIconProps {
   icon: string
   color: string
   size?: 'sm' | 'md' | 'lg'
+  active?: boolean
   className?: string
 }
 
-export function TokenIcon({ icon, color, size = 'md', className }: TokenIconProps) {
-  const Icon = (ICON_MAP[icon as IconToken] ?? WalletMoneyBoldDuotoneIcon) as SolarIcon
+export function TokenIcon({ icon, color, size = 'md', active, className }: TokenIconProps) {
+  const map = active ? ICON_MAP_ACTIVE : ICON_MAP
+  const Icon = (map[icon as IconToken] ?? WalletMoneyLinearIcon) as SolarIcon
   const colorClass = COLOR_CLASSES[color as ColorToken] ?? COLOR_CLASSES.gray
   const s = SIZE[size] ?? SIZE.md
 

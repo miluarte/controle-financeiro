@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { CheckCircleBoldIcon, ClockCircleBoldDuotoneIcon } from '@solar-icons/react'
+import { CheckCircleBoldIcon, ClockCircleLinearIcon } from '@solar-icons/react'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { useHistory, useOwnWallets } from '@/hooks/use-data'
@@ -44,7 +44,7 @@ export function FirstSteps() {
           <ListRow
             leading={s.done
               ? <CheckCircleBoldIcon className="size-6 text-success" />
-              : <ClockCircleBoldDuotoneIcon className="size-6 text-muted-foreground" />}
+              : <ClockCircleLinearIcon className="size-6 text-muted-foreground" />}
             title={<span className={s.done ? 'text-muted-foreground line-through' : undefined}>{s.label}</span>}
             chevron={!!s.href && !s.done}
           />

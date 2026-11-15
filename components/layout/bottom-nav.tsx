@@ -4,13 +4,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
-  BillListBoldDuotoneIcon,
+  BillListLinearIcon,
   BillListBoldIcon,
-  ChartSquareBoldDuotoneIcon,
+  ChartSquareLinearIcon,
   ChartSquareBoldIcon,
-  Home2BoldDuotoneIcon,
+  Home2LinearIcon,
   Home2BoldIcon,
-  SettingsBoldDuotoneIcon,
+  SettingsLinearIcon,
   SettingsBoldIcon,
 } from '@solar-icons/react'
 
@@ -18,10 +18,10 @@ type SolarIcon = React.ComponentType<{ className?: string }>
 
 // NAV-1: Contas, Home, Análise e Config. Transações abre por "Ver todas" na Home.
 const NAV_ITEMS: { href: string; label: string; icon: SolarIcon; activeIcon: SolarIcon; also?: string[] }[] = [
-  { href: '/bills',    label: 'Contas',  icon: BillListBoldDuotoneIcon,    activeIcon: BillListBoldIcon },
-  { href: '/home',     label: 'Home',    icon: Home2BoldDuotoneIcon,       activeIcon: Home2BoldIcon, also: ['/transactions'] },
-  { href: '/analysis', label: 'Análise', icon: ChartSquareBoldDuotoneIcon, activeIcon: ChartSquareBoldIcon },
-  { href: '/config',   label: 'Config',  icon: SettingsBoldDuotoneIcon,    activeIcon: SettingsBoldIcon },
+  { href: '/bills',    label: 'Contas',  icon: BillListLinearIcon,    activeIcon: BillListBoldIcon },
+  { href: '/home',     label: 'Home',    icon: Home2LinearIcon,       activeIcon: Home2BoldIcon, also: ['/transactions'] },
+  { href: '/analysis', label: 'Análise', icon: ChartSquareLinearIcon, activeIcon: ChartSquareBoldIcon },
+  { href: '/config',   label: 'Config',  icon: SettingsLinearIcon,    activeIcon: SettingsBoldIcon },
 ]
 
 // Barra de abas Liquid Glass (iOS 26): cápsula de vidro flutuante, aba ativa marcada por uma
