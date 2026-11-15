@@ -77,6 +77,7 @@ Família e cartões (2026-11-16):
 
 Notificações push (2026-11-16):
 - Edge Function `notify` (`supabase/functions/notify`), chamada a cada 10 min pelo pg_cron via pg_net com `x-cron-secret` (avisos por horário) e na hora por trigger em `notification_queue` (eventos e teste, `queue_only`). Cada aviso da fila é reservado antes do envio para não duplicar. Envia a fila `notification_queue` (eventos da família por trigger, teste) e avisos agendados com dedupe em `notification_log`: contas a vencer, lembrete de registro, resumo de domingo, orçamento 80%/100%, fatura de cartão compartilhado fechada.
+- A mesma função remove do bucket `receipts` as fotos de quem excluiu a conta (pasta sem perfil), só com a lista de perfis confirmada (ACE-5).
 - Chaves VAPID geradas pela própria função e guardadas em `private.app_secrets` (fora da API). O app pega só a pública via RPC `get_vapid_public_key`.
 - App: `lib/push.ts`, `app/config/notifications`, handlers `push`/`notificationclick` em `app/sw.ts`. No iPhone só funciona com o app na Tela de Início.
 
@@ -90,7 +91,7 @@ Replanejar metas (5.11, ANA-8, ANA-9, 2026-11-16):
 - `ReplanSheet` (`components/replan/`): 3 etapas (como você gasta hoje + renda opcional; afine cada categoria; tudo pronto com encaixe no orçamento, quanto guarda e "O que muda"). Salva em `category_goals` a partir do mês atual.
 - `/analysis/categories` ("Suas categorias"): média por mês, libera aos 30 gastos com barra "N de 30". Atalhos no fim da Análise.
 
-Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`.
+Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`; contas de teste (`@example.com`) e os dados delas.
 
 Pendente (spec, seção 8):
 - Fila de pendentes e automações (toque duplo, Apple Pay, notificação do banco) com tokens.

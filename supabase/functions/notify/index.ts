@@ -202,5 +202,26 @@ Deno.serve(async req => {
     }
   }
 
-  return new Response(JSON.stringify({ ok: true, sent }), { headers: { 'Content-Type': 'application/json' } })
+  // ACE-5: fotos de comprovante de quem excluiu a conta (pasta = id do usuário que não existe mais)
+  let removed = 0
+  const { data: folders } = await supabase.storage.from('receipts').list('', { limit: 1000 })
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+  const folderIds = (folders ?? []).map(f => f.name).filter(n => uuid.test(n))
+  // só apaga com a lista de usuários confirmada; se a consulta falhar, não mexe em nada
+  const { data: alive, error: aliveError } = folderIds.length
+    ? await supabase.from('profiles').select('id').in('id', folderIds)
+    : { data: [], error: null }
+  if (folderIds.length && !aliveError && alive) {
+    const aliveIds = new Set(alive.map(p => p.id))
+    for (const folder of folderIds.filter(id => !aliveIds.has(id))) {
+      const { data: files } = await supabase.storage.from('receipts').list(folder, { limit: 1000 })
+      const paths = (files ?? []).map(f => `${folder}/${f.name}`)
+      if (paths.length) {
+        await supabase.storage.from('receipts').remove(paths)
+        removed += paths.length
+      }
+    }
+  }
+
+  return new Response(JSON.stringify({ ok: true, sent, removed }), { headers: { 'Content-Type': 'application/json' } })
 })
