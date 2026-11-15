@@ -1,4 +1,4 @@
-import type { CategorySpending, MonthHistory } from '../types'
+import type { CategorySpending, MonthHistory, MonthlyClosing } from '../types'
 import { supabase, unwrap } from '../supabase/client'
 import { toCategorySpending, toMonthHistory } from '../supabase/mappers'
 
@@ -31,5 +31,12 @@ export const analysisApi = {
       { user_id: userId, category_id: categoryId, effective_from: `${month}-01`, goal_amount: amount },
       { onConflict: 'category_id,effective_from' },
     ))
+  },
+
+  // Fechamento mensal: saldo inicial e final de cada mês já fechado.
+  closings: async (months = 12): Promise<MonthlyClosing[]> => {
+    const rows = unwrap(await supabase.from('monthly_closings').select('ref_month, opening_balance, closing_balance')
+      .order('ref_month', { ascending: false }).limit(months))
+    return rows.map(r => ({ refMonth: r.ref_month, openingBalance: Number(r.opening_balance), closingBalance: Number(r.closing_balance) }))
   },
 }

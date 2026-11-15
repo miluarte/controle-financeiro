@@ -57,3 +57,8 @@ export function useAllMyTransactions(userId: string | undefined) {
   const { data, isLoading } = useSWR(userId ? ['all-mine', userId] : null, () => transactionsApi.getAllMine(userId!))
   return { transactions: data ?? [], loading: isLoading || !userId }
 }
+
+export function useClosings(months = 12) {
+  const { data } = useSWR(['closings', months], () => analysisApi.closings(months))
+  return data ?? []
+}

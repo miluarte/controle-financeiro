@@ -89,6 +89,7 @@ export function toMonthSummary(r: Row): MonthSummary {
     invoicePaid: num(r.invoice_paid),
     balance: num(r.balance),
     openingBalance: num(r.opening_balance),
+    closed: !!r.closed,
     totalSaved: num(r.total_saved),
     budget: numOrNull(r.budget),
     receivableFromMembers: num(r.receivable_from_members),

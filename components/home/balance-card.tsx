@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { EyeLinearIcon, EyeClosedLinearIcon } from '@solar-icons/react'
 import { useMonthSummary } from '@/hooks/use-month-summary'
-import { cn, formatCurrency, monthLabel } from '@/lib/utils'
+import { addMonths, cn, formatCurrency, monthLabel, monthName } from '@/lib/utils'
 
 const HIDDEN = 'R$ ••••'
 
@@ -42,6 +42,11 @@ export function BalanceCard({ month }: { month: string }) {
           {hidden ? <EyeClosedLinearIcon className="size-6" /> : <EyeLinearIcon className="size-6" />}
         </button>
       </div>
+      {summary && summary.openingBalance !== 0 && (
+        <p className="mt-1 text-footnote text-muted-foreground">
+          Inclui {show(summary.openingBalance)} que {summary.openingBalance > 0 ? 'sobrou' : 'faltou'} em {monthName(addMonths(month, -1))}
+        </p>
+      )}
       {summary && (
         <dl className="mt-3 grid grid-cols-3 gap-2 border-t border-separator pt-3">
           <div>

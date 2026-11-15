@@ -94,6 +94,7 @@ export interface MonthSummary {
   invoicePaid: number
   balance: number
   openingBalance: number
+  closed: boolean
   totalSaved: number
   budget: number | null
   receivableFromMembers: number
@@ -226,4 +227,10 @@ export interface Settlement {
   status: 'open' | 'reported' | 'confirmed'
   reportedAt: string | null
   confirmedAt: string | null
+}
+
+export interface MonthlyClosing {
+  refMonth: string
+  openingBalance: number
+  closingBalance: number
 }
