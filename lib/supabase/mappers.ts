@@ -22,6 +22,7 @@ export function toProfile(r: Row): Profile {
     monthlyIncome: numOrNull(r.monthly_income),
     defaultWalletId: r.default_wallet_id ?? null,
     onboardingDismissed: !!r.onboarding_dismissed,
+    onboardingCompletedAt: r.onboarding_completed_at ?? null,
   }
 }
 

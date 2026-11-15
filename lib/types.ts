@@ -13,6 +13,7 @@ export interface Profile {
   monthlyIncome: number | null
   defaultWalletId: string | null
   onboardingDismissed: boolean
+  onboardingCompletedAt: string | null
 }
 
 export type WalletType = 'pix' | 'debit' | 'credit' | 'cash' | 'other'

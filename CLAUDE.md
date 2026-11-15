@@ -21,17 +21,9 @@ Todos os ícones vêm exclusivamente da biblioteca `@solar-icons/react`. Nunca u
 
 Quando um item está **selecionado ou ativo**, trocar o ícone para a variante preenchida `Bold` (ex: `CardBoldIcon`). Inativo usa `Linear`; ativo usa `Bold`. Vale para navegação (bottom nav), pickers (chips de categoria e carteira, via `TokenIcon active`) e qualquer elemento com estado de seleção. Não usar `BoldDuotone`.
 
-## Escopo desta fase (v1, núcleo financeiro)
+## Escopo
 
-Contas e cartões (`Account`, com tipo checking/savings/credit_card/cash — cartão de crédito é uma conta com `creditLimit`/`closingDay`/`dueDay` preenchidos, não uma entidade separada).
-Transações (receita, despesa, transferência entre contas).
-Parcelamento (`InstallmentGroup`: grupo de parcelas com contagem total e quantas já foram pagas).
-Categorias (predefinidas em `lib/constants.ts` + personalizadas).
-Metas de orçamento por categoria (`BudgetGoal`).
-Visualização: lista de lançamentos com saldo, saldo por conta, resumo mensal. Visual simples, sem gráfico.
-Fechamento mensal: saldo final de um mês vira saldo inicial do seguinte.
-
-Não implementar nesta fase: a camada analítica (metas financeiras com simulação de impacto, custo de deslocamento por veículo, custo por uso de assinatura). Ela tem modelo de dados próprio, documentado à parte, e entra numa fase seguinte.
+O app segue a especificação funcional v1.0 (núcleo financeiro, família, notificações, foto de nota, replanejamento). Modelo de dados em `docs/banco-de-dados.md`. Ficam para depois: automações do iPhone (toque duplo, Apple Pay, notificação do banco) com fila de pendentes, Face ID, backup, login por código, e a camada analítica (metas com simulação de impacto, custo de deslocamento, custo por uso de assinatura), que tem modelo próprio.
 
 ## Design (iOS 26, Liquid Glass)
 
@@ -52,8 +44,6 @@ Componentes em `components/ios/`: `ListGroup`, `ListRow`, `FormRow`, `SegmentedC
 `lib/supabase/client.ts` cria o cliente `supabase-js` (URL e chave publicável têm valor padrão no código, sobrescritos por `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`). Os módulos `lib/api/*.ts` mantêm as mesmas assinaturas de antes e convertem snake_case do banco para os tipos camelCase de `lib/types.ts` via `lib/supabase/mappers.ts`.
 
 Modelo de dados: o da especificação funcional v1.0 (seção 6), documentado em `docs/banco-de-dados.md` (mapa spec → colunas, decisões, RPCs, testes). Multiusuário com família e cartões compartilhados; privacidade garantida por RLS.
-
-Front no modelo novo (2026-11-15): login (`components/auth/`), Home (`app/home`: saudação, saldo do mês via RPC `month_summary`, últimas transações, botão + com registro rápido de Gasto/Receita/Guardar e parcelamento no crédito) e Config (`app/config`: perfil e sair). As telas do modelo antigo (contas, faturas, categorias, transações) foram removidas; estão no histórico do Git até `aca1cd9`.
 
 ## Estado atual (registrar aqui conforme evolui, não deixar desatualizado)
 
@@ -91,13 +81,18 @@ Replanejar metas (5.11, ANA-8, ANA-9, 2026-11-16):
 - `ReplanSheet` (`components/replan/`): 3 etapas (como você gasta hoje + renda opcional; afine cada categoria; tudo pronto com encaixe no orçamento, quanto guarda e "O que muda"). Salva em `category_goals` a partir do mês atual.
 - `/analysis/categories` ("Suas categorias"): média por mês, libera aos 30 gastos com barra "N de 30". Atalhos no fim da Análise.
 
+Fechamento mensal (2026-11-17): `monthly_closings` guarda saldo inicial, entradas, saídas, guardado e saldo final de cada mês. `private.close_all_users()` roda no dia 1 (pg_cron `troco-monthly-closing`) e fecha o mês anterior; o gatilho `transactions_refresh_closings` recalcula a partir do mês de um lançamento antigo criado, alterado ou excluído. `month_summary` usa o fechamento do mês anterior como saldo inicial (com saldo acumulado ligado). Home mostra o saldo herdado; o histórico da Análise mostra "Fechou em".
+
+API pública (2026-11-17): funções auxiliares das políticas e funções de gatilho ficam no schema `private` (não publicado pelo PostgREST). No `public` só ficam as RPCs que o app chama. Função nova auxiliar vai para `private` e é chamada como `private.nome(...)`.
+
+Onboarding (2026-11-17): `OnboardingFlow` (`components/onboarding/`) aparece no `AuthGate` enquanto `profiles.onboarding_completed_at` for nulo: boas-vindas, nome, cartões de crédito, orçamento do mês, avisos (com instrução de instalar no iPhone) e pronto. Todos os passos depois do nome podem ser pulados; "Sair" encerra.
+
 Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`; contas de teste (`@example.com`) e os dados delas.
 
 Pendente (spec, seção 8):
 - Fila de pendentes e automações (toque duplo, Apple Pay, notificação do banco) com tokens.
 - Face ID, backup periódico.
 - Login por código de 6 dígitos (ACE-1): hoje é e-mail e senha.
-- Onboarding de novos usuários (combinado para o final).
 
 ## Sobre o AGENTS.md deste repositório
 

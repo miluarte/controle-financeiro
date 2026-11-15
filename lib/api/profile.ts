@@ -11,6 +11,7 @@ export interface ProfilePatch {
   monthly_income?: number | null
   default_wallet_id?: string | null
   onboarding_dismissed?: boolean
+  onboarding_completed_at?: string | null
 }
 
 export const profileApi = {

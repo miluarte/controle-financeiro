@@ -14,7 +14,7 @@ import { analysisApi } from '@/lib/api/analysis'
 import { profileApi } from '@/lib/api/profile'
 import { balanceMessage, proposedGoal, type Rhythm } from '@/lib/replan'
 import { formatCurrency, monthName } from '@/lib/utils'
-import { StepDots } from './step-dots'
+import { StepDots } from '@/components/ios/step-dots'
 
 const STEPS = ['Como você gasta hoje', 'Afine cada categoria', 'Tudo pronto']
 const ACTIONS = ['Continuar', 'Revisar', 'Salvar']
