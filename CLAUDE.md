@@ -43,7 +43,7 @@ Saldo de conta não é armazenado: a view `accounts_with_balance` calcula `curre
 
 ## Estado atual (registrar aqui conforme evolui, não deixar desatualizado)
 
-Backend migrado para Supabase (2026-11-15), com login e dados isolados por usuário. Dados da planilha Troco-Controle-Financeiro importados para a conta da dona do projeto.
+Backend migrado para Supabase (2026-11-15), com login e dados isolados por usuário. Dados da planilha Troco-Controle-Financeiro estão no schema privado `import` (tabela `import.raw`); a função `import.load_for(email)` copia tudo para a conta indicada. Pendente: rodar após a dona do projeto criar a conta no app.
 
 Prontos: tipos (`lib/types.ts`), cliente de API (`lib/api/client.ts`), hooks de dados (`hooks/use-*.ts`), componentes de exibição/lista (cards, badges, listas).
 
