@@ -1,6 +1,7 @@
 'use client'
 
-import { Input } from '@/components/ui/input'
+import type { VariantProps } from 'class-variance-authority'
+import { Input, inputVariants } from '@/components/ui/input'
 import { formatCurrency } from '@/lib/utils'
 
 interface CurrencyInputProps {
@@ -10,12 +11,15 @@ interface CurrencyInputProps {
   placeholder?: string
   className?: string
   disabled?: boolean
+  variant?: VariantProps<typeof inputVariants>['variant']
+  autoFocus?: boolean
+  'aria-label'?: string
 }
 
 // Input controlado inteiramente em centavos: o usuário digita números,
 // a exibição é formatada como moeda, e o valor que sai em onChange nunca
 // é decimal — mantém a regra de "valores monetários sempre em centavos".
-export function CurrencyInput({ id, value, onChange, placeholder, className, disabled }: CurrencyInputProps) {
+export function CurrencyInput({ id, value, onChange, placeholder, className, disabled, variant, autoFocus, ...rest }: CurrencyInputProps) {
   const display = value ? formatCurrency(value) : ''
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -32,6 +36,9 @@ export function CurrencyInput({ id, value, onChange, placeholder, className, dis
       onChange={handleChange}
       className={className}
       disabled={disabled}
+      variant={variant}
+      autoFocus={autoFocus}
+      aria-label={rest['aria-label']}
     />
   )
 }

@@ -1,17 +1,14 @@
-import { PageHeader } from '@/components/layout/page-header'
+import { LargeTitleHeader } from '@/components/ios/large-title-header'
+import { AccountGroup } from '@/components/config/account-group'
 import { ProfileCard } from '@/components/config/profile-card'
-import { SignOutButton } from '@/components/config/sign-out-button'
 
 export default function ConfigPage() {
   return (
     <>
-      <PageHeader title="Config" />
-      <div className="space-y-6 p-4">
+      <LargeTitleHeader title="Config" />
+      <div className="space-y-7 px-4 pt-2">
         <ProfileCard />
-        <section className="space-y-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Conta</h2>
-          <SignOutButton />
-        </section>
+        <AccountGroup />
       </div>
     </>
   )

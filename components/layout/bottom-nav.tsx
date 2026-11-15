@@ -18,41 +18,33 @@ const NAV_ITEMS: { href: string; label: string; icon: SolarIcon; activeIcon: Sol
   { href: '/config', label: 'Config', icon: SettingsBoldDuotoneIcon, activeIcon: SettingsBoldIcon },
 ]
 
+// Barra de abas do iOS: largura total, fundo translúcido com desfoque, hairline no topo,
+// ícone + rótulo pequeno, aba ativa na cor de destaque e ícone preenchido.
 export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav
-      className={cn(
-        'fixed inset-x-4 z-50 flex items-center justify-around',
-        'bottom-[max(1rem,calc(env(safe-area-inset-bottom)+0.5rem))]',
-        'rounded-full border border-border/60 bg-background/80 px-2 py-2 shadow-lg backdrop-blur-xl supports-[backdrop-filter]:bg-background/70',
-      )}
-    >
-      {NAV_ITEMS.map(({ href, label, icon: Icon, activeIcon: ActiveIcon }) => {
-        const active = pathname.startsWith(href)
-        const IconComponent = active ? ActiveIcon : Icon
-        return (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              'flex min-w-16 flex-1 flex-col items-center gap-0.5 rounded-full px-2 py-1.5 transition-colors',
-              active && 'bg-secondary',
-            )}
-          >
-            <IconComponent className={cn('h-6 w-6', active ? 'text-primary' : 'text-muted-foreground')} />
-            <span
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-separator bg-bar pb-[env(safe-area-inset-bottom)] backdrop-blur-xl">
+      <div className="flex h-tabbar items-stretch">
+        {NAV_ITEMS.map(({ href, label, icon: Icon, activeIcon: ActiveIcon }) => {
+          const active = pathname.startsWith(href)
+          const IconComponent = active ? ActiveIcon : Icon
+          return (
+            <Link
+              key={href}
+              href={href}
+              aria-current={active ? 'page' : undefined}
               className={cn(
-                'text-xs font-medium transition-colors',
-                active ? 'text-primary' : 'text-muted-foreground',
+                'flex flex-1 flex-col items-center justify-center gap-0.5 pt-1',
+                active ? 'text-tint' : 'text-muted-foreground',
               )}
             >
-              {label}
-            </span>
-          </Link>
-        )
-      })}
+              <IconComponent className="size-7" />
+              <span className="text-caption2 font-medium">{label}</span>
+            </Link>
+          )
+        })}
+      </div>
     </nav>
   )
 }

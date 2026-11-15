@@ -33,6 +33,12 @@ Fechamento mensal: saldo final de um mês vira saldo inicial do seguinte.
 
 Não implementar nesta fase: a camada analítica (metas financeiras com simulação de impacto, custo de deslocamento por veículo, custo por uso de assinatura). Ela tem modelo de dados próprio, documentado à parte, e entra numa fase seguinte.
 
+## Design (padrão iOS)
+
+O visual segue o iOS (2026-11-15). Tokens em `app/globals.css`: cores do sistema da Apple (`--tint` systemBlue, `--background` systemGroupedBackground, `--grouped`, `--separator`, `--fill`, `--bar`, `--segment`), escala tipográfica do Dynamic Type (`text-large-title`, `text-title1..3`, `text-headline`, `text-body`, `text-subheadline`, `text-footnote`, `text-caption1/2`), alturas `h-row` (44pt) e `h-tabbar`. Fonte do sistema (SF). Modo escuro automático por `prefers-color-scheme`.
+
+Componentes iOS isolados em `components/ios/`: `ListGroup` e `ListRow` (lista agrupada com separador recuado), `FormRow` (linha de formulário rótulo + campo), `SegmentedControl`, `LargeTitleHeader`. Variantes novas: `Button` `plain`/`nav` (botões de barra de navegação), `Input` `bare`/`display`. A folha de baixo (`Sheet side="bottom"`) tem puxador e cantos arredondados; formulários modais usam Cancelar | título | ação no topo. Barra de abas de largura total com desfoque e área segura. Sempre usar esses componentes e tokens em telas novas.
+
 ## Comunicação com o backend
 
 `lib/supabase/client.ts` cria o cliente `supabase-js` (URL e chave publicável têm valor padrão no código, sobrescritos por `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`). Os módulos `lib/api/*.ts` mantêm as mesmas assinaturas de antes e convertem snake_case do banco para os tipos camelCase de `lib/types.ts` via `lib/supabase/mappers.ts`.

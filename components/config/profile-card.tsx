@@ -1,14 +1,14 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui/card'
-import { TokenIcon } from '@/components/shared/token-icon'
+import { ListGroup } from '@/components/ios/list-group'
+import { ListRow } from '@/components/ios/list-row'
+import { COLOR_CLASSES } from '@/components/shared/token-icon'
 import { useProfile } from '@/hooks/use-profile'
 import { useSession } from '@/hooks/use-session'
-import { COLOR_CLASSES } from '@/components/shared/token-icon'
 import type { ColorToken } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
-// ACE-2: avatar com a inicial, nome e e-mail.
+// ACE-2: avatar com a inicial, nome e e-mail, no topo dos Ajustes como no iOS.
 export function ProfileCard() {
   const { profile } = useProfile()
   const { session } = useSession()
@@ -16,25 +16,22 @@ export function ProfileCard() {
   const initial = (name || session?.user.email || '?').charAt(0).toUpperCase()
 
   return (
-    <Card>
-      <CardContent className="flex items-center gap-3">
-        {name ? (
-          <div
+    <ListGroup>
+      <ListRow
+        className="py-1"
+        leading={
+          <span
             className={cn(
-              'flex size-12 shrink-0 items-center justify-center rounded-full text-lg font-semibold',
+              'flex size-14 items-center justify-center rounded-full text-title2 font-semibold',
               COLOR_CLASSES[(profile?.avatarColor as ColorToken) ?? 'gray'] ?? COLOR_CLASSES.gray,
             )}
           >
             {initial}
-          </div>
-        ) : (
-          <TokenIcon icon="ellipsis" color="gray" size="lg" />
-        )}
-        <div className="min-w-0">
-          <p className="truncate font-semibold">{name || 'Sem nome'}</p>
-          <p className="truncate text-sm text-muted-foreground">{session?.user.email}</p>
-        </div>
-      </CardContent>
-    </Card>
+          </span>
+        }
+        title={<span className="text-title3 font-semibold">{name || 'Sem nome'}</span>}
+        subtitle={session?.user.email}
+      />
+    </ListGroup>
   )
 }

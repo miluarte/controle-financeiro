@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { AddBoldDuotoneIcon } from '@solar-icons/react'
+import { AddCircleBoldDuotoneIcon } from '@solar-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { FormRow } from '@/components/ios/form-row'
+import { ListGroup } from '@/components/ios/list-group'
+import { SegmentedControl } from '@/components/ios/segmented-control'
 import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { TokenIcon } from '@/components/shared/token-icon'
@@ -104,105 +105,137 @@ export function QuickAddSheet() {
 
   const walletQuestion =
     mode === 'save' ? (saveDirection === 'apply' ? 'De qual carteira saiu?' : 'Para qual carteira voltou?') : 'Como você pagou?'
-  const placeLabel = mode === 'income' ? 'Descrição (opcional)' : mode === 'save' ? 'Onde? (opcional)' : 'Onde foi? (opcional)'
-  const placePlaceholder = mode === 'income' ? 'Ex.: salário de novembro' : mode === 'save' ? 'Ex.: CDB, Tesouro' : 'Ex.: Mercado'
+  const placeLabel = mode === 'income' ? 'Descrição' : mode === 'save' ? 'Onde?' : 'Onde foi?'
+  const placePlaceholder = mode === 'income' ? 'Opcional' : mode === 'save' ? 'CDB, Tesouro' : 'Opcional'
+
+  const modeTitle = mode === 'expense' ? 'Novo gasto' : mode === 'income' ? 'Nova receita' : 'Guardar'
 
   return (
     <Sheet open={open} onOpenChange={o => { setOpen(o); if (!o) reset() }}>
       <SheetTrigger
         render={
-          <Button size="icon-lg" className="rounded-full shadow-lg" aria-label="Registrar">
-            <AddBoldDuotoneIcon className="size-6" />
+          <Button variant="plain" size="icon" aria-label="Registrar">
+            <AddCircleBoldDuotoneIcon className="size-8" />
           </Button>
         }
       />
-      <SheetContent side="bottom" className="overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle>Registrar</SheetTitle>
-        </SheetHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-5 px-4 pb-6">
-          <Tabs value={mode} onValueChange={v => changeMode(v as Mode)}>
-            <TabsList className="w-full">
-              <TabsTrigger value="expense" className="flex-1">Gasto</TabsTrigger>
-              <TabsTrigger value="income" className="flex-1">Receita</TabsTrigger>
-              <TabsTrigger value="save" className="flex-1">Guardar</TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          {mode === 'save' && (
-            <div className="flex gap-2">
-              <ChoiceChip selected={saveDirection === 'apply'} onClick={() => setSaveDirection('apply')}>Aplicar</ChoiceChip>
-              <ChoiceChip selected={saveDirection === 'redeem'} onClick={() => setSaveDirection('redeem')}>Resgatar</ChoiceChip>
-            </div>
-          )}
-
-          <div className="grid grid-cols-[1fr_auto] gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="amount">Valor</Label>
-              <CurrencyInput id="amount" value={amount} onChange={setAmount} className="h-12 text-2xl font-semibold" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="date">Data</Label>
-              <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value || todayIso())} className="h-12" />
-            </div>
+      <SheetContent side="bottom" showCloseButton={false} className="gap-0 bg-background">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          {/* barra de navegação do modal: Cancelar | título | Registrar */}
+          <div className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center px-2">
+            <SheetClose render={<Button type="button" variant="plain" size="nav" className="justify-self-start" />}>
+              Cancelar
+            </SheetClose>
+            <SheetTitle className="text-headline font-semibold">{modeTitle}</SheetTitle>
+            <Button type="submit" variant="plain" size="nav" className="justify-self-end font-semibold" disabled={!canSubmit}>
+              {submitting ? 'Salvando…' : 'Registrar'}
+            </Button>
           </div>
 
-          {needsCategory && (
-            <div className="space-y-2">
-              <Label>Categoria</Label>
-              <div className="flex flex-wrap gap-2">
-                {visibleCategories.map(c => (
-                  <ChoiceChip key={c.id} selected={categoryId === c.id} onClick={() => setCategoryId(c.id)} className="pl-1">
-                    <TokenIcon icon={c.icon} color={c.color} size="sm" />
-                    {c.name}
-                  </ChoiceChip>
-                ))}
-              </div>
-            </div>
-          )}
+          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-2 pb-6">
+            <SegmentedControl
+              aria-label="Tipo de registro"
+              value={mode}
+              onChange={changeMode}
+              options={[
+                { value: 'expense', label: 'Gasto' },
+                { value: 'income', label: 'Receita' },
+                { value: 'save', label: 'Guardar' },
+              ]}
+            />
 
-          {needsWallet && (
-            <div className="space-y-2">
-              <Label>{walletQuestion}</Label>
-              <div className="flex flex-wrap gap-2">
-                {wallets
-                  .filter(w => mode !== 'save' || w.type !== 'credit')
-                  .map(w => (
-                    <ChoiceChip key={w.id} selected={walletId === w.id} onClick={() => setWalletId(w.id)} className="pl-1">
-                      <TokenIcon icon={WALLET_TYPE_ICON[w.type] ?? 'wallet'} color="gray" size="sm" />
-                      {walletLabel(w)}
+            {mode === 'save' && (
+              <SegmentedControl
+                aria-label="Aplicar ou resgatar"
+                value={saveDirection}
+                onChange={setSaveDirection}
+                options={[
+                  { value: 'apply', label: 'Aplicar' },
+                  { value: 'redeem', label: 'Resgatar' },
+                ]}
+              />
+            )}
+
+            <CurrencyInput
+              id="amount"
+              aria-label="Valor"
+              variant="display"
+              value={amount}
+              onChange={setAmount}
+            />
+
+            <ListGroup>
+              <FormRow label="Data" htmlFor="date">
+                <Input
+                  id="date"
+                  type="date"
+                  variant="bare"
+                  value={date}
+                  onChange={e => setDate(e.target.value || todayIso())}
+                  className="w-auto text-right text-tint"
+                />
+              </FormRow>
+              <FormRow label={placeLabel} htmlFor="place">
+                <Input
+                  id="place"
+                  variant="bare"
+                  value={place}
+                  onChange={e => setPlace(e.target.value)}
+                  placeholder={placePlaceholder}
+                  className="text-right"
+                />
+              </FormRow>
+              {isCredit && (
+                <FormRow label="Parcelas" htmlFor="installments">
+                  <Input
+                    id="installments"
+                    type="number"
+                    inputMode="numeric"
+                    variant="bare"
+                    min={1}
+                    max={48}
+                    value={installments}
+                    onChange={e => setInstallments(Math.min(48, Math.max(1, Number(e.target.value) || 1)))}
+                    className="w-16 text-right"
+                  />
+                </FormRow>
+              )}
+            </ListGroup>
+
+            {needsCategory && (
+              <ListGroup header="Categoria">
+                <li className="flex flex-wrap gap-2 p-3">
+                  {visibleCategories.map(c => (
+                    <ChoiceChip key={c.id} selected={categoryId === c.id} onClick={() => setCategoryId(c.id)} className="pl-1">
+                      <TokenIcon icon={c.icon} color={c.color} size="sm" />
+                      {c.name}
                     </ChoiceChip>
                   ))}
-              </div>
-            </div>
-          )}
+                </li>
+              </ListGroup>
+            )}
 
-          {isCredit && (
-            <div className="space-y-2">
-              <Label htmlFor="installments">Parcelas</Label>
-              <Input
-                id="installments"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={48}
-                value={installments}
-                onChange={e => setInstallments(Math.min(48, Math.max(1, Number(e.target.value) || 1)))}
-              />
-            </div>
-          )}
+            {needsWallet && (
+              <ListGroup header={walletQuestion}>
+                <li className="flex flex-wrap gap-2 p-3">
+                  {wallets
+                    .filter(w => mode !== 'save' || w.type !== 'credit')
+                    .map(w => (
+                      <ChoiceChip key={w.id} selected={walletId === w.id} onClick={() => setWalletId(w.id)} className="pl-1">
+                        <TokenIcon icon={WALLET_TYPE_ICON[w.type] ?? 'wallet'} color="gray" size="sm" />
+                        {walletLabel(w)}
+                      </ChoiceChip>
+                    ))}
+                </li>
+              </ListGroup>
+            )}
 
-          <div className="space-y-2">
-            <Label htmlFor="place">{placeLabel}</Label>
-            <Input id="place" value={place} onChange={e => setPlace(e.target.value)} placeholder={placePlaceholder} />
+            {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+
+            <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>
+              {submitting ? 'Registrando…' : 'Registrar'}
+            </Button>
           </div>
-
-          {error && <p className="text-sm text-destructive">{error}</p>}
-
-          <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>
-            {submitting ? 'Registrando...' : 'Registrar'}
-          </Button>
         </form>
       </SheetContent>
     </Sheet>

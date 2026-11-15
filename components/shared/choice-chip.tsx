@@ -3,18 +3,18 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
-// Botão de escolha única (categoria, carteira, tipo). Selecionado = preenchido.
+// Botão de escolha única em formato de cápsula (categoria, carteira). Selecionado = cor de destaque.
 const chipVariants = cva(
-  'inline-flex shrink-0 items-center gap-2 rounded-full border text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50',
+  'inline-flex shrink-0 items-center gap-2 rounded-full text-subheadline font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring disabled:opacity-50',
   {
     variants: {
       selected: {
-        true: 'border-primary bg-primary text-primary-foreground',
-        false: 'border-border bg-background text-foreground',
+        true: 'bg-tint text-primary-foreground',
+        false: 'bg-fill text-foreground active:opacity-70',
       },
       size: {
         default: 'h-9 px-3',
-        sm: 'h-8 px-2.5 text-xs',
+        sm: 'h-8 px-2.5 text-footnote',
       },
     },
     defaultVariants: { selected: false, size: 'default' },

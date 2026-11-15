@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { WalletMoneyBoldDuotoneIcon } from '@solar-icons/react'
 import { supabase } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { FormRow } from '@/components/ios/form-row'
+import { ListGroup } from '@/components/ios/list-group'
+import { SegmentedControl } from '@/components/ios/segmented-control'
 
 type Mode = 'signin' | 'signup'
 
@@ -59,58 +60,53 @@ export function AuthForm() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-lg">Troco</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Tabs value={mode} onValueChange={v => setMode(v as Mode)}>
-              <TabsList className="w-full">
-                <TabsTrigger value="signin" className="flex-1">Entrar</TabsTrigger>
-                <TabsTrigger value="signup" className="flex-1">Criar conta</TabsTrigger>
-              </TabsList>
-            </Tabs>
+    <div className="flex min-h-dvh flex-col justify-center px-4 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+      <div className="mb-8 flex flex-col items-center gap-3 text-center">
+        <div className="flex size-20 items-center justify-center rounded-2xl bg-tint text-primary-foreground shadow-sm">
+          <WalletMoneyBoldDuotoneIcon className="size-11" />
+        </div>
+        <div>
+          <h1 className="text-large-title font-bold">Troco</h1>
+          <p className="text-subheadline text-muted-foreground">Seu dinheiro, mês a mês.</p>
+        </div>
+      </div>
 
-            {mode === 'signup' && (
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome</Label>
-                <Input id="name" autoComplete="given-name" value={name} onChange={e => setName(e.target.value)} />
-              </div>
-            )}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <SegmentedControl
+          aria-label="Entrar ou criar conta"
+          value={mode}
+          onChange={m => { setMode(m); setError(null); setInfo(null) }}
+          options={[
+            { value: 'signin', label: 'Entrar' },
+            { value: 'signup', label: 'Criar conta' },
+          ]}
+        />
 
-            <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-              />
-            </div>
+        <ListGroup footer={mode === 'signup' ? 'A senha precisa ter pelo menos 6 caracteres.' : undefined}>
+          {mode === 'signup' && (
+            <FormRow label="Nome" htmlFor="name">
+              <Input id="name" variant="bare" autoComplete="given-name" placeholder="Seu nome"
+                value={name} onChange={e => setName(e.target.value)} className="text-right" />
+            </FormRow>
+          )}
+          <FormRow label="E-mail" htmlFor="email">
+            <Input id="email" type="email" variant="bare" autoComplete="email" autoCapitalize="none" placeholder="voce@email.com"
+              value={email} onChange={e => setEmail(e.target.value)} className="text-right" />
+          </FormRow>
+          <FormRow label="Senha" htmlFor="password">
+            <Input id="password" type="password" variant="bare"
+              autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} placeholder="Obrigatória"
+              value={password} onChange={e => setPassword(e.target.value)} className="text-right" />
+          </FormRow>
+        </ListGroup>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-              />
-            </div>
+        {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+        {info && <p className="px-4 text-footnote text-muted-foreground">{info}</p>}
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            {info && <p className="text-sm text-muted-foreground">{info}</p>}
-
-            <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? 'Aguarde...' : mode === 'signin' ? 'Entrar' : 'Criar conta'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+        <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+          {submitting ? 'Aguarde…' : mode === 'signin' ? 'Entrar' : 'Criar conta'}
+        </Button>
+      </form>
     </div>
   )
 }

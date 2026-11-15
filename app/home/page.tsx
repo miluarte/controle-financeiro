@@ -1,20 +1,24 @@
 'use client'
 
+import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { BalanceCard } from '@/components/home/balance-card'
-import { HomeHeader } from '@/components/home/home-header'
 import { RecentTransactions } from '@/components/home/recent-transactions'
 import { QuickAddSheet } from '@/components/transactions/quick-add-sheet'
-import { currentMonth } from '@/lib/utils'
+import { useProfile } from '@/hooks/use-profile'
+import { currentMonth, greeting } from '@/lib/utils'
 
 export default function HomePage() {
   const month = currentMonth()
+  const { profile } = useProfile()
+
   return (
     <>
-      <div className="flex items-end justify-between pr-4">
-        <HomeHeader />
-        <QuickAddSheet />
-      </div>
-      <div className="space-y-6 p-4">
+      <LargeTitleHeader
+        eyebrow={`${greeting()},`}
+        title={profile?.name || ' '}
+        actions={<QuickAddSheet />}
+      />
+      <div className="space-y-7 px-4 pt-2">
         <BalanceCard month={month} />
         <RecentTransactions month={month} />
       </div>

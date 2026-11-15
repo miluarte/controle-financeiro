@@ -52,16 +52,16 @@ export const ICON_MAP: Record<IconToken, SolarIcon> = {
 
 // Classes completas para garantir que o Tailwind inclua no bundle
 export const COLOR_CLASSES: Record<ColorToken, string> = {
-  red:    'bg-red-100 text-red-600',
-  orange: 'bg-orange-100 text-orange-600',
-  yellow: 'bg-yellow-100 text-yellow-600',
-  green:  'bg-green-100 text-green-600',
-  teal:   'bg-teal-100 text-teal-600',
-  blue:   'bg-blue-100 text-blue-600',
-  indigo: 'bg-indigo-100 text-indigo-600',
-  purple: 'bg-purple-100 text-purple-600',
-  pink:   'bg-pink-100 text-pink-600',
-  gray:   'bg-gray-100 text-gray-500',
+  red:    'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400',
+  orange: 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400',
+  yellow: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400',
+  green:  'bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400',
+  teal:   'bg-teal-100 text-teal-600 dark:bg-teal-500/20 dark:text-teal-400',
+  blue:   'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400',
+  indigo: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400',
+  purple: 'bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400',
+  pink:   'bg-pink-100 text-pink-600 dark:bg-pink-500/20 dark:text-pink-400',
+  gray:   'bg-gray-100 text-gray-500 dark:bg-gray-500/25 dark:text-gray-300',
 }
 
 const SIZE: Record<string, { wrap: string; icon: string }> = {

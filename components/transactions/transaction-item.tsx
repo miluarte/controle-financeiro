@@ -1,5 +1,6 @@
 'use client'
 
+import { ListRow } from '@/components/ios/list-row'
 import { TokenIcon } from '@/components/shared/token-icon'
 import type { Category, Transaction, Wallet } from '@/lib/types'
 import { cn, formatCurrency } from '@/lib/utils'
@@ -29,18 +30,20 @@ export function TransactionItem({ transaction: t, category, wallet }: Transactio
   const inflow = INFLOW.has(t.type)
 
   return (
-    <li className="flex items-center gap-3 py-2">
-      <TokenIcon
-        icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')}
-        color={category?.color ?? 'gray'}
-      />
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{title}</p>
-        <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
-      </div>
-      <p className={cn('shrink-0 font-semibold', inflow && 'text-success')}>
-        {inflow ? '+' : '-'} {formatCurrency(t.amount)}
-      </p>
-    </li>
+    <ListRow
+      leading={
+        <TokenIcon
+          icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')}
+          color={category?.color ?? 'gray'}
+        />
+      }
+      title={title}
+      subtitle={subtitle}
+      trailing={
+        <span className={cn('text-body font-semibold tabular-nums', inflow ? 'text-success' : 'text-foreground')}>
+          {inflow ? '+' : '−'}{formatCurrency(t.amount)}
+        </span>
+      }
+    />
   )
 }

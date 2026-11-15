@@ -2,13 +2,49 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* Modo escuro automático pelo sistema (NAV-3, Automático) ou forçado pela classe .dark */
+@custom-variant dark (@media (prefers-color-scheme: dark));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --color-tint: var(--tint);
+  --color-separator: var(--separator);
+  --color-fill: var(--fill);
+  --color-grouped: var(--grouped);
+  --color-bar: var(--bar);
+  --color-segment: var(--segment);
+
+  /* Escala tipográfica do iOS (Dynamic Type, tamanho padrão) */
+  --text-large-title: 2.125rem;
+  --text-large-title--line-height: 2.5625rem;
+  --text-large-title--letter-spacing: 0.0234em;
+  --text-title1: 1.75rem;
+  --text-title1--line-height: 2.125rem;
+  --text-title2: 1.375rem;
+  --text-title2--line-height: 1.75rem;
+  --text-title3: 1.25rem;
+  --text-title3--line-height: 1.5625rem;
+  --text-headline: 1.0625rem;
+  --text-headline--line-height: 1.375rem;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.375rem;
+  --text-callout: 1rem;
+  --text-callout--line-height: 1.3125rem;
+  --text-subheadline: 0.9375rem;
+  --text-subheadline--line-height: 1.25rem;
+  --text-footnote: 0.8125rem;
+  --text-footnote--line-height: 1.125rem;
+  --text-caption1: 0.75rem;
+  --text-caption1--line-height: 1rem;
+  --text-caption2: 0.6875rem;
+  --text-caption2--line-height: 0.8125rem;
+
+  /* Alturas padrão de controles do iOS */
+  --spacing-row: 2.75rem;
+  --spacing-tabbar: 3.0625rem;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -50,84 +86,103 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --success: oklch(0.527 0.154 150.069);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  /* Cores do sistema iOS (modo claro) */
+  --background: #f2f2f7;          /* systemGroupedBackground */
+  --foreground: #000000;          /* label */
+  --card: #ffffff;                /* secondarySystemGroupedBackground */
+  --card-foreground: #000000;
+  --popover: #f2f2f7;
+  --popover-foreground: #000000;
+  --primary: #007aff;             /* systemBlue */
+  --primary-foreground: #ffffff;
+  --secondary: #e5e5ea;           /* systemGray5 */
+  --secondary-foreground: #000000;
+  --muted: #e5e5ea;
+  --muted-foreground: rgb(60 60 67 / 0.6);  /* secondaryLabel */
+  --accent: #e5e5ea;
+  --accent-foreground: #000000;
+  --destructive: #ff3b30;         /* systemRed */
+  --success: #34c759;             /* systemGreen */
+  --tint: #007aff;
+  --separator: rgb(60 60 67 / 0.29);
+  --fill: rgb(118 118 128 / 0.12);          /* tertiarySystemFill */
+  --grouped: #ffffff;
+  --bar: rgb(249 249 249 / 0.94);           /* barra de abas e navegação */
+  --segment: #ffffff;                       /* segmento selecionado */
+  --border: rgb(60 60 67 / 0.29);
+  --input: rgb(118 118 128 / 0.12);
+  --ring: rgb(0 122 255 / 0.5);
+  --chart-1: #007aff;
+  --chart-2: #34c759;
+  --chart-3: #ff9500;
+  --chart-4: #af52de;
+  --chart-5: #ff2d55;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #f2f2f7;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #007aff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e5e5ea;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: rgb(60 60 67 / 0.29);
+  --sidebar-ring: rgb(0 122 255 / 0.5);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --success: oklch(0.723 0.192 149.579);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Cores do sistema iOS (modo escuro) */
+    --background: #000000;
+    --foreground: #ffffff;
+    --card: #1c1c1e;
+    --card-foreground: #ffffff;
+    --popover: #1c1c1e;
+    --popover-foreground: #ffffff;
+    --primary: #0a84ff;
+    --primary-foreground: #ffffff;
+    --secondary: #2c2c2e;
+    --secondary-foreground: #ffffff;
+    --muted: #2c2c2e;
+    --muted-foreground: rgb(235 235 245 / 0.6);
+    --accent: #2c2c2e;
+    --accent-foreground: #ffffff;
+    --destructive: #ff453a;
+    --success: #30d158;
+    --tint: #0a84ff;
+    --separator: rgb(84 84 88 / 0.6);
+    --fill: rgb(118 118 128 / 0.24);
+    --grouped: #1c1c1e;
+    --bar: rgb(22 22 22 / 0.94);
+    --segment: #636366;
+    --border: rgb(84 84 88 / 0.6);
+    --input: rgb(118 118 128 / 0.24);
+    --ring: rgb(10 132 255 / 0.5);
+    --chart-1: #0a84ff;
+    --chart-2: #30d158;
+    --chart-3: #ff9f0a;
+    --chart-4: #bf5af2;
+    --chart-5: #ff375f;
+    --sidebar: #1c1c1e;
+    --sidebar-foreground: #ffffff;
+    --sidebar-primary: #0a84ff;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #2c2c2e;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: rgb(84 84 88 / 0.6);
+    --sidebar-ring: rgb(10 132 255 / 0.5);
+  }
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
-    @apply font-sans;
+    @apply font-sans antialiased;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-body text-foreground;
+    overscroll-behavior-y: none;
   }
 }

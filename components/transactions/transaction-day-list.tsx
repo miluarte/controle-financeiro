@@ -1,6 +1,7 @@
 'use client'
 
 import { TransactionItem } from './transaction-item'
+import { ListGroup } from '@/components/ios/list-group'
 import { useCategories } from '@/hooks/use-categories'
 import { useWallets } from '@/hooks/use-wallets'
 import type { Transaction } from '@/lib/types'
@@ -12,7 +13,7 @@ interface TransactionDayListProps {
   emptyText?: string
 }
 
-// TRA-1: lista agrupada por dia.
+// TRA-1: lista agrupada por dia, um grupo do iOS por dia.
 export function TransactionDayList({
   transactions,
   emptyTitle = 'Nenhuma transação',
@@ -25,9 +26,9 @@ export function TransactionDayList({
 
   if (transactions.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed p-6 text-center">
-        <p className="font-medium">{emptyTitle}</p>
-        <p className="text-sm text-muted-foreground">{emptyText}</p>
+      <div className="px-4 py-10 text-center">
+        <p className="text-headline">{emptyTitle}</p>
+        <p className="text-subheadline text-muted-foreground">{emptyText}</p>
       </div>
     )
   }
@@ -40,21 +41,18 @@ export function TransactionDayList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {groups.map(g => (
-        <section key={g.day}>
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{dayLabel(g.day)}</h3>
-          <ul className="divide-y">
-            {g.items.map(t => (
-              <TransactionItem
-                key={t.id}
-                transaction={t}
-                category={t.categoryId ? catById.get(t.categoryId) : undefined}
-                wallet={t.walletId ? walletById.get(t.walletId) : undefined}
-              />
-            ))}
-          </ul>
-        </section>
+        <ListGroup key={g.day} header={dayLabel(g.day)}>
+          {g.items.map(t => (
+            <TransactionItem
+              key={t.id}
+              transaction={t}
+              category={t.categoryId ? catById.get(t.categoryId) : undefined}
+              wallet={t.walletId ? walletById.get(t.walletId) : undefined}
+            />
+          ))}
+        </ListGroup>
       ))}
     </div>
   )

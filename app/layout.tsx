@@ -1,15 +1,9 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist } from 'next/font/google'
 import { SerwistProvider } from '@serwist/turbopack/react'
 import './globals.css'
 import { AppShell } from '@/components/layout/app-shell'
 import { Providers } from './providers'
 import { AuthGate } from '@/components/auth/auth-gate'
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-})
 
 export const metadata: Metadata = {
   title: 'Troco',
@@ -25,7 +19,8 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    // conteúdo passa por baixo da barra de status, como app nativo; o AppShell compensa com safe-area
+    statusBarStyle: 'black-translucent',
     title: 'Troco',
   },
   formatDetection: {
@@ -38,12 +33,16 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#171717',
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f2f2f7' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
+  ],
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${geistSans.variable} h-full antialiased`}>
+    <html lang="pt-BR" className="h-full">
       <body className="h-full bg-background font-sans text-foreground">
         <SerwistProvider swUrl="/serwist/sw.js" disable={process.env.NODE_ENV !== 'production'}>
           <Providers>

@@ -2,8 +2,6 @@
 
 import { useState } from 'react'
 import { EyeBoldDuotoneIcon, EyeClosedBoldDuotoneIcon } from '@solar-icons/react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { useMonthSummary } from '@/hooks/use-month-summary'
 import { cn, formatCurrency, monthLabel } from '@/lib/utils'
 
@@ -27,36 +25,39 @@ export function BalanceCard({ month }: { month: string }) {
   const show = (v: number) => (hidden ? HIDDEN : formatCurrency(v))
 
   return (
-    <Card>
-      <CardContent className="space-y-4">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-sm text-muted-foreground">Saldo de {monthLabel(month)}</p>
-            <p className={cn('text-3xl font-semibold', summary && summary.balance < 0 && 'text-destructive')}>
-              {loading || !summary ? '...' : show(summary.balance)}
-            </p>
-          </div>
-          <Button variant="ghost" size="icon" onClick={toggle} aria-label={hidden ? 'Mostrar valores' : 'Ocultar valores'}>
-            {hidden ? <EyeClosedBoldDuotoneIcon className="size-6" /> : <EyeBoldDuotoneIcon className="size-6" />}
-          </Button>
+    <section className="rounded-xl bg-grouped p-4">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-subheadline text-muted-foreground">Saldo de {monthLabel(month)}</p>
+          <p className={cn('truncate text-title1 font-bold tabular-nums', summary && summary.balance < 0 && 'text-destructive')}>
+            {loading || !summary ? '…' : show(summary.balance)}
+          </p>
         </div>
-        {summary && (
-          <dl className="grid grid-cols-3 gap-2 text-sm">
-            <div>
-              <dt className="text-muted-foreground">Entrou</dt>
-              <dd className="font-medium">{show(summary.income)}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Gastos</dt>
-              <dd className="font-medium">{show(summary.spending)}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Guardado</dt>
-              <dd className="font-medium">{show(summary.totalSaved)}</dd>
-            </div>
-          </dl>
-        )}
-      </CardContent>
-    </Card>
+        <button
+          type="button"
+          onClick={toggle}
+          className="flex size-11 shrink-0 items-center justify-center text-tint active:opacity-50"
+          aria-label={hidden ? 'Mostrar valores' : 'Ocultar valores'}
+        >
+          {hidden ? <EyeClosedBoldDuotoneIcon className="size-6" /> : <EyeBoldDuotoneIcon className="size-6" />}
+        </button>
+      </div>
+      {summary && (
+        <dl className="mt-3 grid grid-cols-3 gap-2 border-t border-separator pt-3">
+          <div>
+            <dt className="text-footnote text-muted-foreground">Entrou</dt>
+            <dd className="text-subheadline font-semibold tabular-nums text-success">{show(summary.income)}</dd>
+          </div>
+          <div>
+            <dt className="text-footnote text-muted-foreground">Gastos</dt>
+            <dd className="text-subheadline font-semibold tabular-nums">{show(summary.spending)}</dd>
+          </div>
+          <div>
+            <dt className="text-footnote text-muted-foreground">Guardado</dt>
+            <dd className="text-subheadline font-semibold tabular-nums">{show(summary.totalSaved)}</dd>
+          </div>
+        </dl>
+      )}
+    </section>
   )
 }

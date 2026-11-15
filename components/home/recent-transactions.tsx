@@ -8,10 +8,10 @@ export function RecentTransactions({ month, limit = 8 }: { month: string; limit?
   const { transactions, loading } = useMonthTransactions(month)
 
   return (
-    <section className="space-y-3">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Últimas transações</h2>
+    <section className="space-y-2">
+      <h2 className="text-title3 font-semibold">Últimas transações</h2>
       {loading ? (
-        <p className="text-sm text-muted-foreground">Carregando...</p>
+        <p className="text-subheadline text-muted-foreground">Carregando…</p>
       ) : (
         <TransactionDayList transactions={transactions.slice(0, limit)} />
       )}
