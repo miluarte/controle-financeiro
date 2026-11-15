@@ -105,7 +105,22 @@ export const COLOR_CLASSES: Record<ColorToken, string> = {
   indigo: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400',
   purple: 'bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400',
   pink:   'bg-pink-100 text-pink-600 dark:bg-pink-500/20 dark:text-pink-400',
-  gray:   'bg-gray-100 text-gray-500 dark:bg-gray-500/25 dark:text-gray-300',
+  gray:   'bg-gray-100 text-gray-600 dark:bg-gray-500/35 dark:text-gray-100',
+}
+
+// Item selecionado: círculo de cor sólida e ícone branco, legível tanto no chip preto
+// (modo claro) quanto no chip branco (modo escuro).
+export const ACTIVE_COLOR_CLASSES: Record<ColorToken, string> = {
+  red:    'bg-red-500 text-white',
+  orange: 'bg-orange-500 text-white',
+  yellow: 'bg-yellow-500 text-white',
+  green:  'bg-green-600 text-white',
+  teal:   'bg-teal-600 text-white',
+  blue:   'bg-blue-500 text-white',
+  indigo: 'bg-indigo-500 text-white',
+  purple: 'bg-purple-500 text-white',
+  pink:   'bg-pink-500 text-white',
+  gray:   'bg-gray-500 text-white',
 }
 
 const SIZE: Record<string, { wrap: string; icon: string }> = {
@@ -125,7 +140,8 @@ interface TokenIconProps {
 export function TokenIcon({ icon, color, size = 'md', active, className }: TokenIconProps) {
   const map = active ? ICON_MAP_ACTIVE : ICON_MAP
   const Icon = (map[icon as IconToken] ?? WalletMoneyLinearIcon) as SolarIcon
-  const colorClass = COLOR_CLASSES[color as ColorToken] ?? COLOR_CLASSES.gray
+  const palette = active ? ACTIVE_COLOR_CLASSES : COLOR_CLASSES
+  const colorClass = palette[color as ColorToken] ?? palette.gray
   const s = SIZE[size] ?? SIZE.md
 
   return (
