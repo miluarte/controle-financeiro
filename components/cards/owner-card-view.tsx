@@ -1,0 +1,130 @@
+'use client'
+
+import { useMemo, useState } from 'react'
+import useSWR from 'swr'
+import { Button } from '@/components/ui/button'
+import { ListGroup } from '@/components/ios/list-group'
+import { InvoiceSheet, type InvoiceRef } from '@/components/bills/invoice-sheet'
+import { MemberAvatar } from '@/components/family/member-avatar'
+import { ProgressBar, toneFor } from '@/components/shared/progress-bar'
+import { TransactionEditSheet } from '@/components/transactions/transaction-edit-sheet'
+import { TransactionItem } from '@/components/transactions/transaction-item'
+import { WalletFormSheet } from '@/components/wallets/wallet-form-sheet'
+import { useCategories } from '@/hooks/use-categories'
+import { useInvoices } from '@/hooks/use-data'
+import { useFamily, useFamilyMembers } from '@/hooks/use-family'
+import { useProfile } from '@/hooks/use-profile'
+import { useSession } from '@/hooks/use-session'
+import { transactionsApi } from '@/lib/api/transactions'
+import { invoiceDueDate, openInvoiceRef } from '@/lib/invoice'
+import type { FamilyMember, OwnWallet, Transaction } from '@/lib/types'
+import { formatCurrency, formatDate, todayIso } from '@/lib/utils'
+import { AssignSheet } from './assign-sheet'
+import { InvoiceNavigator } from './invoice-navigator'
+import { ShareCardGroup } from './share-card-group'
+
+// CAR-5 e VIS-3: visão do titular. Fatura total, fatia de cada pessoa, limite, compras e compartilhamento.
+export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
+  const { session } = useSession()
+  const { profile } = useProfile()
+  const { family, status } = useFamily()
+  const inFamily = !!family && status === 'active'
+  const members = useFamilyMembers(inFamily)
+  const { categories } = useCategories()
+  const today = todayIso()
+  const openRef = openInvoiceRef(wallet, today)
+  const [ref, setRef] = useState(openRef)
+  const [editingCard, setEditingCard] = useState(false)
+  const [paying, setPaying] = useState<InvoiceRef | null>(null)
+  const [assigning, setAssigning] = useState<Transaction | null>(null)
+  const [editing, setEditing] = useState<Transaction | null>(null)
+  const { totals, paid } = useInvoices(today.slice(0, 7))
+  const { data: purchases } = useSWR(['invoice-tx', wallet.id, ref], () => transactionsApi.getByInvoice(wallet.id, `${ref}-01`))
+  const me = session?.user.id
+
+  const people: FamilyMember[] = useMemo(() => {
+    const self: FamilyMember = { userId: me ?? '', name: profile?.name || 'Você', avatarColor: profile?.avatarColor ?? 'gray', role: 'member', status: 'active', joinedAt: null }
+    return [self, ...members.filter(m => m.status === 'active' && m.userId !== me)]
+  }, [members, me, profile?.avatarColor, profile?.name])
+  const nameOf = (id: string) => (id === me ? 'Você' : people.find(p => p.userId === id)?.name ?? 'Membro')
+
+  const list = purchases ?? []
+  const total = list.reduce((s, t) => s + t.amount, 0)
+  const byPerson = new Map<string, number>()
+  for (const t of list) byPerson.set(t.owner, (byPerson.get(t.owner) ?? 0) + t.amount)
+  const paidAt = paid.find(p => p.walletId === wallet.id && p.refMonth.slice(0, 7) === ref)?.paidAt ?? null
+  const closed = ref < openRef
+  const shared = wallet.shareScope !== 'none'
+
+  // limite usado: faturas ainda não pagas, da aberta em diante (inclui parcelas futuras)
+  const used = totals
+    .filter(t => t.walletId === wallet.id && t.invoiceRef.slice(0, 7) >= openRef)
+    .filter(t => !paid.some(p => p.walletId === wallet.id && p.refMonth === t.invoiceRef && p.paidAt))
+    .reduce((s, t) => s + t.total, 0)
+  const catById = new Map(categories.map(c => [c.id, c]))
+  const due = invoiceDueDate(wallet, ref)
+
+  return (
+    <div className="space-y-7">
+      <InvoiceNavigator value={ref} onChange={setRef}
+        caption={`${paidAt ? `Paga em ${formatDate(paidAt)}` : closed ? 'Fechada' : ref === openRef ? 'Aberta' : 'Futura'} · vence ${formatDate(due)}`} />
+
+      <section className="space-y-3 rounded-3xl bg-grouped p-4">
+        <div className="text-center">
+          <p className="text-large-title font-bold tabular-nums">{formatCurrency(total)}</p>
+          <p className="text-footnote text-muted-foreground">{list.length} {list.length === 1 ? 'compra' : 'compras'}</p>
+        </div>
+        {shared && byPerson.size > 0 && (
+          <ul className="space-y-2 border-t border-separator pt-3">
+            {[...byPerson.entries()].sort((a, b) => b[1] - a[1]).map(([id, v]) => {
+              const p = people.find(x => x.userId === id)
+              return (
+                <li key={id} className="flex items-center gap-2">
+                  <MemberAvatar name={p?.name ?? 'M'} color={p?.avatarColor ?? 'gray'} size="sm" />
+                  <span className="flex-1 text-subheadline">{nameOf(id)}</span>
+                  <span className="text-subheadline font-semibold tabular-nums">{formatCurrency(v)}</span>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+        {!paidAt && total > 0 && (
+          <Button size="lg" className="w-full"
+            onClick={() => setPaying({ wallet, ref, dueDate: due, total, paidAt })}>
+            Pagar fatura
+          </Button>
+        )}
+      </section>
+
+      {wallet.spendingLimit ? (
+        <section className="space-y-2 rounded-3xl bg-grouped p-4">
+          <div className="flex justify-between text-subheadline">
+            <span className="text-muted-foreground">Limite usado</span>
+            <span className="font-semibold tabular-nums">{formatCurrency(used)} de {formatCurrency(wallet.spendingLimit)}</span>
+          </div>
+          <ProgressBar value={used / wallet.spendingLimit} tone={toneFor(used / wallet.spendingLimit)} />
+          <p className="text-footnote text-muted-foreground">Disponível: {formatCurrency(wallet.spendingLimit - used)}</p>
+        </section>
+      ) : null}
+
+      <ListGroup header="Compras" footer={shared && !paidAt ? 'Toque numa compra para dizer de quem ela é.' : undefined}>
+        {list.length === 0 && <li className="p-4 text-center text-subheadline text-muted-foreground">Nenhuma compra nesta fatura.</li>}
+        {list.map(t => (
+          <TransactionItem key={t.id} transaction={t}
+            category={t.categoryId ? catById.get(t.categoryId) : undefined}
+            note={shared ? `de ${nameOf(t.owner)}` : undefined}
+            onClick={() => (shared && !paidAt ? setAssigning(t) : t.owner === me ? setEditing(t) : undefined)} />
+        ))}
+      </ListGroup>
+
+      {inFamily && <ShareCardGroup wallet={wallet} scope={wallet.shareScope} members={members.filter(m => m.userId !== me && m.status === 'active')} />}
+
+      <Button variant="secondary" size="lg" className="w-full" onClick={() => setEditingCard(true)}>Editar cartão</Button>
+
+      <InvoiceSheet invoice={paying} onClose={() => setPaying(null)} />
+      <AssignSheet transaction={assigning} people={people} me={me} onClose={() => setAssigning(null)} />
+      <TransactionEditSheet transaction={editing} onClose={() => setEditing(null)} />
+      <WalletFormSheet open={editingCard} wallet={wallet} onClose={() => setEditingCard(false)} />
+    </div>
+  )
+}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { AddLinearIcon } from '@solar-icons/react'
 import { GlassButton } from '@/components/ios/glass-button'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
@@ -24,6 +25,7 @@ export default function WalletsPage() {
   const { profile } = useProfile()
   const { transactions } = useMonthTransactions(month)
   const { totals } = useInvoices(currentMonth())
+  const router = useRouter()
   const [editing, setEditing] = useState<OwnWallet | null>(null)
   const [creating, setCreating] = useState(false)
 
@@ -55,9 +57,9 @@ export default function WalletsPage() {
               const current = invoiceTotal(w.id, ref)
               const next = invoiceTotal(w.id, addMonths(ref, 1))
               return (
-                <ListRow key={w.id} onClick={() => open(w)}
+                <ListRow key={w.id} onClick={() => router.push(`/cards/${w.id}`)}
                   leading={<CardPreview name="" finish={w.finish} size="sm" className="w-11" />}
-                  title={w.name}
+                  title={<>{w.name}{w.shareScope !== 'none' && <span className="text-muted-foreground"> · compartilhado</span>}</>}
                   subtitle={`Fatura de ${monthName(ref, 'short')} ${formatCurrency(current)} · próxima ${formatCurrency(next)}`
                     + (w.spendingLimit ? ` · limite ${formatCurrency(w.spendingLimit)}` : '')}
                   chevron />
@@ -82,7 +84,7 @@ export default function WalletsPage() {
         {shared.length > 0 && (
           <ListGroup header="Compartilhados com você">
             {shared.map(w => (
-              <ListRow key={w.id}
+              <ListRow key={w.id} onClick={() => router.push(`/cards/${w.id}`)} chevron
                 leading={<CardPreview name="" finish={w.finish} size="sm" className="w-11" />}
                 title={`${w.name}, de ${w.ownerName}`}
                 subtitle={`Fecha dia ${w.closingDay} · vence dia ${w.dueDay}`} />

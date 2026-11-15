@@ -52,6 +52,9 @@ export interface Transaction {
   installmentGroupId: string | null
   billId: string | null
   toWalletId: string | null
+  createdBy: string | null
+  // de quem é a compra (5.7.5)
+  owner: string
   amount: number
   date: string
   categoryId: string | null
@@ -105,6 +108,7 @@ export interface WalletInput {
 export interface OwnWallet extends Wallet {
   spendingLimit: number | null
   closingDayInclusive: boolean
+  shareScope: 'none' | 'family' | 'selected'
 }
 
 export interface CategoryInput {
@@ -181,4 +185,29 @@ export interface MonthHistory {
   spending: number
   income: number
   saved: number
+}
+
+export interface Family {
+  id: string
+  name: string
+  code: string
+  entriesPaused: boolean
+}
+
+export interface FamilyMember {
+  userId: string
+  name: string
+  avatarColor: string
+  role: 'admin' | 'member'
+  status: 'pending' | 'active'
+  joinedAt: string | null
+}
+
+export interface CardDebt {
+  walletId: string
+  invoiceRef: string
+  dueDate: string
+  total: number
+  settled: number
+  open: number
 }

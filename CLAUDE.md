@@ -65,10 +65,19 @@ Front v1 completo (2026-11-15), publicado na main (Vercel):
 - Análise: orçamento do mês, ritmo (gráfico SVG próprio), resta e livre por dia, comparação com o mês anterior até o mesmo dia, gastos por categoria com meta (`category_goals`), categorias sem gasto recolhidas, histórico de 6 meses. Cálculos em `lib/analysis.ts`.
 - Config: perfil (nome, cor do avatar), tema (claro/escuro/automático via `data-theme` no html), categorias (`/config/categories`: criar, renomear, ícone, cor, classe, reordenar, arquivar, excluir), carteiras (`/config/wallets`: tipos, acabamento com prévia, fechamento/vencimento, limite, fatura atual e próxima, padrão, arquivar, excluir), moeda padrão, saldo acumulado, exportar/importar CSV (`lib/csv.ts`, prévia, mapeamento e duplicadas), novidades, versão, feedback, sair e excluir conta.
 
-Pendente (v2 e v3 da spec, seção 8):
-- Família e cartões compartilhados (o banco já suporta; faltam as telas).
-- Fila de pendentes, automações (toque duplo, Apple Pay, notificação) com Edge Functions e tokens.
-- Push de notificações, Face ID, backup periódico.
+Família e cartões (2026-11-16):
+- `/config/family`: criar, entrar com código (pendente até aprovar), aprovar/recusar, remover, sair, novo código, pausar entradas. API em `lib/api/family.ts`.
+- `/cards/[id]`: detalhe do cartão. Titular (`OwnerCardView`): fatura por mês, divisão por pessoa, limite usado, compras, "De quem é essa compra?" (`assign_purchase`), compartilhar (Ninguém/Todos/Escolher). Membro (`MemberCardView`): "Você deve", próxima fatura, em aberto, já comprometido, só as próprias compras.
+- Home mostra "A receber de membros" e "Você deve a …" (`FamilyBalances`).
+
+Notificações push (2026-11-16):
+- Edge Function `notify` (`supabase/functions/notify`), chamada a cada 10 min pelo pg_cron via pg_net com `x-cron-secret`. Envia a fila `notification_queue` (eventos da família por trigger, teste) e avisos agendados com dedupe em `notification_log`: contas a vencer, lembrete de registro, resumo de domingo, orçamento 80%/100%, fatura de cartão compartilhado fechada.
+- Chaves VAPID geradas pela própria função e guardadas em `private.app_secrets` (fora da API). O app pega só a pública via RPC `get_vapid_public_key`.
+- App: `lib/push.ts`, `app/config/notifications`, handlers `push`/`notificationclick` em `app/sw.ts`. No iPhone só funciona com o app na Tela de Início.
+
+Pendente (spec, seção 8):
+- Fila de pendentes e automações (toque duplo, Apple Pay, notificação do banco) com tokens.
+- Face ID, backup periódico.
 - Login por código de 6 dígitos (ACE-1): hoje é e-mail e senha.
 - v3: foto de nota fiscal, replanejar metas, acertos entre membros, divisão de compra, alertas inteligentes.
 

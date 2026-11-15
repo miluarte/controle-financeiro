@@ -59,6 +59,8 @@ export function toTransaction(r: Row): Transaction {
     installmentGroupId: r.installment_group_id ?? null,
     billId: r.bill_id ?? null,
     toWalletId: r.to_wallet_id ?? null,
+    createdBy: r.created_by ?? null,
+    owner: r.assigned_to,
     amount: num(r.amount),
     date: r.date,
     categoryId: r.category_id ?? null,
@@ -97,6 +99,7 @@ export function toOwnWallet(r: Row): OwnWallet {
     ...toWallet(r),
     spendingLimit: numOrNull(r.spending_limit),
     closingDayInclusive: r.closing_day_inclusive ?? true,
+    shareScope: r.share_scope ?? 'none',
   }
 }
 

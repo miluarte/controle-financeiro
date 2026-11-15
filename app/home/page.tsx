@@ -2,6 +2,7 @@
 
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { BalanceCard } from '@/components/home/balance-card'
+import { FamilyBalances } from '@/components/home/family-balances'
 import { FirstSteps } from '@/components/home/first-steps'
 import { RecentTransactions } from '@/components/home/recent-transactions'
 import { MonthSelector } from '@/components/shared/month-selector'
@@ -23,6 +24,7 @@ export default function HomePage() {
       />
       <div className="space-y-7 px-4 pt-2">
         <BalanceCard month={month} />
+        <FamilyBalances month={month} />
         <FirstSteps />
         <RecentTransactions month={month} />
       </div>
