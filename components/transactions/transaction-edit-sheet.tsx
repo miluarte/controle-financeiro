@@ -16,6 +16,8 @@ import { transactionsApi } from '@/lib/api/transactions'
 import { WALLET_TYPE_ICON } from '@/lib/constants'
 import type { Transaction } from '@/lib/types'
 import { TYPE_LABEL } from './transaction-item'
+import { receiptUrl, type ReceiptItem } from '@/lib/receipt'
+import { formatCurrency } from '@/lib/utils'
 
 // TRA-6: abrir, editar e excluir um lançamento.
 export function TransactionEditSheet({
@@ -116,6 +118,25 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
               </ChoiceChip>
             ))}
           </li>
+        </ListGroup>
+      )}
+
+      {t.source === 'photo' && (
+        <ListGroup header="Nota fiscal">
+          {((t.sourceData?.items as ReceiptItem[] | undefined) ?? []).map((i, k) => (
+            <li key={k} className="flex justify-between gap-2 border-b border-separator px-4 py-2 text-subheadline last:border-b-0">
+              <span className="truncate">{i.name}</span>
+              <span className="shrink-0 tabular-nums text-muted-foreground">{formatCurrency(i.amount)}</span>
+            </li>
+          ))}
+          {t.receiptPath && (
+            <li className="p-3">
+              <Button type="button" variant="secondary" className="w-full rounded-full"
+                onClick={async () => { const url = await receiptUrl(t.receiptPath!); if (url) window.open(url, '_blank') }}>
+                Ver comprovante
+              </Button>
+            </li>
+          )}
         </ListGroup>
       )}
 

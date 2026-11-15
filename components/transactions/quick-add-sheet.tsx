@@ -19,6 +19,10 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { useWallets } from '@/hooks/use-wallets'
 import { transactionsApi } from '@/lib/api/transactions'
 import { WALLET_TYPE_ICON } from '@/lib/constants'
+import { uploadReceipt, type ReceiptResult } from '@/lib/receipt'
+import { ReceiptResultGroup } from '@/components/receipt/receipt-result-group'
+import { ReceiptScanButton } from '@/components/receipt/receipt-scan-button'
+import { useSession } from '@/hooks/use-session'
 import type { Wallet } from '@/lib/types'
 import { todayIso } from '@/lib/utils'
 
@@ -35,6 +39,7 @@ export function QuickAddSheet() {
   const { wallets } = useWallets()
   const { profile } = useProfile()
   const refreshMonth = useRefresh()
+  const { session } = useSession()
 
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<Mode>('expense')
@@ -48,6 +53,17 @@ export function QuickAddSheet() {
   const [installments, setInstallments] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // leitura da nota fiscal (5.4)
+  const [receipt, setReceipt] = useState<{ result: ReceiptResult; image: Blob } | null>(null)
+  const [attachReceipt, setAttachReceipt] = useState(false)
+
+  function onReceipt(result: ReceiptResult, image: Blob) {
+    setReceipt({ result, image })
+    if (result.amount) setAmount(result.amount)
+    if (result.place) setPlace(result.place)
+    if (result.date) setDate(result.date)
+    if (result.categoryId) setCategoryId(result.categoryId)
+  }
 
   function reset() {
     setAmount(0)
@@ -57,6 +73,8 @@ export function QuickAddSheet() {
     setInstallments(1)
     setError(null)
     setWalletId(null)
+    setReceipt(null)
+    setAttachReceipt(false)
   }
 
   function changeMode(next: Mode) {
@@ -85,7 +103,14 @@ export function QuickAddSheet() {
           walletId: walletId!, categoryId, total: amount, installments, firstDate: date, place: placeValue,
         })
       } else {
+        const fromPhoto = mode === 'expense' && receipt
+        const receiptPath = fromPhoto && attachReceipt && session ? await uploadReceipt(session.user.id, receipt.image) : null
         await transactionsApi.create({
+          ...(fromPhoto ? {
+            source: 'photo',
+            sourceData: { reader: receipt.result.source, items: receipt.result.items },
+            receiptPath,
+          } : {}),
           type: mode === 'save' ? (saveDirection === 'apply' ? 'save_apply' : 'save_redeem') : mode,
           amount,
           date,
@@ -158,6 +183,8 @@ export function QuickAddSheet() {
               />
             )}
 
+            {mode === 'expense' && <ReceiptScanButton onRead={onReceipt} />}
+
             <CurrencyInput
               id="amount"
               aria-label="Valor"
@@ -194,6 +221,11 @@ export function QuickAddSheet() {
                 </FormRow>
               )}
             </ListGroup>
+
+            {mode === 'expense' && receipt && (
+              <ReceiptResultGroup source={receipt.result.source} items={receipt.result.items}
+                attach={attachReceipt} onAttachChange={setAttachReceipt} attachDisabled={isCredit && installments > 1} />
+            )}
 
             {needsCategory && (
               <ListGroup header="Categoria">

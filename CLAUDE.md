@@ -80,11 +80,23 @@ Notificações push (2026-11-16):
 - Chaves VAPID geradas pela própria função e guardadas em `private.app_secrets` (fora da API). O app pega só a pública via RPC `get_vapid_public_key`.
 - App: `lib/push.ts`, `app/config/notifications`, handlers `push`/`notificationclick` em `app/sw.ts`. No iPhone só funciona com o app na Tela de Início.
 
+Foto da nota fiscal (5.4, 2026-11-16):
+- Botão "Ler nota fiscal" no registro de Gasto (`components/receipt/`). `lib/receipt.ts` reduz a foto (1600 px, JPEG) e chama a Edge Function `ler-nota` (Gemini 2.5 Flash, plano gratuito, segredo `GEMINI_API_KEY`), que devolve total em centavos, local, data, itens e categoria sugerida entre as da pessoa. Sem chave, sem cota ou com erro, cai no Tesseract.js no celular (`por`), com regras para achar TOTAL/VALOR A PAGAR, data e nome da loja, e o app avisa que é menos preciso.
+- Nada é salvo sem confirmar. A foto só é guardada se a pessoa ligar "Anexar a foto": bucket privado `receipts`, pasta = id do usuário, coluna `transactions.receipt_path`. Lançamento por foto tem `source = 'photo'` e itens em `source_data`; a edição mostra itens e "Ver comprovante" (URL assinada).
+- Leitura do QR code da NFC-e (passo 7) não foi feita.
+
+Replanejar metas (5.11, ANA-8, ANA-9, 2026-11-16):
+- `lib/replan.ts`: período-base "até agora" (do primeiro gasto ao último mês completo), média por categoria, Essencial/Desejo, ritmos 0,9/1/1,15, arredondamento a R$ 10, categoria sem gasto mantém a meta atual.
+- `ReplanSheet` (`components/replan/`): 3 etapas (como você gasta hoje + renda opcional; afine cada categoria; tudo pronto com encaixe no orçamento, quanto guarda e "O que muda"). Salva em `category_goals` a partir do mês atual.
+- `/analysis/categories` ("Suas categorias"): média por mês, libera aos 30 gastos com barra "N de 30". Atalhos no fim da Análise.
+
+Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`.
+
 Pendente (spec, seção 8):
 - Fila de pendentes e automações (toque duplo, Apple Pay, notificação do banco) com tokens.
 - Face ID, backup periódico.
 - Login por código de 6 dígitos (ACE-1): hoje é e-mail e senha.
-- v3: foto de nota fiscal, replanejar metas. (Acertos, divisão de compra e alertas de orçamento já feitos.)
+- Onboarding de novos usuários (combinado para o final).
 
 ## Sobre o AGENTS.md deste repositório
 

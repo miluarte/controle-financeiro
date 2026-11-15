@@ -41,8 +41,6 @@ Tabelas extras, exigidas por requisitos sem tabela na seção 6:
 - `installment_groups`: dados da compra parcelada (ATR-4, 7.6).
 - `invoices`: estado de pagamento da fatura (CON-8, ATR-3). Os valores vêm da view `invoice_totals`.
 - `wallet_aliases`: cartão do Apple Pay ou da notificação ligado a uma carteira (CAR-6).
-- `app_news` e `news_reads`: Novidades com indicador de não lido (NAV-6).
-- `feedback`: ícone de feedback (NAV-5).
 
 ## Decisões tomadas (seção 9)
 

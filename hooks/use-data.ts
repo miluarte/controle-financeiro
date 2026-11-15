@@ -5,6 +5,7 @@ import { analysisApi } from '@/lib/api/analysis'
 import { billsApi } from '@/lib/api/bills'
 import { categoriesApi } from '@/lib/api/categories'
 import { invoicesApi } from '@/lib/api/invoices'
+import { transactionsApi } from '@/lib/api/transactions'
 import { walletsApi } from '@/lib/api/wallets'
 import { addMonths } from '@/lib/utils'
 
@@ -49,4 +50,10 @@ export function useCategorySpending(month: string) {
 export function useHistory(months = 6) {
   const { data, isLoading } = useSWR(['history', months], () => analysisApi.history(months))
   return { history: data ?? [], loading: isLoading }
+}
+
+// Todos os meus lançamentos (replanejamento usa o histórico inteiro).
+export function useAllMyTransactions(userId: string | undefined) {
+  const { data, isLoading } = useSWR(userId ? ['all-mine', userId] : null, () => transactionsApi.getAllMine(userId!))
+  return { transactions: data ?? [], loading: isLoading || !userId }
 }

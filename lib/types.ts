@@ -67,6 +67,8 @@ export interface Transaction {
   invoiceRef: string | null
   source: string
   status: 'confirmed' | 'pending'
+  receiptPath: string | null
+  sourceData: Record<string, unknown> | null
 }
 
 export interface NewTransaction {
@@ -78,6 +80,8 @@ export interface NewTransaction {
   place: string | null
   description: string | null
   source?: string
+  sourceData?: Record<string, unknown> | null
+  receiptPath?: string | null
 }
 
 export interface MonthSummary {

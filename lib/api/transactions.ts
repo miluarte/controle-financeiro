@@ -13,6 +13,8 @@ function toRow(t: Partial<NewTransaction>) {
   if (t.place !== undefined) r.place = t.place
   if (t.description !== undefined) r.description = t.description
   if (t.source !== undefined) r.source = t.source
+  if (t.sourceData !== undefined) r.source_data = t.sourceData
+  if (t.receiptPath !== undefined) r.receipt_path = t.receiptPath
   return r
 }
 

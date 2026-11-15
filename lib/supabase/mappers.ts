@@ -73,6 +73,8 @@ export function toTransaction(r: Row): Transaction {
     invoiceRef: r.invoice_ref ?? null,
     source: r.source,
     status: r.status,
+    receiptPath: r.receipt_path ?? null,
+    sourceData: r.source_data ?? null,
   }
 }
 
