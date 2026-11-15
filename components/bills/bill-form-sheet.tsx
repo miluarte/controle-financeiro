@@ -8,6 +8,7 @@ import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
 import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
+import { NumberField } from '@/components/shared/number-field'
 import { TokenIcon } from '@/components/shared/token-icon'
 import { useCategories } from '@/hooks/use-categories'
 import { useMonth } from '@/hooks/use-month'
@@ -58,8 +59,6 @@ function BillForm({ onDone }: { onDone: () => void }) {
     }
   }
 
-  const clampDay = (v: string) => Math.min(31, Math.max(1, Number(v) || 1))
-
   return (
     <form id="new-bill" onSubmit={save} className="space-y-6">
       <CurrencyInput id="bill-amount" aria-label="Valor" variant="display" value={amount} onChange={setAmount} />
@@ -68,8 +67,7 @@ function BillForm({ onDone }: { onDone: () => void }) {
           <Input id="bill-name" variant="bare" value={name} onChange={e => setName(e.target.value)} placeholder="Aluguel, internet…" className="text-right" />
         </FormRow>
         <FormRow label="Dia do vencimento" htmlFor="bill-day">
-          <Input id="bill-day" type="number" inputMode="numeric" min={1} max={31} variant="bare"
-            value={dueDay} onChange={e => setDueDay(clampDay(e.target.value))} className="w-16 text-right" />
+          <NumberField id="bill-day" min={1} max={31} value={dueDay} onChange={setDueDay} className="w-16 text-right" />
         </FormRow>
         <FormRow label="Mês de referência" htmlFor="bill-month">
           <Input id="bill-month" type="month" variant="bare" value={startMonth}
@@ -90,12 +88,10 @@ function BillForm({ onDone }: { onDone: () => void }) {
         {installments && (
           <>
             <FormRow label="Parcela atual" htmlFor="bill-current">
-              <Input id="bill-current" type="number" inputMode="numeric" min={1} variant="bare"
-                value={current} onChange={e => setCurrent(Math.max(1, Number(e.target.value) || 1))} className="w-16 text-right" />
+              <NumberField id="bill-current" min={1} max={360} value={current} onChange={setCurrent} className="w-16 text-right" />
             </FormRow>
             <FormRow label="Total de parcelas" htmlFor="bill-total">
-              <Input id="bill-total" type="number" inputMode="numeric" min={1} variant="bare"
-                value={total} onChange={e => setTotal(Math.max(1, Number(e.target.value) || 1))} className="w-16 text-right" />
+              <NumberField id="bill-total" min={1} max={360} value={total} onChange={setTotal} className="w-16 text-right" />
             </FormRow>
           </>
         )}

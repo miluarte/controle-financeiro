@@ -11,6 +11,7 @@ import { ListGroup } from '@/components/ios/list-group'
 import { SegmentedControl } from '@/components/ios/segmented-control'
 import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
+import { NumberField } from '@/components/shared/number-field'
 import { TokenIcon } from '@/components/shared/token-icon'
 import { useCategories } from '@/hooks/use-categories'
 import { useProfile } from '@/hooks/use-profile'
@@ -188,17 +189,8 @@ export function QuickAddSheet() {
               </FormRow>
               {isCredit && (
                 <FormRow label="Parcelas" htmlFor="installments">
-                  <Input
-                    id="installments"
-                    type="number"
-                    inputMode="numeric"
-                    variant="bare"
-                    min={1}
-                    max={48}
-                    value={installments}
-                    onChange={e => setInstallments(Math.min(48, Math.max(1, Number(e.target.value) || 1)))}
-                    className="w-16 text-right"
-                  />
+                  <NumberField id="installments" min={1} max={48} value={installments}
+                    onChange={setInstallments} className="w-16 text-right" />
                 </FormRow>
               )}
             </ListGroup>

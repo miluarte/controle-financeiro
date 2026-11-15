@@ -5,6 +5,7 @@ import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import { NumberField } from '@/components/shared/number-field'
 import { FormRow } from '@/components/ios/form-row'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { ListGroup } from '@/components/ios/list-group'
@@ -92,10 +93,8 @@ export default function NotificationsPage() {
               )}
               {t.days && s?.enabled !== false && (
                 <FormRow label="Dias de antecedência" htmlFor={`${t.type}-days`}>
-                  <Input id={`${t.type}-days`} type="number" inputMode="numeric" min={0} max={30} variant="bare"
-                    value={s?.days_before ?? 2}
-                    onChange={e => update(t.type, { days_before: Math.min(30, Math.max(0, Number(e.target.value) || 0)) })}
-                    className="w-16 text-right" />
+                  <NumberField id={`${t.type}-days`} min={0} max={30} value={s?.days_before ?? 2}
+                    onChange={v => update(t.type, { days_before: v })} className="w-16 text-right" />
                 </FormRow>
               )}
             </ListGroup>

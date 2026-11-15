@@ -8,6 +8,7 @@ import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
 import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
+import { NumberField } from '@/components/shared/number-field'
 import { useProfile } from '@/hooks/use-profile'
 import { useRefresh } from '@/hooks/use-refresh'
 import { profileApi } from '@/lib/api/profile'
@@ -62,8 +63,6 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
     run(() => (wallet ? walletsApi.update(wallet.id, input) : walletsApi.create(input)))
   }
 
-  const day = (v: string) => Math.min(31, Math.max(1, Number(v) || 1))
-
   return (
     <form id="wallet" onSubmit={save} className="space-y-6">
       <div className="flex justify-center">
@@ -91,12 +90,10 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
       {isCredit && (
         <ListGroup footer="O fechamento define em qual fatura cada compra entra.">
           <FormRow label="Dia do fechamento" htmlFor="w-closing">
-            <Input id="w-closing" type="number" inputMode="numeric" variant="bare" min={1} max={31}
-              value={closingDay} onChange={e => setClosingDay(day(e.target.value))} className="w-16 text-right" />
+            <NumberField id="w-closing" min={1} max={31} value={closingDay} onChange={setClosingDay} className="w-16 text-right" />
           </FormRow>
           <FormRow label="Dia do vencimento" htmlFor="w-due">
-            <Input id="w-due" type="number" inputMode="numeric" variant="bare" min={1} max={31}
-              value={dueDay} onChange={e => setDueDay(day(e.target.value))} className="w-16 text-right" />
+            <NumberField id="w-due" min={1} max={31} value={dueDay} onChange={setDueDay} className="w-16 text-right" />
           </FormRow>
           <FormRow label="Limite de gasto" htmlFor="w-limit">
             <CurrencyInput id="w-limit" variant="bare" value={limit} onChange={setLimit} placeholder="Opcional" className="text-right" />
