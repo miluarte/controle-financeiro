@@ -88,3 +88,8 @@ export function useVehicles(month: string) {
   })
   return { vehicles: data?.list ?? [], trips: data?.trips ?? [], maintenance: data?.maintenance ?? [], loading: isLoading }
 }
+
+export function usePending(userId: string | undefined) {
+  const { data, isLoading } = useSWR(userId ? ['pending', userId] : null, () => transactionsApi.getPending(userId!))
+  return { pending: data ?? [], loading: isLoading }
+}

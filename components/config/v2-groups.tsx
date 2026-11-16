@@ -27,3 +27,13 @@ export function NotificationsGroup() {
     </ListGroup>
   )
 }
+
+// Config > Automações do iPhone (5.15, item 7).
+export function AutomationsGroup() {
+  const router = useRouter()
+  return (
+    <ListGroup header="Automações">
+      <ListRow title="Apple Pay, toque duplo e SMS" chevron onClick={() => router.push('/config/automations')} />
+    </ListGroup>
+  )
+}

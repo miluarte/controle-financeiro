@@ -23,7 +23,7 @@ Quando um item está **selecionado ou ativo**, trocar o ícone para a variante p
 
 ## Escopo
 
-O app segue a especificação funcional v1.0 (núcleo financeiro, família, notificações, foto de nota, replanejamento). Modelo de dados em `docs/banco-de-dados.md`. Ficam para depois: automações do iPhone (toque duplo, Apple Pay, notificação do banco) com fila de pendentes, backup, login por código e Open Finance.
+O app segue a especificação funcional v1.0 (núcleo financeiro, família, notificações, foto de nota, replanejamento). Modelo de dados em `docs/banco-de-dados.md`. Ficam para depois: backup, login por código e Open Finance.
 
 Textos de apoio na interface (footers, dicas, legendas): curtos e diretos, uma frase. Sem explicar o óbvio.
 
@@ -106,10 +106,11 @@ Análise avançada (2026-11-16, backlog da spec), em Análise > Planejamento. Fo
 - Assinaturas: dias de uso marcados no mês; custo por uso = mensal / usos; com preço avulso, mostra a diferença.
 - Veículos: combustível = km do mês / km por litro x preço do litro; manutenção = custo / meses do intervalo.
 
+Automações do iPhone (2026-11-16): Config > Automações (`app/config/automations`) gera um token pessoal (`create_automation_token`, hash em `automation_tokens`) e mostra o passo a passo do app Atalhos para Apple Pay (automação Transação), toque duplo (atalho que pede valor e local) e SMS do banco (automação Mensagem). O Atalhos chama a Edge Function `atalho` (sem JWT; GET ou POST com `t`, `s`, `v`, `l`, `c`, `x`), que lê valor e local (também de texto de SMS) e chama `automation_capture` (só service_role): cria gasto `status = 'pending'`, acha a carteira pelo apelido aprendido (`wallet_aliases`) ou nome parecido, ignora a mesma compra em 5 min e avisa por push (`automations`). Fila de pendentes: `PendingBanner` na Home (abre sozinho com `?pendentes=1`) e `PendingSheet`/`PendingConfirm` (`components/pending/`): confirmar (categoria, carteira) ou descartar. Ao confirmar compra do Apple Pay, guarda o nome do cartão como apelido. Leituras de saldo e listas usam só `status = 'confirmed'`.
+
 Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`; contas de teste (`@example.com`) e os dados delas.
 
 Pendente (spec, seção 8):
-- Fila de pendentes e automações (toque duplo, Apple Pay, notificação do banco) com tokens.
 - Backup periódico.
 - Login por código de 6 dígitos (ACE-1): hoje é e-mail e senha, ou Google.
 

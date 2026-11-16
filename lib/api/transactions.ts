@@ -37,7 +37,7 @@ export const transactionsApi = {
     const all: Transaction[] = []
     for (let from = 0; ; from += 1000) {
       const rows = unwrap(
-        await supabase.from('transactions').select('*').eq('assigned_to', userId)
+        await supabase.from('transactions').select('*').eq('assigned_to', userId).eq('status', 'confirmed')
           .order('date').range(from, from + 999),
       )
       all.push(...rows.map(toTransaction))
@@ -62,6 +62,15 @@ export const transactionsApi = {
   createMany: async (list: NewTransaction[]) => {
     if (list.length === 0) return
     unwrap(await supabase.from('transactions').insert(list.map(toRow)))
+  },
+
+  // Fila de pendentes (automações do iPhone): gastos que ainda precisam de confirmação.
+  getPending: async (userId: string) =>
+    unwrap(await supabase.from('transactions').select('*').eq('assigned_to', userId).eq('status', 'pending')
+      .order('created_at', { ascending: false })).map(toTransaction),
+
+  confirmPending: async (id: string, t: Partial<NewTransaction>) => {
+    unwrap(await supabase.from('transactions').update({ ...toRow(t), status: 'confirmed' }).eq('id', id))
   },
 
   update: async (id: string, t: Partial<NewTransaction>) =>
