@@ -95,7 +95,7 @@
 }
 
 :root {
-  /* altura útil da tela, atualizada pelo IosViewportFix */
+  /* altura útil da tela (AppShell, classe h-app); no app instalado é a tela inteira (100lvh) */
   --app-height: 100dvh;
 
   /* Cores do sistema iOS (modo claro) */
@@ -271,6 +271,11 @@
     0 16px 48px -12px var(--glass-shadow);
 }
 
+@media (display-mode: standalone) {
+  :root { --app-height: 100lvh; }
+}
+:root[data-standalone] { --app-height: 100lvh; }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -280,6 +285,14 @@
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
   }
+  /* iOS 26, app na Tela de Início (viewport-fit=cover + barra de status translúcida): enquanto o
+     documento não for mais alto que a área visível, o iOS encurta a tela pela altura da barra de
+     status e não desenha o rodapé (WebKit 301108). Esticar o html só nesse modo devolve a tela
+     inteira; o teto em 100lvh evita que a página role. */
+  @media (display-mode: standalone) {
+    html { min-height: min(100lvh, calc(100% + env(safe-area-inset-top))); }
+  }
+  html[data-standalone] { min-height: min(100lvh, calc(100% + env(safe-area-inset-top))); }
   body {
     @apply bg-background text-body text-foreground;
     overscroll-behavior-y: none;
