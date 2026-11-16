@@ -23,10 +23,17 @@ const cents = (v: string) => Math.round(Number(v.replace(/\./g, '').replace(',',
 const NOT_PURCHASE = /pagamento (da fatura|recebido)|cr[eé]dito de|estorno|pagamentos e (cr[eé]ditos|financiamentos)/i
 
 // Texto do PDF em linhas, juntando os pedaços que estão na mesma altura da página.
-export async function pdfLines(data: ArrayBuffer): Promise<string[]> {
+// PDF com senha (alguns bancos protegem com parte do CPF): askPassword pede a senha à pessoa.
+export async function pdfLines(data: ArrayBuffer, askPassword?: (wrong: boolean) => string | null): Promise<string[]> {
   const pdfjs = await import('pdfjs-dist')
   if (typeof window !== 'undefined') pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'
-  const doc = await pdfjs.getDocument({ data }).promise
+  const task = pdfjs.getDocument({ data: new Uint8Array(data) })
+  task.onPassword = (update: (password: string) => void, reason: number) => {
+    const password = askPassword?.(reason === pdfjs.PasswordResponses.INCORRECT_PASSWORD) ?? null
+    if (password == null) task.destroy()
+    else update(password)
+  }
+  const doc = await task.promise
   const lines: string[] = []
   for (let p = 1; p <= doc.numPages; p++) {
     const content = await (await doc.getPage(p)).getTextContent()
@@ -46,6 +53,20 @@ export function groupLines(items: { str?: string; transform: number[] }[]): stri
     else rows.push({ y: part.y, parts: [part] })
   }
   return rows.map(r => r.parts.sort((a, b) => a.x - b.x).map(x => x.s).join(' ').replace(/\s+/g, ' '))
+}
+
+// Vencimento escrito na fatura: "Vence em 13/11/2026", "Vencimento: 13/11/2026", "Data de vencimento: 09 NOV 2026".
+export function findDueDate(lines: string[]): string | null {
+  for (const line of lines) {
+    const a = line.match(/venc\w*[^0-9]{0,20}(\d{2})\/(\d{2})\/(\d{4})/i)
+    if (a) return `${a[3]}-${a[2]}-${a[1]}`
+    const b = line.match(/venc\w*[^0-9]{0,20}(\d{2})\s+(JAN|FEV|MAR|ABR|MAI|JUN|JUL|AGO|SET|OUT|NOV|DEZ)\w*\s+(\d{4})/i)
+    if (b) return `${b[3]}-${String(MONTHS[b[2].toUpperCase()]).padStart(2, '0')}-${b[1]}`
+  }
+  // às vezes o rótulo e a data ficam em linhas separadas: "Vence em" e, abaixo, "13/11/2026 ..."
+  const i = lines.findIndex(l => /^vence\s*em$|^vencimento$/i.test(l.trim()))
+  const next = i >= 0 ? lines[i + 1]?.match(/(\d{2})\/(\d{2})\/(\d{4})/) : null
+  return next ? `${next[3]}-${next[2]}-${next[1]}` : null
 }
 
 // dueDate (AAAA-MM-DD) define o ano das datas sem ano: mês depois do vencimento é do ano anterior.

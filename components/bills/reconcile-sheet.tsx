@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { DocumentAddLinearIcon } from '@solar-icons/react'
 import { Button } from '@/components/ui/button'
 import { ListGroup } from '@/components/ios/list-group'
@@ -31,7 +31,13 @@ export function ReconcileSheet({ open, onOpenChange, wallet, invoiceRef, dueDate
 const label = (i: StatementItem) =>
   `${formatDate(i.date).slice(0, 5)}${i.installmentN ? ` · parcela ${i.installmentN} de ${i.installmentsTotal}` : ''}`
 
-function Reconcile({ wallet, invoiceRef, dueDate }: { wallet: OwnWallet; invoiceRef: string; dueDate: string }) {
+// Pede a senha de PDF protegido (alguns bancos usam parte do CPF).
+export const askPdfPassword = (wrong: boolean) =>
+  window.prompt(wrong ? 'Senha errada. Digite a senha do PDF:' : 'Este PDF tem senha. Digite a senha:')
+
+export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
+  wallet: OwnWallet; invoiceRef: string; dueDate: string; initialFile?: File
+}) {
   const refresh = useRefresh()
   const input = useRef<HTMLInputElement>(null)
   const [status, setStatus] = useState<string | null>(null)
@@ -55,7 +61,7 @@ function Reconcile({ wallet, invoiceRef, dueDate }: { wallet: OwnWallet; invoice
     if (!file) return
     setStatus('Lendo o PDF…'); setResult(null)
     try {
-      const st = parseStatement(await pdfLines(await file.arrayBuffer()), dueDate)
+      const st = parseStatement(await pdfLines(await file.arrayBuffer(), askPdfPassword), dueDate)
       const list = st.carried
         ? [...st.items, { date: `${invoiceRef}-01`, description: 'Saldo da fatura anterior', amount: st.carried, installmentN: null, installmentsTotal: null }]
         : st.items
@@ -69,6 +75,12 @@ function Reconcile({ wallet, invoiceRef, dueDate }: { wallet: OwnWallet; invoice
       if (input.current) input.current.value = ''
     }
   }
+
+  // vindo da importação: o PDF já foi escolhido
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- lê o arquivo escolhido fora daqui (sistema externo)
+    if (initialFile) void onFile(initialFile)
+  }, [initialFile]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // data dentro desta fatura: a do banco, ou o dia do fechamento se ela cair em outra fatura
   function dateInInvoice(date: string) {
@@ -109,10 +121,10 @@ function Reconcile({ wallet, invoiceRef, dueDate }: { wallet: OwnWallet; invoice
 
   return (
     <div className="space-y-6">
-      <Button variant="secondary" size="lg" className="w-full gap-2" disabled={!!status && status.startsWith('Lendo')}
+      {!initialFile && <Button variant="secondary" size="lg" className="w-full gap-2" disabled={!!status && status.startsWith('Lendo')}
         onClick={() => input.current?.click()}>
         <DocumentAddLinearIcon className="size-5" />{result ? 'Escolher outro PDF' : 'Escolher PDF da fatura'}
-      </Button>
+      </Button>}
       <input ref={input} type="file" accept="application/pdf,.pdf" className="sr-only" onChange={e => onFile(e.target.files?.[0])} />
       {status && <p className="px-4 text-center text-footnote text-muted-foreground">{status}</p>}
 

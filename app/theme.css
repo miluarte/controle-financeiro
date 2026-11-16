@@ -1,0 +1,114 @@
+/* ======================================================================
+   Troco: variáveis de cor e material. Fonte única de cor do app.
+   Todas as cores vêm da paleta do Tailwind (var(--color-*)).
+   Os nomes são semânticos de USO (o que a cor faz na tela), não de componente:
+   superfícies, texto, linhas, ações, estados, dados e vidro.
+   Para mudar o visual do app, mude aqui. Componentes nunca usam cor direta.
+   ====================================================================== */
+
+:root {
+  /* Superfícies */
+  --surface-page: var(--color-gray-50);          /* fundo das telas */
+  --surface-raised: var(--color-white);          /* listas agrupadas, cards, folhas */
+  --surface-sunken: var(--color-gray-100);       /* chips, campos, trilhos de controle */
+  --surface-strong: var(--color-gray-200);       /* botões neutros, trilho de chave desligada */
+  --surface-selected: var(--color-white);        /* item escolhido no controle segmentado */
+
+  /* Texto */
+  --text-primary: var(--color-gray-950);
+  --text-secondary: var(--color-gray-500);
+  --text-on-action: var(--color-white);          /* texto sobre a ação principal */
+
+  /* Linhas */
+  --line-subtle: var(--color-gray-200);          /* divisores e bordas */
+  --focus-ring: color-mix(in oklab, var(--color-gray-950) 30%, transparent);
+
+  /* Ações */
+  --action-primary: var(--color-gray-950);       /* cor principal: botões, abas e seleção */
+
+  /* Estados */
+  --status-danger: var(--color-red-500);
+  --status-success: var(--color-green-500);
+  --status-warning: var(--color-amber-500);
+  --status-info: var(--color-blue-500);
+
+  /* Dados (gráficos) */
+  --data-1: var(--color-blue-500);
+  --data-2: var(--color-green-500);
+  --data-3: var(--color-amber-500);
+  --data-4: var(--color-purple-500);
+  --data-5: var(--color-pink-500);
+
+  /* Vidro (Liquid Glass): bem transparente e pouco desfocado, como no iOS */
+  --glass-surface: color-mix(in oklab, var(--color-white) 22%, transparent);
+  --glass-surface-strong: color-mix(in oklab, var(--color-white) 62%, transparent);
+  --glass-edge: color-mix(in oklab, var(--color-white) 70%, transparent);
+  --glass-highlight: color-mix(in oklab, var(--color-white) 95%, transparent);
+  --glass-shade: color-mix(in oklab, var(--color-black) 4%, transparent);
+  --glass-shadow: color-mix(in oklab, var(--color-black) 12%, transparent);
+  --glass-lens: color-mix(in oklab, var(--color-gray-950) 7%, transparent);
+  --glass-blur: 6px;
+  --glass-blur-strong: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --surface-page: var(--color-gray-950);
+    --surface-raised: var(--color-gray-900);
+    --surface-sunken: var(--color-gray-800);
+    --surface-strong: var(--color-gray-700);
+    --surface-selected: var(--color-gray-600);
+    --text-primary: var(--color-white);
+    --text-secondary: var(--color-gray-400);
+    --text-on-action: var(--color-gray-950);
+    --line-subtle: var(--color-gray-800);
+    --focus-ring: color-mix(in oklab, var(--color-white) 35%, transparent);
+    --action-primary: var(--color-white);
+    --status-danger: var(--color-red-400);
+    --status-success: var(--color-green-400);
+    --status-warning: var(--color-amber-400);
+    --status-info: var(--color-blue-400);
+    --data-1: var(--color-blue-400);
+    --data-2: var(--color-green-400);
+    --data-3: var(--color-amber-400);
+    --data-4: var(--color-purple-400);
+    --data-5: var(--color-pink-400);
+    --glass-surface: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
+    --glass-surface-strong: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
+    --glass-edge: color-mix(in oklab, var(--color-white) 14%, transparent);
+    --glass-highlight: color-mix(in oklab, var(--color-white) 22%, transparent);
+    --glass-shade: color-mix(in oklab, var(--color-black) 25%, transparent);
+    --glass-shadow: color-mix(in oklab, var(--color-black) 50%, transparent);
+    --glass-lens: color-mix(in oklab, var(--color-white) 14%, transparent);
+  }
+}
+
+:root[data-theme="dark"] {
+  --surface-page: var(--color-gray-950);
+  --surface-raised: var(--color-gray-900);
+  --surface-sunken: var(--color-gray-800);
+  --surface-strong: var(--color-gray-700);
+  --surface-selected: var(--color-gray-600);
+  --text-primary: var(--color-white);
+  --text-secondary: var(--color-gray-400);
+  --text-on-action: var(--color-gray-950);
+  --line-subtle: var(--color-gray-800);
+  --focus-ring: color-mix(in oklab, var(--color-white) 35%, transparent);
+  --action-primary: var(--color-white);
+  --status-danger: var(--color-red-400);
+  --status-success: var(--color-green-400);
+  --status-warning: var(--color-amber-400);
+  --status-info: var(--color-blue-400);
+  --data-1: var(--color-blue-400);
+  --data-2: var(--color-green-400);
+  --data-3: var(--color-amber-400);
+  --data-4: var(--color-purple-400);
+  --data-5: var(--color-pink-400);
+  --glass-surface: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
+  --glass-surface-strong: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
+  --glass-edge: color-mix(in oklab, var(--color-white) 14%, transparent);
+  --glass-highlight: color-mix(in oklab, var(--color-white) 22%, transparent);
+  --glass-shade: color-mix(in oklab, var(--color-black) 25%, transparent);
+  --glass-shadow: color-mix(in oklab, var(--color-black) 50%, transparent);
+  --glass-lens: color-mix(in oklab, var(--color-white) 14%, transparent);
+}

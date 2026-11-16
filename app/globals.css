@@ -1,4 +1,5 @@
-@import "tailwindcss";
+@import "tailwindcss" theme(static);
+@import "./theme.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -98,162 +99,58 @@
   /* altura útil da tela (AppShell, classe h-app); o script do app/layout.tsx troca pela medida real */
   --app-height: 100dvh;
 
-  /* Cores: escala gray do Tailwind (modo claro); vermelho, verde e gráficos do iOS */
-  --background: #f9fafb;          /* gray-50 */
-  --foreground: #000000;          /* label */
-  --card: #ffffff;
-  --card-foreground: #000000;
-  --popover: #f9fafb;             /* gray-50 */
-  --popover-foreground: #000000;
-  --primary: #000000;             /* cor principal: preto */
-  --primary-foreground: #ffffff;
-  --secondary: #e5e7eb;           /* gray-200 */
-  --secondary-foreground: #000000;
-  --muted: #f3f4f6;               /* gray-100 */
-  --muted-foreground: #6b7280;    /* gray-500 */
-  --accent: #f3f4f6;              /* gray-100 */
-  --accent-foreground: #000000;
-  --destructive: #ff3b30;         /* systemRed */
-  --success: #34c759;             /* systemGreen */
-  --tint: #000000;
-  --separator: #e5e7eb;           /* gray-200 */
-  --fill: #f3f4f6;                /* gray-100 */
-  --grouped: #ffffff;
-  --bar: rgb(249 250 251 / 0.94);  /* gray-50 */
-  --segment: #ffffff;                       /* segmento selecionado */
-  /* Liquid Glass (iOS 26) */
-  --glass: rgb(255 255 255 / 0.5);
-  --glass-strong: rgb(255 255 255 / 0.72);
-  --glass-border: rgb(255 255 255 / 0.65);
-  --glass-highlight: rgb(255 255 255 / 0.9);
-  --glass-shade: rgb(0 0 0 / 0.04);
-  --glass-shadow: rgb(0 0 0 / 0.12);
-  --glass-lens: rgb(0 0 0 / 0.07);
-  --border: #e5e7eb;              /* gray-200 */
-  --input: #f3f4f6;               /* gray-100 */
-  --ring: rgb(0 0 0 / 0.3);
-  --chart-1: #007aff;
-  --chart-2: #34c759;
-  --chart-3: #ff9500;
-  --chart-4: #af52de;
-  --chart-5: #ff2d55;
+  /* Nomes usados pelos componentes (shadcn/ui e os do app), apontando para as variáveis
+     semânticas de app/theme.css. Claro e escuro são resolvidos lá. Não colocar cor aqui. */
+  --background: var(--surface-page);
+  --foreground: var(--text-primary);
+  --card: var(--surface-raised);
+  --card-foreground: var(--text-primary);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--text-primary);
+  --primary: var(--action-primary);
+  --primary-foreground: var(--text-on-action);
+  --secondary: var(--surface-strong);
+  --secondary-foreground: var(--text-primary);
+  --muted: var(--surface-sunken);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--surface-sunken);
+  --accent-foreground: var(--text-primary);
+  --destructive: var(--status-danger);
+  --success: var(--status-success);
+  --tint: var(--action-primary);
+  --separator: var(--line-subtle);
+  --fill: var(--surface-sunken);
+  --grouped: var(--surface-raised);
+  --bar: var(--glass-surface-strong);
+  --segment: var(--surface-selected);
+  --glass: var(--glass-surface);
+  --glass-strong: var(--glass-surface-strong);
+  --glass-border: var(--glass-edge);
+  --border: var(--line-subtle);
+  --input: var(--surface-sunken);
+  --ring: var(--focus-ring);
+  --chart-1: var(--data-1);
+  --chart-2: var(--data-2);
+  --chart-3: var(--data-3);
+  --chart-4: var(--data-4);
+  --chart-5: var(--data-5);
   --radius: 0.625rem;
-  --sidebar: #f9fafb;
-  --sidebar-foreground: #000000;
-  --sidebar-primary: #000000;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f3f4f6;
-  --sidebar-accent-foreground: #000000;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: rgb(0 0 0 / 0.3);
+  --sidebar: var(--surface-page);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--action-primary);
+  --sidebar-primary-foreground: var(--text-on-action);
+  --sidebar-accent: var(--surface-sunken);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: var(--line-subtle);
+  --sidebar-ring: var(--focus-ring);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    /* Cores: escala gray do Tailwind (modo escuro) */
-    --background: #030712;          /* gray-950 */
-    --foreground: #ffffff;
-    --card: #111827;                /* gray-900 */
-    --card-foreground: #ffffff;
-    --popover: #111827;
-    --popover-foreground: #ffffff;
-    --primary: #ffffff;
-    --primary-foreground: #000000;
-    --secondary: #1f2937;           /* gray-800 */
-    --secondary-foreground: #ffffff;
-    --muted: #1f2937;
-    --muted-foreground: #9ca3af;    /* gray-400 */
-    --accent: #1f2937;
-    --accent-foreground: #ffffff;
-    --destructive: #ff453a;
-    --success: #30d158;
-    --tint: #ffffff;
-    --separator: #1f2937;           /* gray-800 */
-    --fill: #1f2937;                /* gray-800 */
-    --grouped: #111827;             /* gray-900 */
-    --bar: rgb(17 24 39 / 0.94);     /* gray-900 */
-    --segment: #4b5563;             /* gray-600 */
-    --glass: rgb(31 41 55 / 0.45);   /* gray-800 */
-    --glass-strong: rgb(31 41 55 / 0.7);
-    --glass-border: rgb(255 255 255 / 0.14);
-    --glass-highlight: rgb(255 255 255 / 0.22);
-    --glass-shade: rgb(0 0 0 / 0.25);
-    --glass-shadow: rgb(0 0 0 / 0.5);
-    --glass-lens: rgb(255 255 255 / 0.14);
-    --border: #1f2937;
-    --input: #1f2937;
-    --ring: rgb(255 255 255 / 0.35);
-    --chart-1: #0a84ff;
-    --chart-2: #30d158;
-    --chart-3: #ff9f0a;
-    --chart-4: #bf5af2;
-    --chart-5: #ff375f;
-    --sidebar: #111827;
-    --sidebar-foreground: #ffffff;
-    --sidebar-primary: #ffffff;
-    --sidebar-primary-foreground: #000000;
-    --sidebar-accent: #1f2937;
-    --sidebar-accent-foreground: #ffffff;
-    --sidebar-border: #1f2937;
-    --sidebar-ring: rgb(255 255 255 / 0.35);
-  }
-}
-
-:root[data-theme="dark"] {
-  /* Cores: escala gray do Tailwind (modo escuro) */
-  --background: #030712;          /* gray-950 */
-  --foreground: #ffffff;
-  --card: #111827;                /* gray-900 */
-  --card-foreground: #ffffff;
-  --popover: #111827;
-  --popover-foreground: #ffffff;
-  --primary: #ffffff;
-  --primary-foreground: #000000;
-  --secondary: #1f2937;           /* gray-800 */
-  --secondary-foreground: #ffffff;
-  --muted: #1f2937;
-  --muted-foreground: #9ca3af;    /* gray-400 */
-  --accent: #1f2937;
-  --accent-foreground: #ffffff;
-  --destructive: #ff453a;
-  --success: #30d158;
-  --tint: #ffffff;
-  --separator: #1f2937;           /* gray-800 */
-  --fill: #1f2937;                /* gray-800 */
-  --grouped: #111827;             /* gray-900 */
-  --bar: rgb(17 24 39 / 0.94);     /* gray-900 */
-  --segment: #4b5563;             /* gray-600 */
-  --glass: rgb(31 41 55 / 0.45);   /* gray-800 */
-  --glass-strong: rgb(31 41 55 / 0.7);
-  --glass-border: rgb(255 255 255 / 0.14);
-  --glass-highlight: rgb(255 255 255 / 0.22);
-  --glass-shade: rgb(0 0 0 / 0.25);
-  --glass-shadow: rgb(0 0 0 / 0.5);
-  --glass-lens: rgb(255 255 255 / 0.14);
-  --border: #1f2937;
-  --input: #1f2937;
-  --ring: rgb(255 255 255 / 0.35);
-  --chart-1: #0a84ff;
-  --chart-2: #30d158;
-  --chart-3: #ff9f0a;
-  --chart-4: #bf5af2;
-  --chart-5: #ff375f;
-  --sidebar: #111827;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #1f2937;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #1f2937;
-  --sidebar-ring: rgb(255 255 255 / 0.35);
-}
-
-/* Materiais Liquid Glass: vidro translúcido que desfoca e satura o que está atrás,
-   borda clara com brilho no topo e sombra suave. */
+/* Materiais Liquid Glass: vidro bem transparente, com pouco desfoque (--glass-blur),
+   borda clara com brilho no topo e sombra suave. Valores em app/theme.css. */
 @utility glass {
   background-color: var(--glass);
-  -webkit-backdrop-filter: blur(24px) saturate(190%);
-  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
   border: 0.5px solid var(--glass-border);
   box-shadow:
     inset 0 1px 0 0 var(--glass-highlight),
@@ -263,8 +160,8 @@
 
 @utility glass-strong {
   background-color: var(--glass-strong);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
-  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(180%);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(180%);
   border: 0.5px solid var(--glass-border);
   box-shadow:
     inset 0 1px 0 0 var(--glass-highlight),

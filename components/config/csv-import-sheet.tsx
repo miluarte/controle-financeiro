@@ -12,13 +12,15 @@ import { useWallets } from '@/hooks/use-wallets'
 import { transactionsApi } from '@/lib/api/transactions'
 import { FIELD_LABEL, guessField, parseCsv, parseDate, parseOfx, parseType, type ImportField } from '@/lib/csv'
 import { WalletPicker } from '@/components/shared/wallet-picker'
+import { StatementImport } from './statement-import'
 import type { NewTransaction } from '@/lib/types'
 import { formatCurrency, formatDate, parseCents } from '@/lib/utils'
 
-// DAD-2: importar CSV ou OFX (extrato do banco ou do cartão) com prévia, mapeamento de colunas e detecção de duplicadas.
+// DAD-2: importar CSV ou OFX (extrato) com prévia, mapeamento e duplicadas, ou a fatura do cartão em PDF
+// (StatementImport: compras que faltam, com parcela atual e quem fez a compra).
 export function CsvImportSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   return (
-    <ModalSheet open={open} onOpenChange={onOpenChange} title="Importar extrato">
+    <ModalSheet open={open} onOpenChange={onOpenChange} title="Importar">
       {open && <Importer onDone={() => onOpenChange(false)} />}
     </ModalSheet>
   )
@@ -39,9 +41,11 @@ function Importer({ onDone }: { onDone: () => void }) {
   const [message, setMessage] = useState<string | null>(null)
   // carteira para as linhas que não dizem qual é (num extrato OFX, todas)
   const [targetWalletId, setTargetWalletId] = useState<string | null>(null)
+  const [pdf, setPdf] = useState<File | null>(null)
   const targetWallet = targetWalletId ?? profile?.defaultWalletId ?? null
 
   async function onFile(file: File) {
+    if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') { setPdf(file); return }
     const text = await file.text()
     const parsed = /\.ofx$/i.test(file.name) || /<OFX>/i.test(text) ? parseOfx(text) : parseCsv(text)
     if (parsed.length < 2) { setMessage('O arquivo não tem linhas para importar.'); return }
@@ -92,15 +96,17 @@ function Importer({ onDone }: { onDone: () => void }) {
     finally { setBusy(false) }
   }
 
+  if (pdf) return <StatementImport file={pdf} />
+
   if (!rows) {
     return (
       <div className="space-y-4">
         <p className="px-4 text-center text-subheadline text-muted-foreground">
-          Arquivo .csv ou .ofx (extrato do banco ou do cartão).
+          PDF da fatura do cartão (do app ou do e-mail), ou extrato .csv ou .ofx.
         </p>
         <label className="flex h-12.5 cursor-pointer items-center justify-center rounded-full bg-tint text-headline font-semibold text-primary-foreground">
           Escolher arquivo
-          <input type="file" accept=".csv,.ofx,text/csv,application/x-ofx" className="sr-only" onChange={e => e.target.files?.[0] && onFile(e.target.files[0])} />
+          <input type="file" accept=".pdf,.csv,.ofx,application/pdf,text/csv,application/x-ofx" className="sr-only" onChange={e => e.target.files?.[0] && onFile(e.target.files[0])} />
         </label>
         {message && <p className="px-4 text-footnote text-destructive">{message}</p>}
       </div>
