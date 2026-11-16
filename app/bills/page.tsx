@@ -14,6 +14,7 @@ import { TokenIcon } from '@/components/shared/token-icon'
 import { useCategories } from '@/hooks/use-categories'
 import { useBills, useInvoices, useOwnWallets } from '@/hooks/use-data'
 import { useMonth } from '@/hooks/use-month'
+import { nextBusinessDay } from '@/lib/business-days'
 import { invoiceDueDate, invoiceRefDueIn } from '@/lib/invoice'
 import type { BillOccurrence } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -84,7 +85,7 @@ export default function BillsPage() {
                     onClick={() => setOpenInvoice(i.inv)}
                     leading={<TokenIcon icon="credit-card" color="gray" />}
                     title={`Fatura ${i.inv.wallet.name}`}
-                    subtitle={<span className="flex items-center gap-1.5">Vence {formatDate(i.due).slice(0, 5)} <DueBadge dueDate={i.due} paid={i.paid} /></span>}
+                    subtitle={<span className="flex items-center gap-1.5">Vence {formatDate(i.due).slice(0, 5)} <DueBadge dueDate={nextBusinessDay(i.due)} paid={i.paid} /></span>}
                     trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(i.amount)}</span>}
                     chevron
                   />

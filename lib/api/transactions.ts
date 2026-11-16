@@ -94,8 +94,8 @@ export const transactionsApi = {
   createInstallments: async (args: {
     walletId: string; categoryId: string | null; total: number; installments: number
     firstDate: string; place: string | null; start?: number
-  }) => {
-    unwrap(await supabase.rpc('create_installment_purchase', {
+  }): Promise<string> => {
+    return unwrap(await supabase.rpc('create_installment_purchase', {
       p_wallet: args.walletId,
       p_category: args.categoryId,
       p_total: args.total,
@@ -103,8 +103,11 @@ export const transactionsApi = {
       p_first_date: args.firstDate,
       p_place: args.place,
       p_start: args.start ?? 1,
-    }))
+    })) as string
   },
+
+  idsOfGroup: async (groupId: string) =>
+    unwrap(await supabase.from('transactions').select('id').eq('installment_group_id', groupId)).map(r => r.id as string),
 
   remove: async (id: string) => {
     unwrap(await supabase.from('transactions').delete().eq('id', id))

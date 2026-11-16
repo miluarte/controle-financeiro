@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { ModalSheet } from '@/components/ios/modal-sheet'
+import { SelectField } from '@/components/shared/select-field'
+import { useCardPeople } from '@/hooks/use-card-people'
 import { useRefresh } from '@/hooks/use-refresh'
+import { familyApi } from '@/lib/api/family'
 import { transactionsApi } from '@/lib/api/transactions'
 import { openInvoiceRef } from '@/lib/invoice'
 import { reconcile, type Reconciliation } from '@/lib/reconcile'
@@ -36,6 +39,12 @@ function Reconcile({ wallet, invoiceRef, dueDate }: { wallet: OwnWallet; invoice
   const [result, setResult] = useState<Reconciliation | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [items, setItems] = useState<StatementItem[]>([])
+  // cartão compartilhado: de quem é cada compra que falta (padrão: você)
+  const shared = wallet.shareScope !== 'none'
+  const { me, people, nameOf } = useCardPeople()
+  const [owners, setOwners] = useState<Record<string, string>>({})
+  const keyOf = (i: StatementItem) => `${i.date}|${i.amount}|${i.description}|${i.installmentN ?? ''}`
+  const peopleOptions = people.map(p => ({ value: p.userId, label: p.userId === me ? 'Você' : p.name }))
 
   async function compare(list: StatementItem[]) {
     const txs = await transactionsApi.getByInvoice(wallet.id, `${invoiceRef}-01`)
@@ -69,18 +78,25 @@ function Reconcile({ wallet, invoiceRef, dueDate }: { wallet: OwnWallet; invoice
   }
 
   async function add(item: StatementItem) {
+    const who = owners[keyOf(item)]
     if (item.installmentN && item.installmentsTotal) {
-      await transactionsApi.createInstallments({
+      const group = await transactionsApi.createInstallments({
         walletId: wallet.id, categoryId: null, place: item.description, installments: item.installmentsTotal,
         total: item.amount * item.installmentsTotal, firstDate: installmentFirstDate(item, invoiceRef), start: item.installmentN,
       })
+      // assign_purchase já vale para todas as parcelas em aberto da compra
+      if (who && who !== me) { const [first] = await transactionsApi.idsOfGroup(group); if (first) await familyApi.assignPurchase(first, who) }
     } else {
-      await transactionsApi.create({
+      const tx = await transactionsApi.create({
         type: 'expense', amount: item.amount, date: dateInInvoice(item.date), categoryId: null,
         walletId: wallet.id, place: item.description, description: null, source: 'import',
       })
+      if (who && who !== me) await familyApi.assignPurchase(tx.id, who)
     }
   }
+
+  // muda o dono de uma compra que já está no app (parcelada: vale para as parcelas em aberto)
+  const reassign = (txId: string, who: string) => familyApi.assignPurchase(txId, who)
 
   async function run(key: string, fn: () => Promise<unknown>) {
     setBusy(key)
@@ -116,7 +132,13 @@ function Reconcile({ wallet, invoiceRef, dueDate }: { wallet: OwnWallet; invoice
           {result.missing.length > 0 && (
             <ListGroup header={`Faltam no app · ${result.missing.length}`}>
               {result.missing.map((i, k) => (
-                <ListRow key={`m${k}`} title={i.description} subtitle={label(i)}
+                <ListRow key={`m${k}`} title={i.description}
+                  subtitle={shared ? (
+                    <span className="flex items-center gap-1">{label(i)} · De
+                      <SelectField value={owners[keyOf(i)] ?? me} options={peopleOptions}
+                        onChange={v => setOwners(o => ({ ...o, [keyOf(i)]: v }))} className="h-auto text-subheadline" />
+                    </span>
+                  ) : label(i)}
                   trailing={
                     <span className="flex items-center gap-2">
                       <span className="tabular-nums">{formatCurrency(i.amount)}</span>
@@ -138,7 +160,7 @@ function Reconcile({ wallet, invoiceRef, dueDate }: { wallet: OwnWallet; invoice
             <ListGroup header={`No app, mas não na fatura · ${result.extra.length}`} footer="Pode ser compra lançada no cartão errado ou em outra fatura.">
               {result.extra.map(t => (
                 <ListRow key={t.id} title={t.place ?? t.description ?? 'Gasto'}
-                  subtitle={`${formatDate(t.date).slice(0, 5)}${t.installmentN ? ` · parcela ${t.installmentN} de ${t.installmentsTotal}` : ''}`}
+                  subtitle={`${formatDate(t.date).slice(0, 5)}${t.installmentN ? ` · parcela ${t.installmentN} de ${t.installmentsTotal}` : ''}${shared ? ` · ${nameOf(t.owner)}` : ''}`}
                   trailing={
                     <span className="flex items-center gap-2">
                       <span className="tabular-nums">{formatCurrency(t.amount)}</span>
@@ -151,8 +173,19 @@ function Reconcile({ wallet, invoiceRef, dueDate }: { wallet: OwnWallet; invoice
             </ListGroup>
           )}
 
-          <ListGroup footer={result.missing.length === 0 && result.extra.length === 0 ? 'Tudo certo com esta fatura.' : undefined}>
-            <ListRow title="Conferidas" trailing={<span className="tabular-nums text-success">{result.matched.length}</span>} />
+          <ListGroup header={shared ? `Conferidas · ${result.matched.length}` : undefined}
+            footer={result.missing.length === 0 && result.extra.length === 0 ? 'Tudo certo com esta fatura.' : undefined}>
+            {shared ? result.matched.map(({ tx }) => (
+              <ListRow key={tx.id} title={tx.place ?? tx.description ?? 'Gasto'}
+                subtitle={
+                  <span className="flex items-center gap-1">{formatDate(tx.date).slice(0, 5)} · De
+                    <SelectField value={tx.owner} options={peopleOptions} className="h-auto text-subheadline"
+                      onChange={v => { if (v && v !== tx.owner) run(tx.id, () => reassign(tx.id, v)) }} />
+                  </span>}
+                trailing={<span className="tabular-nums">{formatCurrency(tx.amount)}</span>} />
+            )) : (
+              <ListRow title="Conferidas" trailing={<span className="tabular-nums text-success">{result.matched.length}</span>} />
+            )}
           </ListGroup>
         </>
       )}

@@ -8,6 +8,7 @@ import { invoicesApi } from '@/lib/api/invoices'
 import { transactionsApi } from '@/lib/api/transactions'
 import { institutionsApi, walletsApi } from '@/lib/api/wallets'
 import { goalsApi, subscriptionsApi, vehiclesApi } from '@/lib/api/advanced'
+import { notificationsApi } from '@/lib/api/notifications'
 import { addMonths, daysInMonth, monthRange } from '@/lib/utils'
 
 // Hooks de leitura das telas da v1. Escrita: lib/api + useRefresh.
@@ -102,4 +103,10 @@ export function useInstitutions() {
 export function useInstitutionRates() {
   const { data } = useSWR(['institution-rates'], () => institutionsApi.rates())
   return data ?? []
+}
+
+export function useNotifications() {
+  const { data, mutate } = useSWR(['notifications'], () => notificationsApi.list(), { refreshInterval: 60_000 })
+  const list = data ?? []
+  return { notifications: list, unread: list.filter(n => !n.readAt).length, mutate }
 }

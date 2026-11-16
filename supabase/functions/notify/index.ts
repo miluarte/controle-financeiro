@@ -88,6 +88,12 @@ Deno.serve(async req => {
     }
   }
 
+  // avisos agendados: guarda na central de notificações e envia o push
+  async function alert(userId: string, kind: string, title: string, body: string, url: string) {
+    await supabase.from('notifications').insert({ user_id: userId, kind, title, body, url })
+    await push(userId, title, body, url)
+  }
+
   // 1. fila de eventos. Cada aviso é "reservado" (sent_at) antes de enviar, para que dois
   //    disparos simultâneos (trigger imediato e agendamento) não mandem o mesmo aviso duas vezes.
   const { data: queue } = await supabase.from('notification_queue').select('id').is('sent_at', null).order('created_at').limit(200)
@@ -127,7 +133,7 @@ Deno.serve(async req => {
         if (await once(userId, 'bill_due', `${o.id}:${o.due_date === now.date ? 0 : before}`)) {
           // deno-lint-ignore no-explicit-any
           const name = (o as any).bills?.name ?? 'Conta'
-          await push(userId, today ? 'Conta vence hoje' : `Conta vence em ${before} dias`, `${name}: ${brl(o.amount)}`, '/bills')
+          await alert(userId, 'bill_due', today ? 'Conta vence hoje' : `Conta vence em ${before} dias`, `${name}: ${brl(o.amount)}`, '/bills')
         }
       }
     }
@@ -138,7 +144,7 @@ Deno.serve(async req => {
       const { count } = await supabase.from('transactions').select('id', { count: 'exact', head: true })
         .eq('created_by', userId).gte('created_at', start)
       if (!count && await once(userId, 'log_reminder', now.date)) {
-        await push(userId, 'Registrou seus gastos hoje?', 'Leva poucos segundos: toque no + e anote.', '/home')
+        await alert(userId, 'log_reminder', 'Registrou seus gastos hoje?', 'Leva poucos segundos: toque no + e anote.', '/home')
       }
     }
 
@@ -161,7 +167,7 @@ Deno.serve(async req => {
         topName = c?.name ? ` Maior categoria: ${c.name}.` : ''
       }
       const diff = prevTotal ? ` (${total >= prevTotal ? '+' : '-'}${Math.round(Math.abs(total - prevTotal) / prevTotal * 100)}% vs. semana anterior)` : ''
-      await push(userId, 'Resumo da semana', `Você gastou ${brl(total)}${diff}.${topName}`, '/analysis')
+      await alert(userId, 'weekly_summary', 'Resumo da semana', `Você gastou ${brl(total)}${diff}.${topName}`, '/analysis')
     }
 
     // NOT-4: orçamento em 80% e 100%
@@ -176,9 +182,9 @@ Deno.serve(async req => {
         const spent = (tx ?? []).reduce((s, t) => s + t.amount, 0)
         const ratio = spent / budget.total_amount
         if (ratio >= 1 && await once(userId, 'smart_alerts', `${month}:100`)) {
-          await push(userId, 'Orçamento do mês estourado', `Você já gastou ${brl(spent)} de ${brl(budget.total_amount)}.`, '/analysis')
+          await alert(userId, 'smart_alerts', 'Orçamento do mês estourado', `Você já gastou ${brl(spent)} de ${brl(budget.total_amount)}.`, '/analysis')
         } else if (ratio >= 0.8 && ratio < 1 && await once(userId, 'smart_alerts', `${month}:80`)) {
-          await push(userId, '80% do orçamento usado', `Restam ${brl(budget.total_amount - spent)} para o mês.`, '/analysis')
+          await alert(userId, 'smart_alerts', '80% do orçamento usado', `Restam ${brl(budget.total_amount - spent)} para o mês.`, '/analysis')
         }
       }
     }
@@ -200,7 +206,7 @@ Deno.serve(async req => {
     const { data: owner } = await supabase.from('profiles').select('name').eq('id', w.owner_id).maybeSingle()
     for (const [memberId, total] of byMember) {
       if (enabled(memberId, 'family_events') && await once(memberId, 'family_events', `close:${w.id}:${ref}`)) {
-        await push(memberId, `Fatura do ${w.name} fechou`, `Você deve ${brl(total)} a ${owner?.name ?? 'titular'}.`, `/cards/${w.id}`)
+        await alert(memberId, 'family_events', `Fatura do ${w.name} fechou`, `Você deve ${brl(total)} a ${owner?.name ?? 'titular'}.`, `/cards/${w.id}`)
       }
     }
   }
