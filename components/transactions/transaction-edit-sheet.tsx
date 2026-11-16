@@ -88,9 +88,10 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
     try {
       await transactionsApi.update(t.id, {
         amount, date, categoryId, walletId,
-        ...(t.type === 'expense' && { sourceData: { ...(t.sourceData ?? {}), items } }),
+        ...(t.type === 'expense' && !t.installmentGroupId && { sourceData: { ...(t.sourceData ?? {}), items } }),
         ...(t.type === 'income' ? { description: text.trim() || null } : { place: text.trim() || null }),
       })
+      if (t.type === 'expense' && t.installmentGroupId) await transactionsApi.setGroupItems(t.installmentGroupId, items)
       await refresh(); onDone()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível salvar.')

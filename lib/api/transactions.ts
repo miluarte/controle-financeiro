@@ -81,6 +81,13 @@ export const transactionsApi = {
     unwrap(await supabase.rpc('undo_prepay_purchase', { p_transaction: id }))
   },
 
+  // Itens de uma compra parcelada valem para todas as parcelas.
+  setGroupItems: async (groupId: string, items: { name: string; amount: number }[]) => {
+    const rows = unwrap(await supabase.from('transactions').select('id, source_data').eq('installment_group_id', groupId))
+    await Promise.all(rows.map(r =>
+      supabase.from('transactions').update({ source_data: { ...(r.source_data ?? {}), items } }).eq('id', r.id)))
+  },
+
   update: async (id: string, t: Partial<NewTransaction>) =>
     toTransaction(unwrap(await supabase.from('transactions').update(toRow(t)).eq('id', id).select('*').single())),
 

@@ -18,6 +18,7 @@ import type { OwnWallet } from '@/lib/types'
 import { formatCurrency, formatDate, monthLabel, todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { LateCostGroup } from './late-cost-group'
+import { ReconcileSheet } from './reconcile-sheet'
 
 export interface InvoiceRef {
   wallet: OwnWallet
@@ -48,6 +49,7 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
   )
   const [payDate, setPayDate] = useState(todayIso())
   const [busy, setBusy] = useState(false)
+  const [checking, setChecking] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { data: purchases } = useSWR(['invoice-tx', inv.wallet.id, inv.ref], () =>
     transactionsApi.getByInvoice(inv.wallet.id, `${inv.ref}-01`))
@@ -103,6 +105,11 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
       )}
 
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+
+      <Button variant="secondary" size="lg" className="w-full" onClick={() => setChecking(true)}>
+        Conferir com o PDF da fatura
+      </Button>
+      <ReconcileSheet open={checking} onOpenChange={setChecking} wallet={inv.wallet} invoiceRef={inv.ref} dueDate={inv.dueDate} />
 
       <ListGroup header={`Compras · ${count}`}>
         {(purchases ?? []).length === 0 && (

@@ -122,6 +122,10 @@ Taxas por banco (2026-11-16): `institutions.bcb_names` (nomes no Banco Central) 
 
 Importar extrato: Config > Dados aceita CSV ou OFX (`parseOfx` em `lib/csv.ts`; no OFX de cartão, créditos/pagamentos ficam de fora) e pergunta em qual carteira lançar.
 
+Conferir fatura pelo PDF (2026-11-16): na fatura, "Conferir com o PDF da fatura" (`ReconcileSheet`). `lib/statement.ts` lê o PDF no celular com pdf.js (worker em `public/pdf.worker.min.mjs`, pdfjs-dist 6.5.438), junta o texto por linha e acha lançamentos "dd/mm" ou "dd MÊS" com "R$" no fim, parcela "Parcela x de y" ou "x/y", total a pagar e saldo anterior não pago; pagamentos e créditos ficam de fora (crédito com mesmo valor e data anula o débito). `lib/reconcile.ts` casa com as compras da fatura no app (parcela, valor até 3 dias, valor). Mostra: faltam no app (adicionar uma ou todas; parcelada entra da parcela atual em diante, `installmentFirstDate` descobre a data original, inclusive de anos anteriores), no app mas não na fatura (excluir) e conferidas. Testado com faturas reais do Mercado Pago e do Nubank.
+
+Itens da compra parcelada valem para todas as parcelas (`setGroupItems`).
+
 Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`; contas de teste (`@example.com`) e os dados delas.
 
 Pendente (spec, seção 8):
