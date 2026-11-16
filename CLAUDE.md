@@ -58,7 +58,7 @@ Modelo de dados: o da especificação funcional v1.0 (seção 6), documentado em
 Backend: Supabase no modelo da spec (2026-11-15). Dados da planilha Troco-Controle-Financeiro estão no schema privado `import` (`import.raw`); `import.load_for(email, card_days)` copia para a conta indicada (contas viram carteiras, saldo inicial vira receita). Pendente: rodar depois que a dona do projeto criar a conta e informar fechamento/vencimento dos cartões Madrinha e Mãe.
 
 Front v1 completo (2026-11-15), publicado na main (Vercel):
-- Abas (NAV-1): Contas (`/bills`), Home (`/home`), Análise (`/analysis`), Config (`/config`). Seletor de mês compartilhado (`MonthProvider`, `MonthSelector`).
+- Abas (NAV-1): Contas (`/bills`), Home (`/home`), Análise (`/analysis`), Config (`/config`). Seletor de mês compartilhado (`MonthProvider`, `MonthSelector`: cápsula "Novembro ⌄" que abre a roda de mês do iPhone; ano só se não for o atual). Nas telas com o seletor, textos não repetem o mês ("Gasto no mês", "Saldo do mês").
 - Home: saudação, saldo do mês (caixa), ocultar valores, primeiros passos (o passo do toque duplo foi trocado por "cadastrar um cartão" até as automações existirem), últimas transações, botão + (registro rápido de Gasto/Receita/Guardar, parcelas no crédito).
 - Transações (`/transactions`, via "Ver todas"): busca, filtro, resumo, edição e exclusão (parcela ou compra inteira).
 - Fim da recorrência (2026-11-16): `bills.end_month` (último mês, null = sem fim); no formulário "Sem fim / Até o mês / Nº de vezes" (`RecurrenceEnd`), com prévia "Último recebimento/pagamento em …". `ensure_bill_occurrences` não gera ocorrência depois de `end_month`.

@@ -16,7 +16,7 @@ import { useBills, useInvoices, useOwnWallets } from '@/hooks/use-data'
 import { useMonth } from '@/hooks/use-month'
 import { invoiceDueDate, invoiceRefDueIn } from '@/lib/invoice'
 import type { BillOccurrence } from '@/lib/types'
-import { formatCurrency, formatDate, monthName } from '@/lib/utils'
+import { formatCurrency, formatDate } from '@/lib/utils'
 
 type Item =
   | { kind: 'bill'; due: string; amount: number; paid: boolean; o: BillOccurrence }
@@ -69,7 +69,7 @@ export default function BillsPage() {
           <p className="text-subheadline text-muted-foreground">Carregando…</p>
         ) : items.length === 0 && incomes.length === 0 ? (
           <div className="py-10 text-center">
-            <p className="text-headline">Nenhuma conta em {monthName(month)}</p>
+            <p className="text-headline">Nenhuma conta neste mês</p>
             <p className="text-subheadline text-muted-foreground">Toque no + na barra de baixo para adicionar</p>
           </div>
         ) : (

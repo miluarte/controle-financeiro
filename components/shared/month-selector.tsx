@@ -1,29 +1,23 @@
 'use client'
 
-import { AltArrowLeftLinearIcon, AltArrowRightLinearIcon } from '@solar-icons/react'
+import { AltArrowDownLinearIcon } from '@solar-icons/react'
 import { useMonth } from '@/hooks/use-month'
-import { addMonths, currentMonth, monthName } from '@/lib/utils'
+import { capitalize, currentMonth, monthName } from '@/lib/utils'
 
-// NAV-2: seletor de mês em cápsula de vidro. Mostra o ano quando não é o ano atual.
+// NAV-2: mês em cápsula de vidro ("Novembro ⌄"). Tocar abre a roda de mês e ano do iPhone.
+// Mostra o ano só quando não é o ano atual.
 export function MonthSelector() {
   const { month, setMonth } = useMonth()
   const sameYear = month.slice(0, 4) === currentMonth().slice(0, 4)
-  const label = monthName(month, 'short').toUpperCase() + (sameYear ? '' : ` ${month.slice(2, 4)}`)
+  const label = capitalize(monthName(month)) + (sameYear ? '' : ` ${month.slice(0, 4)}`)
 
   return (
-    <div className="glass flex h-11 items-center rounded-full px-1">
-      <button type="button" aria-label="Mês anterior" onClick={() => setMonth(addMonths(month, -1))}
-        className="flex size-9 items-center justify-center rounded-full active:bg-fill">
-        <AltArrowLeftLinearIcon className="size-5" />
-      </button>
-      <button type="button" onClick={() => setMonth(currentMonth())} aria-label="Voltar para o mês atual"
-        className="min-w-12 text-center text-subheadline font-semibold tabular-nums">
-        {label}
-      </button>
-      <button type="button" aria-label="Próximo mês" onClick={() => setMonth(addMonths(month, 1))}
-        className="flex size-9 items-center justify-center rounded-full active:bg-fill">
-        <AltArrowRightLinearIcon className="size-5" />
-      </button>
-    </div>
+    <label className="glass relative flex h-11 cursor-pointer items-center gap-1 rounded-full pr-3 pl-4 text-subheadline font-semibold active:scale-95">
+      {label}
+      <AltArrowDownLinearIcon className="size-4" />
+      <input type="month" aria-label="Escolher mês" value={month}
+        onChange={e => setMonth(e.target.value || currentMonth())}
+        className="absolute inset-0 size-full cursor-pointer opacity-0" />
+    </label>
   )
 }

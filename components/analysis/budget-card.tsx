@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ProgressBar, toneFor } from '@/components/shared/progress-bar'
 import { averagePerDay, freePerDay, paceStatus, type Pace } from '@/lib/analysis'
-import { formatCurrency, monthName } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import { BudgetSheet } from './budget-sheet'
 import { PaceSparkline } from './pace-sparkline'
 
@@ -39,7 +39,7 @@ export function BudgetCard({ month, spent, budget, cumulative, day }: {
     <section className="space-y-3 rounded-3xl bg-grouped p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-subheadline text-muted-foreground">Gasto em {monthName(month)}</p>
+          <p className="text-subheadline text-muted-foreground">Gasto no mês</p>
           <p className="text-title1 font-bold tabular-nums">{formatCurrency(spent)}</p>
         </div>
         {budget ? <Button variant="plain" size="nav" className="-mr-2" onClick={() => setEditing(true)}>Editar</Button> : null}

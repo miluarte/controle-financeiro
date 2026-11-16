@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { EyeLinearIcon, EyeClosedLinearIcon } from '@solar-icons/react'
 import { useMonthSummary } from '@/hooks/use-month-summary'
-import { addMonths, cn, formatCurrency, monthLabel, monthName } from '@/lib/utils'
+import { addMonths, cn, formatCurrency, monthName } from '@/lib/utils'
 
 const HIDDEN = 'R$ ••••'
 
@@ -28,7 +28,7 @@ export function BalanceCard({ month }: { month: string }) {
     <section className="rounded-3xl bg-grouped p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-subheadline text-muted-foreground">Saldo de {monthLabel(month)}</p>
+          <p className="text-subheadline text-muted-foreground">Saldo do mês</p>
           <p className={cn('truncate text-title1 font-bold tabular-nums', summary && summary.balance < 0 && 'text-destructive')}>
             {loading || !summary ? '…' : show(summary.balance)}
           </p>
