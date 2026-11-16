@@ -1,6 +1,6 @@
 // Troco: leitura de nota fiscal por foto (spec 5.4), com o Gemini no plano gratuito.
 // Entrada: { image: base64 (JPEG), mimeType }. A imagem não é guardada aqui.
-// Saída: { ok: true, amount (centavos), place, date (AAAA-MM-DD), items, categoryId, payment, cardLast4 }
+// Saída: { ok: true, amount (centavos), place, date (AAAA-MM-DD), items, categoryId, payment, cardLast4, installments }
 //    ou { ok: false, reason } para o app cair na leitura local (Tesseract.js).
 import { createClient } from 'npm:@supabase/supabase-js@2.49.4'
 
@@ -45,6 +45,7 @@ Extraia:
 - category: a categoria mais provável entre estas, exatamente como escrita: ${names.join(', ')}.
 - payment: forma de pagamento: "credito", "debito", "pix", "dinheiro" ou vazio se não aparecer.
 - card_last4: os 4 últimos números do cartão, se a nota mostrar (ex.: "****1234", "final 1234"), ou vazio.
+- installments: número de parcelas se a compra foi parcelada (ex.: "3x", "parcelado em 3 vezes"), ou 1.
 Nunca inclua CPF, CNPJ ou dados pessoais. Se não conseguir ler o total, use 0.`
 
   const body = {
@@ -61,6 +62,7 @@ Nunca inclua CPF, CNPJ ou dados pessoais. Se não conseguir ler o total, use 0.`
           category: { type: 'STRING' },
           payment: { type: 'STRING' },
           card_last4: { type: 'STRING' },
+          installments: { type: 'NUMBER' },
           items: { type: 'ARRAY', items: { type: 'OBJECT', properties: { name: { type: 'STRING' }, amount: { type: 'NUMBER' } } } },
         },
         required: ['total', 'place', 'date', 'category', 'items'],
@@ -78,7 +80,7 @@ Nunca inclua CPF, CNPJ ou dados pessoais. Se não conseguir ler o total, use 0.`
 
   const out = await res.json()
   const text = out?.candidates?.[0]?.content?.parts?.[0]?.text
-  let parsed: { total?: number; place?: string; date?: string; category?: string; payment?: string; card_last4?: string; items?: { name: string; amount: number }[] }
+  let parsed: { total?: number; place?: string; date?: string; category?: string; payment?: string; card_last4?: string; installments?: number; items?: { name: string; amount: number }[] }
   try { parsed = JSON.parse(text) } catch { return json({ ok: false, reason: 'unreadable' }) }
 
   const cents = (v: unknown) => Math.round(Number(v || 0) * 100)
@@ -94,5 +96,6 @@ Nunca inclua CPF, CNPJ ou dados pessoais. Se não conseguir ler o total, use 0.`
     categoryId: category?.id ?? null,
     payment: ['credito', 'debito', 'pix', 'dinheiro'].includes(parsed.payment ?? '') ? parsed.payment : null,
     cardLast4: /^\d{4}$/.test(parsed.card_last4 ?? '') ? parsed.card_last4 : null,
+    installments: Math.min(48, Math.max(1, Math.round(Number(parsed.installments) || 1))),
   })
 })

@@ -18,14 +18,17 @@ export interface ReceiptResult {
   // forma de pagamento impressa na nota, quando aparece
   payment: 'credito' | 'debito' | 'pix' | 'dinheiro' | null
   cardLast4: string | null
+  installments: number   // 1 = à vista
 }
 
 // Na leitura local: "CRÉDITO", "DÉBITO", "PIX", "DINHEIRO" e o final do cartão ("****1234", "final 1234").
-function paymentFromText(text: string): Pick<ReceiptResult, 'payment' | 'cardLast4'> {
+function paymentFromText(text: string): Pick<ReceiptResult, 'payment' | 'cardLast4' | 'installments'> {
   const t = text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toUpperCase()
   const payment = /CREDITO/.test(t) ? 'credito' : /DEBITO/.test(t) ? 'debito' : /\bPIX\b/.test(t) ? 'pix' : /DINHEIRO/.test(t) ? 'dinheiro' : null
   const last4 = t.match(/(?:\*{2,}|X{2,}|FINAL\s*)\s*(\d{4})\b/)?.[1] ?? null
-  return { payment, cardLast4: last4 }
+  // "3X", "PARCELADO EM 3", "3 PARCELAS"
+  const inst = Number(t.match(/\b(\d{1,2})\s*X\b|PARCELADO EM\s*(\d{1,2})|(\d{1,2})\s*PARCELAS/)?.slice(1).find(Boolean) ?? 1)
+  return { payment, cardLast4: last4, installments: inst > 1 && inst <= 48 ? inst : 1 }
 }
 
 // Reduz a foto para no máximo 1600 px e JPEG, para caber no envio e ler mais rápido.
@@ -80,7 +83,7 @@ async function readWithGemini(image: Blob): Promise<ReceiptResult | null> {
       body: { image: await toBase64(image), mimeType: 'image/jpeg' },
     }), 25_000, 'gemini-timeout')
     if (error || !data?.ok || !data.amount) return null
-    return { payment: null, cardLast4: null, ...data, source: 'gemini' }
+    return { payment: null, cardLast4: null, installments: 1, ...data, source: 'gemini' }
   } catch {
     return null
   }

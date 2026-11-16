@@ -16,10 +16,8 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { walletsApi } from '@/lib/api/wallets'
 import { OnboardingStep, StepIcon } from './onboarding-step'
 
-type Kind = 'credit' | 'debit' | 'both'
-const KINDS: { value: Kind; label: string }[] = [
-  { value: 'credit', label: 'Crédito' }, { value: 'debit', label: 'Débito' }, { value: 'both', label: 'Crédito e débito' },
-]
+// Crédito e Débito são chips que podem ser marcados juntos (os dois cria as duas carteiras).
+const KINDS = [{ value: 'credit', label: 'Crédito' }, { value: 'debit', label: 'Débito' }] as const
 
 // Cartões: banco, final e função. O fechamento define em qual fatura cada compra entra.
 export function CardsStep() {
@@ -28,13 +26,18 @@ export function CardsStep() {
   const refresh = useRefresh()
   const [institutionId, setInstitutionId] = useState('')
   const [last4, setLast4] = useState('')
-  const [kind, setKind] = useState<Kind>('credit')
+  const [kinds, setKinds] = useState<Set<'credit' | 'debit'>>(new Set(['credit']))
   const [closing, setClosing] = useState(5)
   const [due, setDue] = useState(12)
   const [error, setError] = useState<string | null>(null)
   const cards = wallets.filter(w => w.type === 'credit' || w.type === 'debit')
   const bank = institutions.find(i => i.id === institutionId)
-  const hasCredit = kind !== 'debit'
+  const hasCredit = kinds.has('credit')
+  const toggle = (k: 'credit' | 'debit') => setKinds(prev => {
+    const next = new Set(prev)
+    if (next.has(k)) { if (next.size > 1) next.delete(k) } else next.add(k)
+    return next
+  })
 
   async function add() {
     if (!bank) { setError('Escolha o banco.'); return }
@@ -42,7 +45,7 @@ export function CardsStep() {
     const base = { name: bank.name, finish: 'black', institutionId: bank.id, last4: last4 || null, spendingLimit: null, revolvingRate: null }
     try {
       if (hasCredit) await walletsApi.create({ ...base, type: 'credit', closingDay: closing, dueDay: due })
-      if (kind !== 'credit') await walletsApi.create({ ...base, type: 'debit', closingDay: null, dueDay: null })
+      if (kinds.has('debit')) await walletsApi.create({ ...base, type: 'debit', closingDay: null, dueDay: null })
       setInstitutionId(''); setLast4('')
       await refresh()
     } catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível adicionar.') }
@@ -71,7 +74,7 @@ export function CardsStep() {
         </FormRow>
         <li className="flex flex-wrap gap-2 p-3">
           {KINDS.map(k => (
-            <ChoiceChip key={k.value} size="sm" selected={kind === k.value} onClick={() => setKind(k.value)}>{k.label}</ChoiceChip>
+            <ChoiceChip key={k.value} size="sm" selected={kinds.has(k.value)} onClick={() => toggle(k.value)}>{k.label}</ChoiceChip>
           ))}
         </li>
         {hasCredit && (

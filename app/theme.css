@@ -41,7 +41,8 @@
 
   /* Vidro (Liquid Glass): bem transparente e pouco desfocado, como no iOS */
   --glass-surface: color-mix(in oklab, var(--color-white) 22%, transparent);
-  --glass-surface-strong: color-mix(in oklab, var(--color-white) 62%, transparent);
+  --glass-surface-strong: color-mix(in oklab, var(--color-gray-50) 94%, transparent); /* folhas e menus: fundo da tela */
+  --scrim: color-mix(in oklab, var(--color-black) 12%, transparent);                  /* escurece o fundo atrás das folhas */
   --glass-edge: color-mix(in oklab, var(--color-white) 70%, transparent);
   --glass-highlight: color-mix(in oklab, var(--color-white) 95%, transparent);
   --glass-shade: color-mix(in oklab, var(--color-black) 4%, transparent);
@@ -74,7 +75,8 @@
     --data-4: var(--color-purple-400);
     --data-5: var(--color-pink-400);
     --glass-surface: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
-    --glass-surface-strong: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
+    --glass-surface-strong: color-mix(in oklab, var(--color-gray-900) 94%, transparent);
+    --scrim: color-mix(in oklab, var(--color-black) 45%, transparent);
     --glass-edge: color-mix(in oklab, var(--color-white) 14%, transparent);
     --glass-highlight: color-mix(in oklab, var(--color-white) 22%, transparent);
     --glass-shade: color-mix(in oklab, var(--color-black) 25%, transparent);
@@ -105,7 +107,8 @@
   --data-4: var(--color-purple-400);
   --data-5: var(--color-pink-400);
   --glass-surface: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
-  --glass-surface-strong: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
+  --glass-surface-strong: color-mix(in oklab, var(--color-gray-900) 94%, transparent);
+  --scrim: color-mix(in oklab, var(--color-black) 45%, transparent);
   --glass-edge: color-mix(in oklab, var(--color-white) 14%, transparent);
   --glass-highlight: color-mix(in oklab, var(--color-white) 22%, transparent);
   --glass-shade: color-mix(in oklab, var(--color-black) 25%, transparent);

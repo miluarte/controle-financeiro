@@ -24,6 +24,7 @@
   --color-segment: var(--segment);
   --color-glass: var(--glass);
   --color-glass-lens: var(--glass-lens);
+  --color-scrim: var(--scrim);
   --radius-glass: 1.75rem;
 
   /* Escala tipográfica do iOS (Dynamic Type, tamanho padrão) */

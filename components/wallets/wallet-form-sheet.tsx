@@ -56,6 +56,16 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const isCredit = type === 'credit'
+  // num cartão novo, Crédito e Débito podem ser marcados juntos (cria as duas carteiras)
+  const isCardType = (t: WalletType) => t === 'credit' || t === 'debit'
+  const isSelected = (t: WalletType) => (both ? isCardType(t) : type === t)
+  function pickType(t: WalletType) {
+    if (!wallet && isCardType(t)) {
+      if (both) { setBoth(false); setType(t === 'credit' ? 'debit' : 'credit'); return }
+      if (isCardType(type) && type !== t) { setBoth(true); setType('credit'); return }
+    }
+    setBoth(false); setType(t)
+  }
   const isCard = type === 'credit' || type === 'debit'
   const institution = institutions.find(i => i.id === institutionId)
   const typeLabel = WALLET_TYPES.find(t => t.value === type)?.label
@@ -121,14 +131,11 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
       <ListGroup header="Tipo">
         <li className="flex flex-wrap gap-2 p-3">
           {WALLET_TYPES.map(t => (
-            <ChoiceChip key={t.value} selected={type === t.value && !both} onClick={() => { setType(t.value); setBoth(false) }}
+            <ChoiceChip key={t.value} selected={isSelected(t.value)} onClick={() => pickType(t.value)}
               disabled={!!wallet && wallet.type !== t.value && (wallet.type === 'credit' || t.value === 'credit')}>
               {t.label}
             </ChoiceChip>
           ))}
-          {!wallet && (
-            <ChoiceChip selected={both} onClick={() => { setType('credit'); setBoth(true) }}>Crédito e débito</ChoiceChip>
-          )}
         </li>
       </ListGroup>
 

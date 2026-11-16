@@ -82,6 +82,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
     // forma de pagamento da nota: final do cartão ou tipo (crédito, débito, Pix, dinheiro)
     const wallet = walletForReceipt(wallets, result)
     if (wallet) setWalletId(wallet)
+    // compra parcelada na nota: o total da nota é o valor da compra inteira
+    if (result.installments > 1) { setInstallments(result.installments); setAmountIsInstallment(false) }
   }
 
   function reset() {
