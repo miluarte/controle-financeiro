@@ -1,10 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { MemberCardView } from '@/components/cards/member-card-view'
 import { OwnerCardView } from '@/components/cards/owner-card-view'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
+import { GlassButton } from '@/components/ios/glass-button'
 import { CardPreview } from '@/components/wallets/card-preview'
+import { WalletFormSheet } from '@/components/wallets/wallet-form-sheet'
 import { useOwnWallets } from '@/hooks/use-data'
 import { useWallets } from '@/hooks/use-wallets'
 
@@ -16,10 +19,12 @@ export default function CardPage() {
   const mine = own.find(w => w.id === id)
   const shared = usable.find(w => w.id === id && w.ownerName)
   const wallet = mine ?? shared
+  const [editing, setEditing] = useState(false)
 
   return (
     <>
-      <LargeTitleHeader back title={wallet ? (shared ? `${wallet.name}, de ${wallet.ownerName}` : wallet.name) : 'Cartão'} />
+      <LargeTitleHeader back title={wallet ? (shared ? `${wallet.name}, de ${wallet.ownerName}` : wallet.name) : 'Cartão'}
+        actions={mine ? <GlassButton size="capsule" onClick={() => setEditing(true)}>Editar</GlassButton> : undefined} />
       <div className="space-y-7 px-4 pt-2">
         {wallet && (
           <div className="flex justify-center">
@@ -31,6 +36,7 @@ export default function CardPage() {
           : shared ? <MemberCardView wallet={shared} />
           : !loading && <p className="text-subheadline text-muted-foreground">Cartão não encontrado.</p>}
       </div>
+      {mine && <WalletFormSheet open={editing} wallet={mine} onClose={() => setEditing(false)} />}
     </>
   )
 }

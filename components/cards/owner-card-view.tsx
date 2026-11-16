@@ -9,7 +9,6 @@ import { MemberAvatar } from '@/components/family/member-avatar'
 import { ProgressBar, toneFor } from '@/components/shared/progress-bar'
 import { TransactionEditSheet } from '@/components/transactions/transaction-edit-sheet'
 import { TransactionItem } from '@/components/transactions/transaction-item'
-import { WalletFormSheet } from '@/components/wallets/wallet-form-sheet'
 import { useCategories } from '@/hooks/use-categories'
 import { useInvoices } from '@/hooks/use-data'
 import { useFamily, useFamilyMembers, useSettlements } from '@/hooks/use-family'
@@ -37,7 +36,6 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
   const today = todayIso()
   const openRef = openInvoiceRef(wallet, today)
   const [ref, setRef] = useState(openRef)
-  const [editingCard, setEditingCard] = useState(false)
   const [paying, setPaying] = useState<InvoiceRef | null>(null)
   const [assigning, setAssigning] = useState<Transaction | null>(null)
   const [editing, setEditing] = useState<Transaction | null>(null)
@@ -142,7 +140,6 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
 
       {inFamily && <ShareCardGroup wallet={wallet} scope={wallet.shareScope} members={members.filter(m => m.userId !== me && m.status === 'active')} />}
 
-      <Button variant="secondary" size="lg" className="w-full" onClick={() => setEditingCard(true)}>Editar cartão</Button>
 
       <InvoiceSheet invoice={paying} onClose={() => setPaying(null)} />
       <AssignSheet transaction={assigning} people={people} me={me} onClose={() => setAssigning(null)}
@@ -150,7 +147,6 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
       <SplitSheet transaction={splitting} people={people} me={me} onClose={() => setSplitting(null)} />
       <ConfirmSettlementSheet settlement={confirming} debtorName={confirming ? nameOf(confirming.debtorId) : ''} onClose={() => setConfirming(null)} />
       <TransactionEditSheet transaction={editing} onClose={() => setEditing(null)} />
-      <WalletFormSheet open={editingCard} wallet={wallet} onClose={() => setEditingCard(false)} />
     </div>
   )
 }
