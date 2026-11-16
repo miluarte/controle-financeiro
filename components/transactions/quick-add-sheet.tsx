@@ -27,6 +27,8 @@ import type { Wallet } from '@/lib/types'
 import { todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { InstallmentProgress } from './installment-progress'
+import { ItemsEditor } from './items-editor'
+import type { ReceiptItem } from '@/lib/receipt'
 
 export type QuickAddMode = 'expense' | 'income' | 'save'
 type Mode = QuickAddMode
@@ -67,6 +69,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
   // leitura da nota fiscal (5.4)
   const [receipt, setReceipt] = useState<{ result: ReceiptResult; image: Blob } | null>(null)
   const [attachReceipt, setAttachReceipt] = useState(false)
+  // itens da compra: vêm da nota ou são digitados
+  const [items, setItems] = useState<ReceiptItem[]>([])
 
   function onReceipt(result: ReceiptResult, image: Blob) {
     setReceipt({ result, image })
@@ -74,6 +78,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
     if (result.place) setPlace(result.place)
     if (result.date) setDate(result.date)
     if (result.categoryId) setCategoryId(result.categoryId)
+    if (result.items.length) setItems(result.items)
   }
 
   function reset() {
@@ -88,6 +93,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
     setWalletId(null)
     setReceipt(null)
     setAttachReceipt(false)
+    setItems([])
   }
 
   function changeMode(next: Mode) {
@@ -112,20 +118,21 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
     try {
       const placeValue = place.trim() || null
       if (isCredit && installments > 1) {
-        await transactionsApi.createInstallments({
+        const group = await transactionsApi.createInstallments({
           walletId: walletId!, categoryId, installments, firstDate: date, place: placeValue,
           total: amountIsInstallment ? amount * installments : amount,
           start: Math.min(currentInstallment, installments),
         })
+        if (items.length) await transactionsApi.setGroupItems(group, items)
       } else {
         const fromPhoto = mode === 'expense' && receipt
         const receiptPath = fromPhoto && attachReceipt && session ? await uploadReceipt(session.user.id, receipt.image) : null
         await transactionsApi.create({
           ...(fromPhoto ? {
             source: 'photo',
-            sourceData: { reader: receipt.result.source, items: receipt.result.items },
+            sourceData: { reader: receipt.result.source, items },
             receiptPath,
-          } : {}),
+          } : mode === 'expense' && items.length ? { sourceData: { items } } : {}),
           type: mode === 'save' ? (saveDirection === 'apply' ? 'save_apply' : 'save_redeem') : mode,
           amount,
           date,
@@ -229,7 +236,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
             </ListGroup>
 
             {mode === 'expense' && receipt && (
-              <ReceiptResultGroup source={receipt.result.source} items={receipt.result.items}
+              <ReceiptResultGroup source={receipt.result.source} items={[]}
                 attach={attachReceipt} onAttachChange={setAttachReceipt} attachDisabled={isCredit && installments > 1} />
             )}
 
@@ -260,6 +267,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
                 </li>
               </ListGroup>
             )}
+
+            {mode === 'expense' && <ItemsEditor items={items} onChange={setItems} total={amount} />}
 
             {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
 

@@ -43,9 +43,9 @@ export function ItemsEditor({ items, onChange, total, disabled }: {
           } />
       ))}
       {!disabled && (
-        <li className="flex items-center gap-2 px-4">
+        // Enter (ou "Ir" no teclado do iPhone) inclui o item em vez de enviar o formulário inteiro
+        <li className="flex items-center gap-2 px-4" onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add() } }}>
           <Input aria-label="Item" variant="bare" value={name} onChange={e => setName(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add() } }}
             placeholder="Novo item" className="min-w-0 flex-1" />
           <CurrencyInput aria-label="Valor do item" variant="bare" value={amount} onChange={setAmount} placeholder="Valor" className="w-24 text-right" />
           <Button type="button" variant="plain" disabled={!name.trim()} onClick={add}>Incluir</Button>
