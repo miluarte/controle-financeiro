@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
-import { ActionSheet } from '@/components/ios/action-sheet'
 import { ModalSheet } from '@/components/ios/modal-sheet'
 import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
@@ -21,25 +20,14 @@ import { receiptUrl, type ReceiptItem } from '@/lib/receipt'
 import { DateField } from '@/components/shared/date-field'
 import { ItemsEditor } from './items-editor'
 import { PrepayGroup } from './prepay-group'
+import { useTransactionDelete } from './use-transaction-delete'
 
 // TRA-6: abrir, editar e excluir um lançamento.
 export function TransactionEditSheet({
   transaction, onClose,
 }: { transaction: Transaction | null; onClose: () => void }) {
-  const refresh = useRefresh()
-  const [asking, setAsking] = useState(false)
+  const del = useTransactionDelete(onClose)
   const t = transaction
-
-  async function remove(all: boolean) {
-    if (!t) return
-    try {
-      if (all && t.installmentGroupId) await transactionsApi.removeInstallmentGroup(t.installmentGroupId)
-      else await transactionsApi.remove(t.id)
-      await refresh(); onClose()
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Não foi possível excluir.')
-    }
-  }
 
   return (
     <>
@@ -49,16 +37,11 @@ export function TransactionEditSheet({
         title={t ? TYPE_LABEL[t.type] : ''}
         formId="edit-transaction"
         actionLabel="Salvar"
-        onDelete={() => setAsking(true)}
+        onDelete={() => t && del.ask(t)}
       >
         {t && <EditForm key={t.id} t={t} onDone={onClose} />}
       </ModalSheet>
-      <ActionSheet open={asking} onOpenChange={setAsking}
-        title={t?.installmentGroupId ? 'O que você quer excluir?' : 'Excluir este lançamento?'}
-        actions={t?.installmentGroupId
-          ? [{ label: 'Só esta parcela', destructive: true, onSelect: () => remove(false) },
-             { label: 'A compra inteira', destructive: true, onSelect: () => remove(true) }]
-          : [{ label: 'Excluir', destructive: true, onSelect: () => remove(false) }]} />
+      {del.sheet}
     </>
   )
 }

@@ -18,6 +18,7 @@
   --text-primary: var(--color-gray-950);
   --text-secondary: var(--color-gray-500);
   --text-on-action: var(--color-white);          /* texto sobre a ação principal */
+  --text-on-danger: var(--color-white);          /* texto e ícone sobre vermelho (ex.: lixeira ao deslizar) */
 
   /* Linhas */
   --line-subtle: var(--color-gray-200);          /* divisores e bordas */

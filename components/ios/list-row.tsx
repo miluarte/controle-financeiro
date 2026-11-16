@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import { AltArrowRightLinearIcon } from '@solar-icons/react'
 import { cn } from '@/lib/utils'
+import { SwipeActions } from './swipe-actions'
 
 // Linha de lista do iOS: ícone à esquerda, título e subtítulo, valor à direita, seta opcional.
 // O separador começa depois do ícone (recuo), como no iOS.
@@ -29,11 +30,13 @@ interface ListRowProps extends VariantProps<typeof rowVariants> {
   trailing?: React.ReactNode
   chevron?: boolean
   onClick?: () => void
+  // deslizar para a esquerda revela a lixeira
+  onDelete?: () => void
   className?: string
 }
 
 export function ListRow({
-  leading, title, subtitle, trailing, chevron, onClick, tone, className,
+  leading, title, subtitle, trailing, chevron, onClick, onDelete, tone, className,
 }: ListRowProps) {
   const centered = tone === 'tint' || tone === 'destructive'
   const content = (
@@ -56,15 +59,17 @@ export function ListRow({
     </>
   )
 
+  const row = onClick ? (
+    <button type="button" onClick={onClick} className={cn(rowVariants({ tone, interactive: true }), className)}>
+      {content}
+    </button>
+  ) : (
+    <div className={cn(rowVariants({ tone, interactive: false }), className)}>{content}</div>
+  )
+
   return (
     <li className="group/row">
-      {onClick ? (
-        <button type="button" onClick={onClick} className={cn(rowVariants({ tone, interactive: true }), className)}>
-          {content}
-        </button>
-      ) : (
-        <div className={cn(rowVariants({ tone, interactive: false }), className)}>{content}</div>
-      )}
+      {onDelete ? <SwipeActions onDelete={onDelete}>{row}</SwipeActions> : row}
     </li>
   )
 }

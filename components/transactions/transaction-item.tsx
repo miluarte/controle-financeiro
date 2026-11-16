@@ -21,11 +21,12 @@ interface TransactionItemProps {
   category?: Category
   wallet?: Wallet
   onClick?: () => void
+  onDelete?: () => void
   // complemento no subtítulo (ex.: "de Ana" no cartão compartilhado)
   note?: string
 }
 
-export function TransactionItem({ transaction: t, category, wallet, onClick, note }: TransactionItemProps) {
+export function TransactionItem({ transaction: t, category, wallet, onClick, onDelete, note }: TransactionItemProps) {
   const title = t.place || t.description || category?.name || TYPE_LABEL[t.type]
   const walletName = wallet?.name ?? t.walletNameSnapshot
   const installment = t.installmentN && t.installmentsTotal ? `${t.installmentN} de ${t.installmentsTotal}` : null
@@ -37,6 +38,7 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, not
   return (
     <ListRow
       onClick={onClick}
+      onDelete={onDelete}
       leading={
         <TokenIcon
           icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')}

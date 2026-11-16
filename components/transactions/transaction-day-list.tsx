@@ -6,6 +6,7 @@ import { useCategories } from '@/hooks/use-categories'
 import { useWallets } from '@/hooks/use-wallets'
 import type { Transaction } from '@/lib/types'
 import { dayLabel } from '@/lib/utils'
+import { useTransactionDelete } from './use-transaction-delete'
 
 interface TransactionDayListProps {
   transactions: Transaction[]
@@ -23,6 +24,7 @@ export function TransactionDayList({
 }: TransactionDayListProps) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
+  const del = useTransactionDelete()
   const catById = new Map(categories.map(c => [c.id, c]))
   const walletById = new Map(wallets.map(w => [w.id, w]))
 
@@ -44,6 +46,7 @@ export function TransactionDayList({
 
   return (
     <div className="space-y-5">
+      {del.sheet}
       {groups.map(g => (
         <ListGroup key={g.day} header={dayLabel(g.day)}>
           {g.items.map(t => (
@@ -53,6 +56,7 @@ export function TransactionDayList({
               category={t.categoryId ? catById.get(t.categoryId) : undefined}
               wallet={t.walletId ? walletById.get(t.walletId) : undefined}
               onClick={onSelect ? () => onSelect(t) : undefined}
+              onDelete={() => del.ask(t)}
             />
           ))}
         </ListGroup>

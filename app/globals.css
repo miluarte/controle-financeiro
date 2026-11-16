@@ -74,6 +74,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -117,6 +118,7 @@
   --accent: var(--surface-sunken);
   --accent-foreground: var(--text-primary);
   --destructive: var(--status-danger);
+  --destructive-foreground: var(--text-on-danger);
   --success: var(--status-success);
   --tint: var(--action-primary);
   --separator: var(--line-subtle);
