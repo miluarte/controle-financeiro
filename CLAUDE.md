@@ -55,7 +55,7 @@ Modelo de dados: o da especificação funcional v1.0 (seção 6), documentado em
 
 ## Estado atual (registrar aqui conforme evolui, não deixar desatualizado)
 
-Backend: Supabase no modelo da spec (2026-11-15). Dados da planilha Troco-Controle-Financeiro estão no schema privado `import` (`import.raw`); `import.load_for(email, card_days)` copia para a conta indicada (contas viram carteiras, saldo inicial vira receita). Pendente: rodar depois que a dona do projeto criar a conta e informar fechamento/vencimento dos cartões Madrinha e Mãe.
+Backend: Supabase no modelo da spec (2026-11-15). Dados da planilha Troco-Controle-Financeiro estão no schema privado `import` (`import.raw`); `import.load_for(email, card_days)` copia para a conta indicada (contas viram carteiras, saldo inicial vira receita). Não será rodado (2026-11-16): "Madrinha" e "Mãe" eram compras feitas no cartão de outras pessoas, não cartões próprios; esses cartões entram pela família (cartão compartilhado pela titular), e o Mercado Pago já veio pelo PDF da fatura. Os dados brutos continuam em `import.raw` só como referência.
 
 Front v1 completo (2026-11-15), publicado na main (Vercel):
 - Abas (NAV-1): Contas (`/bills`), Home (`/home`), Análise (`/analysis`), Config (`/config`). Seletor de mês compartilhado (`MonthProvider`, `MonthSelector`: cápsula "Novembro ⌄" que abre a roda de mês do iPhone; ano só se não for o atual). Nas telas com o seletor, textos não repetem o mês ("Gasto no mês", "Saldo do mês").
