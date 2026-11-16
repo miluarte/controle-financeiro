@@ -17,6 +17,8 @@ import { useWallets } from '@/hooks/use-wallets'
 import { openInvoiceRef } from '@/lib/invoice'
 import type { OwnWallet } from '@/lib/types'
 import { addMonths, currentMonth, formatCurrency, monthName, todayIso } from '@/lib/utils'
+import { walletsApi } from '@/lib/api/wallets'
+import { useConfirmDelete } from '@/components/ios/use-delete-action'
 
 export default function WalletsPage() {
   const { month } = useMonth()
@@ -26,6 +28,8 @@ export default function WalletsPage() {
   const { transactions } = useMonthTransactions(month)
   const { totals } = useInvoices(currentMonth())
   const router = useRouter()
+  const del = useConfirmDelete()
+  const askDelete = (w: { id: string; name: string }) => del.ask({ title: `Excluir "${w.name}"?`, remove: () => walletsApi.remove(w.id) })
   const [editing, setEditing] = useState<OwnWallet | null>(null)
   const [creating, setCreating] = useState(false)
 
@@ -57,7 +61,7 @@ export default function WalletsPage() {
               const current = invoiceTotal(w.id, ref)
               const next = invoiceTotal(w.id, addMonths(ref, 1))
               return (
-                <ListRow key={w.id} onClick={() => router.push(`/cards/${w.id}`)}
+                <ListRow key={w.id} onClick={() => router.push(`/cards/${w.id}`)} onDelete={() => askDelete(w)}
                   leading={<CardPreview name="" finish={w.finish} size="sm" className="w-11" />}
                   title={<>{w.name}{w.last4 && <span className="text-muted-foreground"> •{w.last4}</span>}{w.shareScope !== 'none' && <span className="text-muted-foreground"> · compartilhado</span>}</>}
                   subtitle={`Fatura de ${monthName(ref, 'short')} ${formatCurrency(current)} · próxima ${formatCurrency(next)}`
@@ -72,7 +76,7 @@ export default function WalletsPage() {
           {others.map(w => {
             const spent = spentBy.get(w.id) ?? 0
             return (
-              <ListRow key={w.id} onClick={() => open(w)}
+              <ListRow key={w.id} onClick={() => open(w)} onDelete={() => askDelete(w)}
                 leading={<CardPreview name="" finish={w.finish} size="sm" className="w-11" />}
                 title={<>{w.name}{w.last4 && <span className="text-muted-foreground"> •{w.last4}</span>}{w.type === 'debit' && <span className="text-muted-foreground"> · débito</span>}{profile?.defaultWalletId === w.id && <span className="text-muted-foreground"> · padrão</span>}</>}
                 subtitle={spent ? `${formatCurrency(spent)} em ${monthName(month, 'short')}` : `Sem gastos · ${monthName(month, 'short')}`}
@@ -95,13 +99,14 @@ export default function WalletsPage() {
         {archived.length > 0 && (
           <ListGroup header="Arquivadas">
             {archived.map(w => (
-              <ListRow key={w.id} onClick={() => open(w)}
+              <ListRow key={w.id} onClick={() => open(w)} onDelete={() => askDelete(w)}
                 leading={<CardPreview name="" finish={w.finish} size="sm" className="w-11 opacity-50" />}
                 title={<span className="text-muted-foreground">{w.name}</span>} chevron />
             ))}
           </ListGroup>
         )}
       </div>
+      {del.sheet}
       <WalletFormSheet open={creating || !!editing} wallet={editing} onClose={() => { setCreating(false); setEditing(null) }} />
     </>
   )

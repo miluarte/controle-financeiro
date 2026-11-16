@@ -25,6 +25,7 @@ import { SplitSheet } from './split-sheet'
 import { InvoiceNavigator } from './invoice-navigator'
 import { ShareCardGroup } from './share-card-group'
 import { personStatementPdf, shareOrDownload } from '@/lib/person-statement-pdf'
+import { useTransactionDelete } from '@/components/transactions/use-transaction-delete'
 
 // CAR-5 e VIS-3: visão do titular. Fatura total, fatia de cada pessoa, limite, compras e compartilhamento.
 export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
@@ -40,6 +41,7 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
   const [paying, setPaying] = useState<InvoiceRef | null>(null)
   const [assigning, setAssigning] = useState<Transaction | null>(null)
   const [editing, setEditing] = useState<Transaction | null>(null)
+  const delTx = useTransactionDelete()
   const [splitting, setSplitting] = useState<Transaction | null>(null)
   const [confirming, setConfirming] = useState<Settlement | null>(null)
   const settlements = useSettlements(wallet.id)
@@ -85,6 +87,7 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
 
   return (
     <div className="space-y-7">
+      {delTx.sheet}
       <InvoiceNavigator value={ref} onChange={setRef}
         caption={`${paidAt ? `Paga em ${formatDate(paidAt)}` : closed ? 'Fechada' : ref === openRef ? 'Aberta' : 'Futura'} · vence ${formatDate(due)}`} />
 
@@ -147,7 +150,8 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
           <TransactionItem key={t.id} transaction={t}
             category={t.categoryId ? catById.get(t.categoryId) : undefined}
             note={shared ? `de ${nameOf(t.owner)}` : undefined}
-            onClick={() => (shared && !paidAt ? setAssigning(t) : t.owner === me ? setEditing(t) : undefined)} />
+            onClick={() => (shared && !paidAt ? setAssigning(t) : t.owner === me ? setEditing(t) : undefined)}
+            onDelete={() => delTx.ask(t)} />
         ))}
       </ListGroup>
 

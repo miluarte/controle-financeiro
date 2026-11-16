@@ -18,6 +18,9 @@ export const notificationsApi = {
   markRead: async (id: string) => {
     unwrap(await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id))
   },
+  remove: async (id: string) => {
+    unwrap(await supabase.from('notifications').delete().eq('id', id))
+  },
   markAllRead: async () => {
     unwrap(await supabase.from('notifications').update({ read_at: new Date().toISOString() }).is('read_at', null))
   },

@@ -13,6 +13,8 @@ import { useMonth } from '@/hooks/use-month'
 import { subscriptionCost } from '@/lib/advanced'
 import { cn, formatCurrency } from '@/lib/utils'
 import { LoadingBlock } from '@/components/shared/loading-dots'
+import { subscriptionsApi } from '@/lib/api/advanced'
+import { useConfirmDelete } from '@/components/ios/use-delete-action'
 
 // Custo por uso de cada assinatura no mês, e quanto sairia pagando avulso.
 export default function SubscriptionsPage() {
@@ -20,6 +22,7 @@ export default function SubscriptionsPage() {
   const { subscriptions, uses, loading } = useSubscriptions(month)
   const [openId, setOpenId] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
+  const del = useConfirmDelete()
   const current = subscriptions.find(s => s.id === openId) ?? null
   const daysOf = (id: string) => uses.filter(u => u.subscriptionId === id).map(u => u.usedOn)
 
@@ -45,6 +48,7 @@ export default function SubscriptionsPage() {
               const note = c.loss == null ? null : c.loss > 0 ? `Avulso: ${formatCurrency(c.loss)} a menos` : 'Compensa'
               return (
                 <ListRow key={s.id} onClick={() => openSub(s.id)} chevron
+                  onDelete={() => del.ask({ title: `Excluir "${s.name}"?`, remove: () => subscriptionsApi.remove(s.id) })}
                   title={s.name}
                   subtitle={<>{c.uses} {c.uses === 1 ? 'uso' : 'usos'} · {formatCurrency(s.monthlyAmount)}/mês{note && <><br />{note}</>}</>}
                   trailing={
@@ -57,6 +61,7 @@ export default function SubscriptionsPage() {
           </ListGroup>
         )}
       </div>
+      {del.sheet}
       <SubscriptionSheet open={open} subscription={current} month={month} usedDays={current ? daysOf(current.id) : []} onOpenChange={setOpen} />
     </>
   )

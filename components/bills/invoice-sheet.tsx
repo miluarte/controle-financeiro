@@ -19,6 +19,7 @@ import { formatCurrency, formatDate, monthLabel, todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { LateCostGroup } from './late-cost-group'
 import { ReconcileSheet } from './reconcile-sheet'
+import { useTransactionDelete } from '@/components/transactions/use-transaction-delete'
 
 export interface InvoiceRef {
   wallet: OwnWallet
@@ -43,6 +44,7 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
   const { categories } = useCategories()
   const { profile } = useProfile()
   const refresh = useRefresh()
+  const delTx = useTransactionDelete()
   const payable = wallets.filter(w => !w.ownerName && w.type !== 'credit')
   const [walletId, setWalletId] = useState<string | null>(
     payable.find(w => w.id === profile?.defaultWalletId)?.id ?? payable[0]?.id ?? null,
@@ -65,6 +67,7 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
 
   return (
     <div className="space-y-6">
+      {delTx.sheet}
       <div className="text-center">
         <p className="text-large-title font-bold tabular-nums">{formatCurrency(inv.total)}</p>
         <p className="text-subheadline text-muted-foreground">
@@ -120,6 +123,7 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
             key={t.id}
             transaction={t}
             category={t.categoryId ? catById.get(t.categoryId) : undefined}
+            onDelete={() => delTx.ask(t)}
           />
         ))}
       </ListGroup>

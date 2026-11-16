@@ -22,3 +22,20 @@ export function useDeleteAction({ title, label = 'Excluir', remove, onDone }: {
   )
   return { ask: () => setOpen(true), sheet }
 }
+
+// Mesma confirmação, para listas: cada linha pede a exclusão do próprio item (ex.: deslizar para excluir).
+export function useConfirmDelete() {
+  const refresh = useRefresh()
+  const [req, setReq] = useState<{ title: string; label?: string; remove: () => Promise<unknown> } | null>(null)
+  const sheet = (
+    <ActionSheet open={!!req} onOpenChange={o => { if (!o) setReq(null) }} title={req?.title ?? ''}
+      actions={req ? [{
+        label: req.label ?? 'Excluir', destructive: true,
+        onSelect: async () => {
+          try { await req.remove(); await refresh() }
+          catch (err) { alert(err instanceof Error ? err.message : 'Não foi possível excluir.') }
+        },
+      }] : []} />
+  )
+  return { ask: setReq, sheet }
+}

@@ -14,6 +14,7 @@ import { useAllCategories, useCategoryUsage } from '@/hooks/use-data'
 import { useRefresh } from '@/hooks/use-refresh'
 import { categoriesApi } from '@/lib/api/categories'
 import type { Category, CategoryType } from '@/lib/types'
+import { useConfirmDelete } from '@/components/ios/use-delete-action'
 
 const CLASS_LABEL = { essential: 'Essencial', desire: 'Desejo' } as const
 
@@ -27,6 +28,7 @@ function Categories() {
   const { categories } = useAllCategories()
   const usage = useCategoryUsage()
   const refresh = useRefresh()
+  const del = useConfirmDelete()
   const [type, setType] = useState<CategoryType>(params.get('tipo') === 'receita' ? 'income' : 'expense')
   const [newName, setNewName] = useState('')
   const [editing, setEditing] = useState<Category | null>(null)
@@ -69,6 +71,7 @@ function Categories() {
     if (c.class) parts.push(CLASS_LABEL[c.class])
     return (
       <ListRow key={c.id} bare={bare} onClick={() => setEditing(c)}
+        onDelete={() => del.ask({ title: `Excluir "${c.name}"?`, remove: () => categoriesApi.remove(c.id) })}
         leading={<TokenIcon icon={c.icon} color={c.color} />}
         title={c.active ? c.name : <span className="text-muted-foreground">{c.name}</span>}
         subtitle={parts.join(' · ')} chevron />
@@ -77,6 +80,7 @@ function Categories() {
 
   return (
     <>
+      {del.sheet}
       <LargeTitleHeader back title="Categorias" />
       <div className="space-y-7 px-4 pt-2">
         <SegmentedControl aria-label="Tipo" value={type} onChange={setType}

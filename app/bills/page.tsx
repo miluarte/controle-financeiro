@@ -19,6 +19,8 @@ import { invoiceDueDate, invoiceRefDueIn } from '@/lib/invoice'
 import type { BillOccurrence } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { LoadingBlock } from '@/components/shared/loading-dots'
+import { billsApi } from '@/lib/api/bills'
+import { useConfirmDelete } from '@/components/ios/use-delete-action'
 
 type Item =
   | { kind: 'bill'; due: string; amount: number; paid: boolean; o: BillOccurrence }
@@ -32,6 +34,11 @@ export default function BillsPage() {
   const { categories } = useCategories()
   const [openBill, setOpenBill] = useState<BillOccurrence | null>(null)
   const [editing, setEditing] = useState<BillOccurrence | null>(null)
+  const del = useConfirmDelete()
+  const askEnd = (o: BillOccurrence) => del.ask({
+    title: o.bill.type === 'income' ? 'Encerrar esta receita? Os meses recebidos continuam.' : 'Encerrar esta conta? Os meses pagos continuam.',
+    label: 'Encerrar a partir deste mês', remove: () => billsApi.endSeries(o.billId, month),
+  })
   const [openInvoice, setOpenInvoice] = useState<InvoiceRef | null>(null)
   const catById = new Map(categories.map(c => [c.id, c]))
 
@@ -60,6 +67,7 @@ export default function BillsPage() {
 
   return (
     <>
+      {del.sheet}
       <LargeTitleHeader
         title="Contas"
         actions={<MonthSelector />}
@@ -98,6 +106,7 @@ export default function BillsPage() {
                 <ListRow
                   key={i.o.id}
                   onClick={() => setOpenBill(i.o)}
+                  onDelete={() => askEnd(i.o)}
                   leading={<TokenIcon icon={cat?.icon ?? 'ellipsis'} color={cat?.color ?? 'gray'} />}
                   title={i.o.bill.name}
                   subtitle={<span className="flex items-center gap-1.5">Vence {formatDate(i.due).slice(0, 5)}{n} <DueBadge dueDate={i.due} paid={i.paid} /></span>}
@@ -116,6 +125,7 @@ export default function BillsPage() {
                   <ListRow
                     key={o.id}
                     onClick={() => setOpenBill(o)}
+                    onDelete={() => askEnd(o)}
                     leading={<TokenIcon icon={cat?.icon ?? 'ellipsis'} color={cat?.color ?? 'gray'} />}
                     title={o.bill.name}
                     subtitle={<span className="flex items-center gap-1.5">Dia {formatDate(o.dueDate).slice(0, 5)} <DueBadge dueDate={o.dueDate} paid={!!o.paidAt} income /></span>}

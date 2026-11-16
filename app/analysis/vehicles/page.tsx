@@ -13,6 +13,8 @@ import { useMonth } from '@/hooks/use-month'
 import { vehicleCost } from '@/lib/advanced'
 import { formatCurrency } from '@/lib/utils'
 import { LoadingBlock } from '@/components/shared/loading-dots'
+import { vehiclesApi } from '@/lib/api/advanced'
+import { useConfirmDelete } from '@/components/ios/use-delete-action'
 
 // Custo de deslocamento por veículo no mês. Fica fora do saldo: é estimativa.
 export default function VehiclesPage() {
@@ -20,6 +22,7 @@ export default function VehiclesPage() {
   const { vehicles, trips, maintenance, loading } = useVehicles(month)
   const [openId, setOpenId] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
+  const del = useConfirmDelete()
   const current = vehicles.find(v => v.id === openId) ?? null
 
   function openVehicle(id: string | null) { setOpenId(id); setOpen(true) }
@@ -45,6 +48,7 @@ export default function VehiclesPage() {
               const detail = `Comb. ${formatCurrency(c.fuel)} · manut. ${formatCurrency(c.maintenance)}`
               return (
                 <ListRow key={v.id} onClick={() => openVehicle(v.id)} chevron
+                  onDelete={() => del.ask({ title: `Excluir "${v.name}" e os trajetos?`, remove: () => vehiclesApi.remove(v.id) })}
                   title={v.name}
                   subtitle={<>{c.km.toLocaleString('pt-BR')} km{perKm}<br />{detail}</>}
                   trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(c.total)}</span>} />
@@ -53,6 +57,7 @@ export default function VehiclesPage() {
           </ListGroup>
         )}
       </div>
+      {del.sheet}
       <VehicleSheet open={open} vehicle={current} trips={trips} maintenance={maintenance} onOpenChange={setOpen} />
     </>
   )

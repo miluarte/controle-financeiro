@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { ProgressButton } from '@/components/shared/progress-button'
 import { CameraLinearIcon } from '@solar-icons/react'
 import { Button } from '@/components/ui/button'
 import { LoadingDots } from '@/components/shared/loading-dots'
@@ -12,12 +13,22 @@ export function ReceiptScanButton({ onRead }: { onRead: (result: ReceiptResult, 
   const [reading, setReading] = useState(false)
   const [status, setStatus] = useState('Lendo a nota…')
   const [error, setError] = useState<string | null>(null)
+  // preenchimento do botão: o leitor do celular informa a %; a leitura online avança sozinha até 90%
+  const [progress, setProgress] = useState(0)
 
   async function handleFile(file: File | undefined) {
     if (!file) return
-    setReading(true); setError(null); setStatus('Lendo a nota…')
+    setReading(true); setError(null); setStatus('Lendo a nota…'); setProgress(5)
+    const tick = setInterval(() => setProgress(p => p + (90 - p) * 0.06), 200)
+    const onStatus = (text: string) => {
+      setStatus(text.replace(/\s*\d+%$/, ''))
+      const pct = text.match(/(\d+)%$/)
+      if (pct) setProgress(p => Math.max(p, Number(pct[1])))
+    }
     try {
-      const { result, image } = await readReceipt(file, setStatus)
+      const { result, image } = await readReceipt(file, onStatus)
+      clearInterval(tick); setProgress(100)
+      await new Promise(r => setTimeout(r, 250))
       if (!result.amount) setError('Não consegui achar o total nesta foto. Tente outra mais nítida ou digite o valor.')
       onRead(result, image)
     } catch (err) {
@@ -25,7 +36,8 @@ export function ReceiptScanButton({ onRead }: { onRead: (result: ReceiptResult, 
         ? `Não foi possível ler a nota: ${err.message}`
         : 'Não foi possível ler a nota. Tente de novo ou digite os dados.')
     } finally {
-      setReading(false)
+      clearInterval(tick)
+      setReading(false); setProgress(0)
       if (gallery.current) gallery.current.value = ''
     }
   }
@@ -33,9 +45,9 @@ export function ReceiptScanButton({ onRead }: { onRead: (result: ReceiptResult, 
   return (
     <div className="space-y-1.5">
       {reading ? (
-        <Button type="button" variant="secondary" className="w-full gap-2 rounded-full" disabled>
+        <ProgressButton progress={progress}>
           <LoadingDots size="sm" tone="current" label={status} />{status}
-        </Button>
+        </ProgressButton>
       ) : (
         // um botão só: sem "capture", o iPhone abre o próprio menu (Tirar Foto, Fototeca, Arquivo)
         <Button type="button" variant="secondary" className="w-full rounded-full" onClick={() => gallery.current?.click()}>

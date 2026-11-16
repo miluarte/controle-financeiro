@@ -8,11 +8,13 @@ import { ListRow } from '@/components/ios/list-row'
 import { useNotifications } from '@/hooks/use-data'
 import { notificationsApi } from '@/lib/api/notifications'
 import { dayLabel } from '@/lib/utils'
+import { useConfirmDelete } from '@/components/ios/use-delete-action'
 
 // Central de notificações: tudo que o app avisou, do mais novo para o mais antigo.
 export default function NotificationsPage() {
   const router = useRouter()
   const { notifications, unread, mutate } = useNotifications()
+  const del = useConfirmDelete()
 
   async function open(id: string, url: string | null, read: boolean) {
     if (!read) { await notificationsApi.markRead(id); await mutate() }
@@ -27,6 +29,7 @@ export default function NotificationsPage() {
 
   return (
     <>
+      {del.sheet}
       <LargeTitleHeader back title="Notificações" />
       <div className="space-y-7 px-4 pt-2">
         {unread > 0 && (
@@ -42,6 +45,7 @@ export default function NotificationsPage() {
           <ListGroup key={day} header={dayLabel(day)}>
             {list.map(n => (
               <ListRow key={n.id} onClick={() => open(n.id, n.url, !!n.readAt)} chevron={!!n.url}
+                onDelete={() => del.ask({ title: 'Apagar esta notificação?', label: 'Apagar', remove: () => notificationsApi.remove(n.id) })}
                 title={<span className={n.readAt ? 'text-muted-foreground' : 'font-semibold'}>{n.title}</span>}
                 subtitle={n.body} />
             ))}

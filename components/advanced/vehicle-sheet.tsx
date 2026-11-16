@@ -99,6 +99,7 @@ function VehicleForm({ vehicle, trips, maintenance, onDone }: {
               onClick={() => { if (tripKm > 0) run(async () => { await vehiclesApi.addTrip(vehicle.id, tripDate, tripKm); setTripKm(0) }, false) }} />
             {trips.map(t => (
               <ListRow key={t.id} title={`${t.km.toLocaleString('pt-BR')} km`} subtitle={formatDate(t.date)}
+                onDelete={() => run(() => vehiclesApi.removeTrip(t.id), false)}
                 trailing={<TripDelete onClick={() => run(() => vehiclesApi.removeTrip(t.id), false)} />} />
             ))}
           </ListGroup>
@@ -121,6 +122,7 @@ function VehicleForm({ vehicle, trips, maintenance, onDone }: {
               }} />
             {maintenance.map(m => (
               <ListRow key={m.id} title={m.name}
+                onDelete={() => run(() => vehiclesApi.removeMaintenance(m.id), false)}
                 subtitle={`${formatCurrency(m.cost)} a cada ${m.everyMonths} ${m.everyMonths === 1 ? 'mês' : 'meses'}`}
                 trailing={<TripDelete onClick={() => run(() => vehiclesApi.removeMaintenance(m.id), false)} />} />
             ))}
