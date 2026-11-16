@@ -15,6 +15,7 @@ export interface Statement {
   items: StatementItem[]
   total: number | null     // "Total a pagar" da fatura, se achar
   carried: number | null   // saldo da fatura anterior que não foi pago e veio para esta
+  revolvingRate: number | null  // "Juros do rotativo 17,90% a.m." (taxa do cliente, % ao mês)
 }
 
 const MONTHS: Record<string, number> = { JAN: 1, FEV: 2, MAR: 3, ABR: 4, MAI: 5, JUN: 6, JUL: 7, AGO: 8, SET: 9, OUT: 10, NOV: 11, DEZ: 12 }
@@ -77,12 +78,15 @@ export function parseStatement(lines: string[], dueDate: string): Statement {
   let total: number | null = null
   let previous: number | null = null
   let received = 0
+  let revolvingRate: number | null = null
 
   for (const line of lines) {
     const t = line.match(/total (a pagar|da fatura)\s*R\$\s*([\d.]+,\d{2})/i) ?? line.match(/^total()\s*R\$\s*([\d.]+,\d{2})$/i)
     if (t && total == null) total = cents(t[2])
     const prev = line.match(/^fatura anterior\s*R\$\s*([\d.]+,\d{2})/i)
     if (prev && previous == null) previous = cents(prev[1])
+    const rate = line.match(/juros\s+(?:do\s+)?rotativo\s*([\d]+,\d{1,2})\s*%\s*a\.?\s*m/i)
+    if (rate && revolvingRate == null) revolvingRate = Number(rate[1].replace(',', '.'))
     const paid = line.match(/^pagamento recebido\s*R\$\s*([\d.]+,\d{2})/i)
     if (paid) received = cents(paid[1])
 
@@ -116,7 +120,7 @@ export function parseStatement(lines: string[], dueDate: string): Statement {
   const items = raw.filter((r, i) => !used.has(i) && !NOT_PURCHASE.test(r.description))
     .map(({ negative: _n, ...item }) => item) // eslint-disable-line @typescript-eslint/no-unused-vars
   const carried = previous != null && previous - received > 0 ? previous - received : null
-  return { items, total, carried }
+  return { items, total, carried, revolvingRate }
 }
 
 // Primeira data da compra parcelada. Alguns bancos mostram a data original da compra (que pode ser

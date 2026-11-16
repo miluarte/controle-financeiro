@@ -28,6 +28,8 @@ import { todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { InstallmentProgress } from './installment-progress'
 import { ItemsEditor } from './items-editor'
+import { PurchaseOwnerField, useCardAccess } from './purchase-owner-field'
+import { familyApi } from '@/lib/api/family'
 import type { ReceiptItem } from '@/lib/receipt'
 
 export type QuickAddMode = 'expense' | 'income' | 'save'
@@ -71,6 +73,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
   const [attachReceipt, setAttachReceipt] = useState(false)
   // itens da compra: vêm da nota ou são digitados
   const [items, setItems] = useState<ReceiptItem[]>([])
+  // cartão próprio compartilhado: de quem é a compra ('' = sua)
+  const [owner, setOwner] = useState('')
 
   function onReceipt(result: ReceiptResult, image: Blob) {
     setReceipt({ result, image })
@@ -99,6 +103,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
     setReceipt(null)
     setAttachReceipt(false)
     setItems([])
+    setOwner('')
   }
 
   function changeMode(next: Mode) {
@@ -113,6 +118,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
   const isCredit = mode === 'expense' && wallet?.type === 'credit'
   const needsCategory = mode !== 'save'
   const needsWallet = mode !== 'income'
+  const access = useCardAccess(isCredit ? walletId : null)
+  const assignTo = access.people.some(p => p.userId === owner) && owner !== access.me ? owner : null
   const canSubmit = amount > 0 && (!needsCategory || !!categoryId) && (!needsWallet || !!walletId) && !submitting
 
   async function handleSubmit(e: React.FormEvent) {
@@ -129,10 +136,15 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
           start: Math.min(currentInstallment, installments),
         })
         if (items.length) await transactionsApi.setGroupItems(group, items)
+        if (assignTo) {
+          // assign_purchase vale para todas as parcelas em aberto da compra
+          const first = await transactionsApi.firstOfGroup(group)
+          if (first) await familyApi.assignPurchase(first, assignTo)
+        }
       } else {
         const fromPhoto = mode === 'expense' && receipt
         const receiptPath = fromPhoto && attachReceipt && session ? await uploadReceipt(session.user.id, receipt.image) : null
-        await transactionsApi.create({
+        const created = await transactionsApi.create({
           ...(fromPhoto ? {
             source: 'photo',
             sourceData: { reader: receipt.result.source, items },
@@ -146,6 +158,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
           place: mode === 'income' ? null : placeValue,
           description: mode === 'income' ? placeValue : null,
         })
+        if (assignTo && isCredit) await familyApi.assignPurchase(created.id, assignTo)
       }
       await refreshMonth()
       reset()
@@ -272,6 +285,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
                 </li>
               </ListGroup>
             )}
+
+            {isCredit && <PurchaseOwnerField people={access.people} me={access.me} value={owner} onChange={setOwner} />}
 
             {mode === 'expense' && <ItemsEditor items={items} onChange={setItems} total={amount} />}
 

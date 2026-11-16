@@ -135,6 +135,10 @@ Conferência de cartão compartilhado: na `ReconcileSheet`, cada compra que falt
 
 Pessoa sem o app (2026-11-16): em Config > Família, "Pessoa sem o app" (`GuestForm`, RPC `add_family_guest`) cria um usuário convidado (e-mail interno `convidado-…@sem-app.troco`, senha aleatória, `profiles.is_guest`) e membro ativo da família; recebe compras como qualquer membro. No cartão do titular, cada pessoa da divisão tem "PDF" (`lib/person-statement-pdf.ts`, jsPDF 3.0.1): fatura só dela (compras, parcelas, itens, total, vencimento), compartilhada pelo menu do iPhone ou baixada.
 
+De quem é a compra no registro (2026-11-16): no Novo gasto em cartão de crédito próprio compartilhado (`share_scope` family, ou selected com a pessoa em `wallet_shares`), "De quem é a compra" (`PurchaseOwnerField`, `useCardAccess`); depois de criar, chama `assign_purchase` (na parcelada, com a primeira parcela, via `transactionsApi.firstOfGroup`). A compra aparece para o titular e para a pessoa.
+
+Juros do rotativo pelo PDF: `parseStatement` lê "Juros do rotativo X% a.m." (`revolvingRate`) e a `Reconcile` grava em `wallets.revolving_rate` quando muda, mostrando "Salvo no cartão".
+
 Folhas e menus: `--glass-surface-strong` = gray-50 a 94% (claro); fundo escurecido atrás da folha `--scrim` (preto 12% no claro). Cartão novo: chips Crédito e Débito podem ser marcados juntos. Nota fiscal lê parcelas (`installments`).
 
 Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`; contas de teste (`@example.com`) e os dados delas.

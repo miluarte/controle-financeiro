@@ -91,6 +91,12 @@ export const transactionsApi = {
   update: async (id: string, t: Partial<NewTransaction>) =>
     toTransaction(unwrap(await supabase.from('transactions').update(toRow(t)).eq('id', id).select('*').single())),
 
+  // primeira parcela lançada de uma compra parcelada (para atribuir a compra a alguém)
+  firstOfGroup: async (groupId: string): Promise<string | null> => {
+    const { data } = await supabase.from('transactions').select('id').eq('installment_group_id', groupId).order('date').limit(1).maybeSingle()
+    return (data?.id as string | undefined) ?? null
+  },
+
   createInstallments: async (args: {
     walletId: string; categoryId: string | null; total: number; installments: number
     firstDate: string; place: string | null; start?: number

@@ -10,6 +10,7 @@ import { SelectField } from '@/components/shared/select-field'
 import { useCardPeople } from '@/hooks/use-card-people'
 import { useRefresh } from '@/hooks/use-refresh'
 import { familyApi } from '@/lib/api/family'
+import { walletsApi } from '@/lib/api/wallets'
 import { transactionsApi } from '@/lib/api/transactions'
 import { openInvoiceRef } from '@/lib/invoice'
 import { reconcile, type Reconciliation } from '@/lib/reconcile'
@@ -45,6 +46,8 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
   const [result, setResult] = useState<Reconciliation | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [items, setItems] = useState<StatementItem[]>([])
+  // juros do rotativo lidos da fatura e guardados no cartão (para a estimativa de atraso)
+  const [rateSaved, setRateSaved] = useState<number | null>(null)
   // cartão compartilhado: de quem é cada compra que falta (padrão: você)
   const shared = wallet.shareScope !== 'none'
   const { me, people, nameOf } = useCardPeople()
@@ -67,6 +70,10 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
         : st.items
       if (!list.length) { setStatus('Não achei lançamentos neste PDF.'); return }
       setItems(list); setBankTotal(st.total)
+      if (st.revolvingRate && st.revolvingRate !== wallet.revolvingRate) {
+        await walletsApi.update(wallet.id, { revolvingRate: st.revolvingRate })
+        setRateSaved(st.revolvingRate); await refresh()
+      }
       await compare(list)
       setStatus(null)
     } catch {
@@ -133,6 +140,10 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
           <ListGroup>
             {bankTotal != null && <ListRow title="Fatura do banco" trailing={<span className="tabular-nums">{formatCurrency(bankTotal)}</span>} />}
             <ListRow title="No app" trailing={<span className="tabular-nums">{formatCurrency(appTotal)}</span>} />
+            {rateSaved != null && (
+              <ListRow title="Juros do rotativo" subtitle="Salvo no cartão"
+                trailing={<span className="tabular-nums">{rateSaved.toLocaleString('pt-BR')}% a.m.</span>} />
+            )}
             {bankTotal != null && (
               <ListRow title="Diferença" trailing={
                 <span className={`font-semibold tabular-nums ${bankTotal === appTotal ? 'text-success' : 'text-destructive'}`}>
