@@ -6,6 +6,7 @@ import { TransactionDayList } from '@/components/transactions/transaction-day-li
 import { TransactionEditSheet } from '@/components/transactions/transaction-edit-sheet'
 import { useMonthTransactions } from '@/hooks/use-month-transactions'
 import type { Transaction } from '@/lib/types'
+import { LoadingBlock } from '@/components/shared/loading-dots'
 
 // HOM-4: últimas transações do mês, com atalho "Ver todas".
 export function RecentTransactions({ month, limit = 6 }: { month: string; limit?: number }) {
@@ -19,7 +20,7 @@ export function RecentTransactions({ month, limit = 6 }: { month: string; limit?
         <Link href="/transactions" className="text-body text-tint active:opacity-50">Ver todas</Link>
       </div>
       {loading ? (
-        <p className="text-subheadline text-muted-foreground">Carregando…</p>
+        <LoadingBlock />
       ) : (
         <TransactionDayList transactions={transactions.slice(0, limit)} onSelect={setEditing} />
       )}

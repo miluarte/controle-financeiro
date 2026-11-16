@@ -28,6 +28,7 @@ import { todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { InstallmentProgress } from './installment-progress'
 import { ItemsEditor } from './items-editor'
+import { LoadingDots } from '@/components/shared/loading-dots'
 import { RepeatGroup, repeatDefault, repeatLastMonth } from './repeat-group'
 import { billsApi } from '@/lib/api/bills'
 import { PurchaseOwnerField, useCardAccess } from './purchase-owner-field'
@@ -211,7 +212,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
             </SheetClose>
             <SheetTitle className="text-headline font-semibold">{modeTitle}</SheetTitle>
             <GlassButton type="submit" size="capsule" tone="prominent" className="justify-self-end font-semibold" disabled={!canSubmit}>
-              {submitting ? 'Salvando…' : 'Registrar'}
+              {submitting ? <LoadingDots size="sm" tone="current" label="Salvando" /> : 'Registrar'}
             </GlassButton>
           </div>
 
@@ -320,7 +321,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
             {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
 
             <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>
-              {submitting ? 'Registrando…' : 'Registrar'}
+              {submitting ? <LoadingDots tone="current" label="Registrando" /> : 'Registrar'}
             </Button>
           </div>
         </form>

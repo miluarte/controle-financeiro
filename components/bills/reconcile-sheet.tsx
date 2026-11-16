@@ -17,6 +17,7 @@ import { reconcile, type Reconciliation } from '@/lib/reconcile'
 import { installmentFirstDate, parseStatement, pdfLines, type StatementItem } from '@/lib/statement'
 import type { OwnWallet } from '@/lib/types'
 import { daysInMonth, formatCurrency, formatDate } from '@/lib/utils'
+import { LoadingDots } from '@/components/shared/loading-dots'
 
 // Conferir a fatura com o PDF do banco: o que falta no app, o que sobra e o que bate.
 export function ReconcileSheet({ open, onOpenChange, wallet, invoiceRef, dueDate }: {
@@ -133,7 +134,11 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
         <DocumentAddLinearIcon className="size-5" />{result ? 'Escolher outro PDF' : 'Escolher PDF da fatura'}
       </Button>}
       <input ref={input} type="file" accept="application/pdf,.pdf" className="sr-only" onChange={e => onFile(e.target.files?.[0])} />
-      {status && <p className="px-4 text-center text-footnote text-muted-foreground">{status}</p>}
+      {status && (
+        <p className="flex flex-col items-center gap-2 px-4 text-center text-footnote text-muted-foreground">
+          {status.startsWith('Lendo') && <LoadingDots />}{status}
+        </p>
+      )}
 
       {result && (
         <>

@@ -11,6 +11,7 @@ import { useGoals, useHistory } from '@/hooks/use-data'
 import { averageSavings, planGoals } from '@/lib/advanced'
 import type { Goal } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
+import { LoadingBlock } from '@/components/shared/loading-dots'
 
 // Objetivos com simulação: quando cada um fica pronto com a poupança média real.
 export default function GoalsPage() {
@@ -37,7 +38,7 @@ export default function GoalsPage() {
         </section>
 
         {loading ? (
-          <p className="text-subheadline text-muted-foreground">Carregando…</p>
+          <LoadingBlock />
         ) : plans.length === 0 ? (
           <div className="py-10 text-center">
             <p className="text-headline">Nenhum objetivo</p>

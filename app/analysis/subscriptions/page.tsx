@@ -12,6 +12,7 @@ import { useSubscriptions } from '@/hooks/use-data'
 import { useMonth } from '@/hooks/use-month'
 import { subscriptionCost } from '@/lib/advanced'
 import { cn, formatCurrency } from '@/lib/utils'
+import { LoadingBlock } from '@/components/shared/loading-dots'
 
 // Custo por uso de cada assinatura no mês, e quanto sairia pagando avulso.
 export default function SubscriptionsPage() {
@@ -31,7 +32,7 @@ export default function SubscriptionsPage() {
       <div className="space-y-7 px-4 pt-2">
         <div className="flex"><MonthSelector /></div>
         {loading ? (
-          <p className="text-subheadline text-muted-foreground">Carregando…</p>
+          <LoadingBlock />
         ) : subscriptions.length === 0 ? (
           <div className="py-10 text-center">
             <p className="text-headline">Nenhuma assinatura</p>

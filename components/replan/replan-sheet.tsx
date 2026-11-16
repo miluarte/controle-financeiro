@@ -15,6 +15,7 @@ import { profileApi } from '@/lib/api/profile'
 import { balanceMessage, proposedGoal, type Rhythm } from '@/lib/replan'
 import { formatCurrency, monthName } from '@/lib/utils'
 import { StepDots } from '@/components/ios/step-dots'
+import { LoadingBlock } from '@/components/shared/loading-dots'
 
 const STEPS = ['Como você gasta hoje', 'Afine cada categoria', 'Tudo pronto']
 const ACTIONS = ['Continuar', 'Revisar', 'Salvar']
@@ -70,7 +71,7 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
     await refresh()
   }
 
-  if (loading) return <p className="py-10 text-center text-subheadline text-muted-foreground">Carregando…</p>
+  if (loading) return <LoadingBlock />
 
   return (
     <form id="replan" onSubmit={submit} className="space-y-6">

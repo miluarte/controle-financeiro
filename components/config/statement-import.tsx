@@ -7,6 +7,7 @@ import { askPdfPassword, Reconcile } from '@/components/bills/reconcile-sheet'
 import { useOwnWallets } from '@/hooks/use-data'
 import { invoiceDueDate, invoiceRefDueIn } from '@/lib/invoice'
 import { findDueDate, pdfLines } from '@/lib/statement'
+import { LoadingDots } from '@/components/shared/loading-dots'
 
 // Importar a fatura do cartão em PDF (o do app do banco ou o que chega por e-mail): escolhe o cartão
 // e mostra as compras para adicionar, com quem fez cada uma quando o cartão é compartilhado.
@@ -27,7 +28,11 @@ export function StatementImport({ file }: { file: File }) {
     return () => { alive = false }
   }, [file])
 
-  if (status) return <p className="px-4 text-center text-subheadline text-muted-foreground">{status}</p>
+  if (status) return (
+    <p className="flex flex-col items-center gap-3 px-4 py-6 text-center text-subheadline text-muted-foreground">
+      {status.startsWith('Lendo') && <LoadingDots size="lg" />}{status}
+    </p>
+  )
   if (!cards.length) return <p className="px-4 text-center text-subheadline text-muted-foreground">Cadastre o cartão em Config &gt; Carteiras antes.</p>
 
   // vencimento lido no PDF; se não achar, usa a próxima fatura do cartão escolhido

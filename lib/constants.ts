@@ -2,14 +2,18 @@
 // (trigger handle_new_user, ver docs/banco-de-dados.md).
 
 export const COLOR_TOKENS = [
-  'red', 'orange', 'yellow', 'green', 'teal', 'blue', 'indigo', 'purple', 'pink', 'gray',
+  'red', 'rose', 'pink', 'fuchsia', 'purple', 'violet', 'indigo', 'blue', 'sky', 'cyan', 'teal', 'emerald', 'green', 'lime', 'yellow', 'amber', 'orange', 'gray',
 ] as const
 
 export const ICON_TOKENS = [
-  'wallet', 'credit-card', 'banknote', 'piggy-bank', 'building',
-  'utensils', 'car', 'home', 'heart-pulse', 'book', 'gamepad-2',
-  'shirt', 'ellipsis', 'briefcase', 'laptop', 'trending-up', 'plus-circle',
-  'repeat', 'undo', 'gift',
+  'wallet', 'credit-card', 'banknote', 'piggy-bank', 'building', 'safe', 'hand-money', 'card-transfer',
+  'bill', 'document', 'tag', 'home', 'sofa', 'broom', 'lightbulb', 'waterdrop',
+  'wifi', 'key', 'shield', 'utensils', 'chef-hat', 'cart', 'bag', 'box',
+  'car', 'bus', 'fuel', 'bicycle', 'plane', 'globe', 'heart-pulse', 'pill',
+  'stethoscope', 'dumbbell', 'cosmetic', 'scissors', 'users', 'paw', 'shirt', 'hanger',
+  'gift', 'hand-heart', 'gamepad-2', 'ticket', 'music', 'tv', 'football', 'palette',
+  'book', 'laptop', 'smartphone', 'briefcase', 'trending-up', 'repeat', 'undo', 'plus-circle',
+  'ellipsis',
 ] as const
 
 export type ColorToken = typeof COLOR_TOKENS[number]

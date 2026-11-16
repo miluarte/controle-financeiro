@@ -18,6 +18,7 @@ import { nextBusinessDay } from '@/lib/business-days'
 import { invoiceDueDate, invoiceRefDueIn } from '@/lib/invoice'
 import type { BillOccurrence } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { LoadingBlock } from '@/components/shared/loading-dots'
 
 type Item =
   | { kind: 'bill'; due: string; amount: number; paid: boolean; o: BillOccurrence }
@@ -67,7 +68,7 @@ export default function BillsPage() {
         <BillsMonthCard total={total} paid={paid} count={items.length} />
 
         {loading ? (
-          <p className="text-subheadline text-muted-foreground">Carregando…</p>
+          <LoadingBlock />
         ) : items.length === 0 && incomes.length === 0 ? (
           <div className="py-10 text-center">
             <p className="text-headline">Nenhuma conta neste mês</p>

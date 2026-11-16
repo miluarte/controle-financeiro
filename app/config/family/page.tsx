@@ -7,6 +7,7 @@ import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { useFamily } from '@/hooks/use-family'
 import { useRefresh } from '@/hooks/use-refresh'
 import { familyApi } from '@/lib/api/family'
+import { LoadingBlock } from '@/components/shared/loading-dots'
 
 export default function FamilyPage() {
   const { family, status, role, loading } = useFamily()
@@ -17,7 +18,7 @@ export default function FamilyPage() {
       <LargeTitleHeader back title="Família" />
       <div className="px-4 pt-2">
         {loading ? (
-          <p className="text-subheadline text-muted-foreground">Carregando…</p>
+          <LoadingBlock />
         ) : !family || !status ? (
           <NoFamily />
         ) : status === 'pending' ? (

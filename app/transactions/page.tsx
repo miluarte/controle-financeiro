@@ -17,6 +17,7 @@ import { useMonth } from '@/hooks/use-month'
 import { useMonthTransactions } from '@/hooks/use-month-transactions'
 import { useWallets } from '@/hooks/use-wallets'
 import type { Transaction } from '@/lib/types'
+import { LoadingBlock } from '@/components/shared/loading-dots'
 
 type Filter = 'all' | 'expense' | 'income' | 'saved'
 
@@ -81,7 +82,7 @@ export default function TransactionsPage() {
         )}
         <TransactionsSummary transactions={visible} />
         {loading ? (
-          <p className="text-subheadline text-muted-foreground">Carregando…</p>
+          <LoadingBlock />
         ) : (
           <TransactionDayList transactions={visible} onSelect={setEditing} />
         )}

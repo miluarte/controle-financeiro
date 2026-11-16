@@ -12,6 +12,7 @@ import { useVehicles } from '@/hooks/use-data'
 import { useMonth } from '@/hooks/use-month'
 import { vehicleCost } from '@/lib/advanced'
 import { formatCurrency } from '@/lib/utils'
+import { LoadingBlock } from '@/components/shared/loading-dots'
 
 // Custo de deslocamento por veículo no mês. Fica fora do saldo: é estimativa.
 export default function VehiclesPage() {
@@ -30,7 +31,7 @@ export default function VehiclesPage() {
       <div className="space-y-7 px-4 pt-2">
         <div className="flex"><MonthSelector /></div>
         {loading ? (
-          <p className="text-subheadline text-muted-foreground">Carregando…</p>
+          <LoadingBlock />
         ) : vehicles.length === 0 ? (
           <div className="py-10 text-center">
             <p className="text-headline">Nenhum veículo</p>

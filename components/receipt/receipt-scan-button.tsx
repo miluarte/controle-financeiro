@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { CameraLinearIcon } from '@solar-icons/react'
 import { Button } from '@/components/ui/button'
+import { LoadingDots } from '@/components/shared/loading-dots'
 import { readReceipt, type ReceiptResult } from '@/lib/receipt'
 
 // 5.4 passos 1 e 2: abre a câmera ou a galeria e lê a nota. O formulário só é preenchido; nada é salvo aqui.
@@ -32,7 +33,9 @@ export function ReceiptScanButton({ onRead }: { onRead: (result: ReceiptResult, 
   return (
     <div className="space-y-1.5">
       {reading ? (
-        <Button type="button" variant="secondary" className="w-full rounded-full" disabled>{status}</Button>
+        <Button type="button" variant="secondary" className="w-full gap-2 rounded-full" disabled>
+          <LoadingDots size="sm" tone="current" label={status} />{status}
+        </Button>
       ) : (
         // um botão só: sem "capture", o iPhone abre o próprio menu (Tirar Foto, Fototeca, Arquivo)
         <Button type="button" variant="secondary" className="w-full rounded-full" onClick={() => gallery.current?.click()}>

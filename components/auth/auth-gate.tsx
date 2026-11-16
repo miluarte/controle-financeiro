@@ -5,13 +5,10 @@ import { useProfile } from '@/hooks/use-profile'
 import { OnboardingFlow } from '@/components/onboarding/onboarding-flow'
 import { AppLock } from './app-lock'
 import { AuthForm } from './auth-form'
+import { LoadingBlock } from '@/components/shared/loading-dots'
 
 function Loading() {
-  return (
-    <div className="flex min-h-dvh items-center justify-center">
-      <p className="text-sm text-muted-foreground">Carregando…</p>
-    </div>
-  )
+  return <LoadingBlock fullScreen />
 }
 
 // Sem sessão, mostra a tela de login. Conta nova passa pelo onboarding antes do app.

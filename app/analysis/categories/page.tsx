@@ -11,6 +11,7 @@ import { TokenIcon } from '@/components/shared/token-icon'
 import { useReplanData } from '@/hooks/use-replan-data'
 import { UNLOCK_EXPENSES } from '@/lib/replan'
 import { formatCurrency } from '@/lib/utils'
+import { LoadingBlock } from '@/components/shared/loading-dots'
 
 const CLASS_LABEL = { essential: 'Essencial', desire: 'Desejo' } as const
 
@@ -25,7 +26,7 @@ export default function YourCategoriesPage() {
     <>
       <LargeTitleHeader back title="Suas categorias" />
       <div className="space-y-7 px-4 pt-2">
-        <p className="px-4 text-subheadline text-muted-foreground">{loading ? 'Carregando…' : subtitle}</p>
+        {loading ? <LoadingBlock /> : <p className="px-4 text-subheadline text-muted-foreground">{subtitle}</p>}
 
         {!loading && !unlocked && (
           <section className="space-y-3 rounded-3xl bg-grouped p-4">
