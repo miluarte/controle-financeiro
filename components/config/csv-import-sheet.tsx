@@ -102,7 +102,7 @@ function Importer({ onDone }: { onDone: () => void }) {
     return (
       <div className="space-y-4">
         <p className="px-4 text-center text-subheadline text-muted-foreground">
-          PDF da fatura do cartão (do app ou do e-mail), ou extrato .csv ou .ofx.
+          PDF, CSV ou OFX.
         </p>
         <label className="flex h-12.5 cursor-pointer items-center justify-center rounded-full bg-tint text-headline font-semibold text-primary-foreground">
           Escolher arquivo
