@@ -97,7 +97,7 @@ API pública (2026-11-17): funções auxiliares das políticas e funções de ga
 
 Login com Google (2026-11-16, oculto por enquanto: `GOOGLE_LOGIN = false` em `auth-form.tsx`): `GoogleSignInButton` (`components/auth/`) na tela de entrada, `signInWithOAuth` voltando para `/home`. Antes de redirecionar, confere em `/auth/v1/settings` se o provedor está ligado; se não, avisa. Configuração do provedor (Client ID/Secret do Google Cloud, URLs de redirecionamento) é feita no painel do Supabase.
 
-Onboarding (2026-11-17): `OnboardingFlow` (`components/onboarding/`) aparece no `AuthGate` enquanto `profiles.onboarding_completed_at` for nulo: boas-vindas, nome, cartões de crédito, orçamento do mês, avisos (com instrução de instalar no iPhone) e pronto. Todos os passos depois do nome podem ser pulados; "Sair" encerra.
+Onboarding (refeito 2026-11-16): `OnboardingFlow` (`components/onboarding/`) aparece no `AuthGate` enquanto `profiles.onboarding_completed_at` for nulo: boas-vindas, nome, cartões (banco, final, crédito/débito/os dois, fechamento e vencimento), receita fixa (salário; se o dia já passou, começa no mês seguinte), orçamento, avisos, Face ID e pronto (dicas: +, parcela atual, automações). Config > Conta > "Ver o passo a passo inicial" zera a data e mostra de novo. Todos os passos depois do nome podem ser pulados; "Sair" encerra.
 
 Editar conta/receita fixa (2026-11-16): "Editar conta" na folha da ocorrência abre o `BillFormSheet` com `bill` (nome, valor, dia, categoria), salvando com `updateSeries` do mês aberto em diante.
 

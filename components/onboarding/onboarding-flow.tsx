@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { ChartSquareLinearIcon, CheckCircleLinearIcon, WalletMoneyLinearIcon } from '@solar-icons/react'
+import { billsApi } from '@/lib/api/bills'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormRow } from '@/components/ios/form-row'
@@ -14,18 +15,26 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { useSession } from '@/hooks/use-session'
 import { analysisApi } from '@/lib/api/analysis'
 import { profileApi } from '@/lib/api/profile'
-import { currentMonth, monthName } from '@/lib/utils'
+import { addMonths, currentMonth, todayIso } from '@/lib/utils'
 import { CardsStep } from './cards-step'
+import { IncomeStep, type IncomeDraft } from './income-step'
+import { SecurityStep } from './security-step'
 import { NotificationsStep } from './notifications-step'
 import { OnboardingStep, StepIcon } from './onboarding-step'
 
-const STEPS = ['welcome', 'name', 'cards', 'budget', 'notifications', 'done'] as const
+const STEPS = ['welcome', 'name', 'cards', 'income', 'budget', 'notifications', 'security', 'done'] as const
 
 const HIGHLIGHTS = [
-  { title: 'Registre em segundos', text: 'Toque no + e anote. Dá para ler a nota pela foto.' },
-  { title: 'Contas e faturas', text: 'Contas fixas, parcelas e faturas.' },
-  { title: 'Análise do mês', text: 'Orçamento, ritmo e metas.' },
-  { title: 'Família', text: 'Compartilhe cartões. Cada pessoa vê só as próprias finanças.' },
+  { title: 'Registre em segundos', text: 'Pelo +, pela foto da nota ou sozinho pelo Apple Pay.' },
+  { title: 'Contas e faturas', text: 'Contas e receitas fixas, parcelas e a fatura conferida pelo PDF.' },
+  { title: 'Análise do mês', text: 'Orçamento, ritmo, metas e objetivos.' },
+  { title: 'Família', text: 'Compartilhe cartões. Cada pessoa vê só o que é seu.' },
+]
+
+const TIPS = [
+  'Toque no + para registrar um gasto, uma receita ou uma conta fixa.',
+  'Já tem compras parceladas? No gasto, informe a parcela atual.',
+  'Apple Pay e toque duplo: Config > Automações.',
 ]
 
 // Passo a passo para quem acabou de criar a conta. Tudo depois das boas-vindas pode ser pulado.
@@ -36,6 +45,7 @@ export function OnboardingFlow() {
   const [i, setI] = useState(0)
   const [name, setName] = useState(profile?.name ?? '')
   const [budget, setBudget] = useState(0)
+  const [income, setIncome] = useState<IncomeDraft>({ name: 'Salário', amount: 0, day: 5 })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const step = STEPS[i]
@@ -56,6 +66,14 @@ export function OnboardingFlow() {
     try {
       if (step === 'name' && name.trim() && name.trim() !== profile?.name) {
         await profileApi.update(profile!.id, { name: name.trim() })
+      }
+      if (step === 'income' && income.amount > 0) {
+        await billsApi.create({
+          type: 'income', name: income.name.trim() || 'Salário', amount: income.amount, dueDay: income.day, dueNextMonth: false,
+          categoryId: null, recurring: true,
+          // dia de receber que já passou: este mês provavelmente já caiu, começa no próximo
+          startMonth: `${income.day < Number(todayIso().slice(8, 10)) ? addMonths(month, 1) : month}-01`, installmentCurrent: null, installmentsTotal: null, endMonth: null,
+        })
       }
       if (step === 'budget' && budget > 0) {
         await analysisApi.setBudget(session!.user.id, month, budget)
@@ -112,8 +130,10 @@ export function OnboardingFlow() {
 
         {step === 'cards' && <CardsStep />}
 
+        {step === 'income' && <IncomeStep value={income} onChange={setIncome} />}
+
         {step === 'budget' && (
-          <OnboardingStep icon={<StepIcon><ChartSquareLinearIcon /></StepIcon>} title={`Orçamento de ${monthName(month)}`}
+          <OnboardingStep icon={<StepIcon><ChartSquareLinearIcon /></StepIcon>} title="Orçamento do mês"
             text="Quanto quer gastar este mês?">
             <CurrencyInput id="ob-budget" aria-label="Orçamento do mês" variant="display" value={budget} onChange={setBudget} />
             <p className="text-center text-footnote text-muted-foreground">Pode definir depois na Análise.</p>
@@ -122,9 +142,14 @@ export function OnboardingFlow() {
 
         {step === 'notifications' && <NotificationsStep />}
 
+        {step === 'security' && <SecurityStep />}
+
         {step === 'done' && (
-          <OnboardingStep icon={<StepIcon><CheckCircleLinearIcon /></StepIcon>} title="Tudo pronto"
-            text="Toque no + para registrar o primeiro gasto." />
+          <OnboardingStep icon={<StepIcon><CheckCircleLinearIcon /></StepIcon>} title="Tudo pronto">
+            <ListGroup>
+              {TIPS.map(t => <li key={t} className="border-b border-separator px-4 py-3 text-subheadline last:border-b-0">{t}</li>)}
+            </ListGroup>
+          </OnboardingStep>
         )}
       </div>
 
