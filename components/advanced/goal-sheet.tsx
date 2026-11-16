@@ -11,6 +11,7 @@ import { NumberField } from '@/components/shared/number-field'
 import { useRefresh } from '@/hooks/use-refresh'
 import { goalsApi } from '@/lib/api/advanced'
 import type { Goal } from '@/lib/types'
+import { DateField } from '@/components/shared/date-field'
 
 // Criar ou editar um objetivo (ex.: comprar uma moto).
 export function GoalSheet({ open, goal, nextPriority, onOpenChange }: {
@@ -57,7 +58,7 @@ function GoalForm({ goal, nextPriority, onDone }: { goal: Goal | null; nextPrior
           <CurrencyInput id="goal-saved" variant="bare" value={saved} onChange={setSaved} className="text-right" />
         </FormRow>
         <FormRow label="Quero até" htmlFor="goal-date">
-          <Input id="goal-date" type="month" variant="bare" value={date} onChange={e => setDate(e.target.value)} className="w-auto text-right" />
+          <DateField id="goal-date" mode="month" value={date} onChange={v => setDate(v)} />
         </FormRow>
         <FormRow label="Prioridade" htmlFor="goal-priority">
           <NumberField id="goal-priority" min={1} max={99} value={priority} onChange={setPriority} className="w-16 text-right" />

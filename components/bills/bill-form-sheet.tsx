@@ -17,6 +17,7 @@ import { billsApi } from '@/lib/api/bills'
 import { addMonths, capitalize, monthLabel } from '@/lib/utils'
 import { RecurrenceEnd, type EndMode } from './recurrence-end'
 import type { Bill, BillType } from '@/lib/types'
+import { DateField } from '@/components/shared/date-field'
 
 // CON-3, CON-4, CON-5: nova conta (fixa, recorrente ou parcelada).
 // Com type="income" vira receita fixa (salário, aluguel recebido): mesma série mensal, mas a pagar vira a receber.
@@ -111,8 +112,7 @@ function BillForm({ type, bill, onDone }: { type: BillType; bill: Bill | null; o
         </FormRow>
         {!bill && (
           <FormRow label="Mês de referência" htmlFor="bill-month">
-            <Input id="bill-month" type="month" variant="bare" value={startMonth}
-              onChange={e => setStartMonth(e.target.value || month)} className="w-auto text-right" />
+            <DateField id="bill-month" mode="month" value={startMonth} onChange={v => setStartMonth(v || month)} />
           </FormRow>
         )}
         {!income && (

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Input } from '@/components/ui/input'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
@@ -14,6 +13,7 @@ import { useWallets } from '@/hooks/use-wallets'
 import { familyApi } from '@/lib/api/family'
 import type { CardDebt, Wallet } from '@/lib/types'
 import { capitalize, formatCurrency, monthName, todayIso } from '@/lib/utils'
+import { DateField } from '@/components/shared/date-field'
 
 // 5.7.8 passo 1: o membro informa que pagou ao titular (valor, data e de onde saiu).
 export function SettlementSheet({
@@ -65,7 +65,7 @@ function Form({ card, debts, onDone }: { card: Wallet; debts: CardDebt[]; onDone
       </ListGroup>
       <ListGroup>
         <FormRow label="Data" htmlFor="settle-date">
-          <Input id="settle-date" type="date" variant="bare" value={date} onChange={e => setDate(e.target.value || todayIso())} className="w-auto text-right" />
+          <DateField id="settle-date" value={date} onChange={v => setDate(v || todayIso())} />
         </FormRow>
       </ListGroup>
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}

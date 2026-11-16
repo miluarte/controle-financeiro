@@ -1,6 +1,6 @@
 import type {
   Bill, BillOccurrence, Category, CategorySpending, InvoiceTotal, MonthHistory, MonthSummary, OwnWallet,
-  Profile, Transaction, Wallet, Goal, Subscription, SubscriptionUse, Vehicle, VehicleTrip, VehicleMaintenance,
+  Profile, Transaction, Wallet, Goal, Institution, Subscription, SubscriptionUse, Vehicle, VehicleTrip, VehicleMaintenance,
 } from '../types'
 
 // Banco em snake_case, front em camelCase (lib/types.ts).
@@ -102,6 +102,9 @@ export function toOwnWallet(r: Row): OwnWallet {
   return {
     ...toWallet(r),
     spendingLimit: numOrNull(r.spending_limit),
+    institutionId: r.institution_id ?? null,
+    last4: r.last4 ?? null,
+    revolvingRate: numOrNull(r.revolving_rate),
     closingDayInclusive: r.closing_day_inclusive ?? true,
     shareScope: r.share_scope ?? 'none',
   }
@@ -189,4 +192,11 @@ export function toVehicleTrip(r: Row): VehicleTrip {
 
 export function toVehicleMaintenance(r: Row): VehicleMaintenance {
   return { id: r.id, vehicleId: r.vehicle_id, name: r.name, cost: num(r.cost), everyMonths: num(r.every_months) }
+}
+
+export function toInstitution(r: Row): Institution {
+  return {
+    id: r.id, name: r.name, revolvingRate: numOrNull(r.revolving_rate), installmentRate: numOrNull(r.installment_rate),
+    lateInterest: num(r.late_interest), lateFine: num(r.late_fine), iofDaily: num(r.iof_daily), iofAdditional: num(r.iof_additional),
+  }
 }

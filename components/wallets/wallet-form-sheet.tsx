@@ -8,7 +8,10 @@ import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
 import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
+import { DecimalField } from '@/components/shared/decimal-field'
 import { NumberField } from '@/components/shared/number-field'
+import { SelectField } from '@/components/shared/select-field'
+import { useInstitutions } from '@/hooks/use-data'
 import { useProfile } from '@/hooks/use-profile'
 import { useRefresh } from '@/hooks/use-refresh'
 import { profileApi } from '@/lib/api/profile'
@@ -38,9 +41,17 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
   const [closingDay, setClosingDay] = useState(wallet?.closingDay ?? 5)
   const [dueDay, setDueDay] = useState(wallet?.dueDay ?? 12)
   const [limit, setLimit] = useState(wallet?.spendingLimit ?? 0)
+  const institutions = useInstitutions()
+  const [institutionId, setInstitutionId] = useState(wallet?.institutionId ?? '')
+  const [last4, setLast4] = useState(wallet?.last4 ?? '')
+  const [revolving, setRevolving] = useState(wallet?.revolvingRate ?? 0)
+  // novo cartão com as duas funções vira duas carteiras: crédito (com fatura) e débito (sai na hora)
+  const [both, setBoth] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const isCredit = type === 'credit'
+  const isCard = type === 'credit' || type === 'debit'
+  const institution = institutions.find(i => i.id === institutionId)
   const typeLabel = WALLET_TYPES.find(t => t.value === type)?.label
   const isDefault = !!wallet && profile?.defaultWalletId === wallet.id
 
@@ -53,37 +64,65 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
 
   function save(e: React.FormEvent) {
     e.preventDefault()
-    if (!name.trim()) { setError('Dê um nome para a carteira.'); return }
+    const finalName = name.trim() || institution?.name || ''
+    if (!finalName) { setError('Dê um nome para a carteira.'); return }
+    if (last4 && !/^\d{4}$/.test(last4)) { setError('O final do cartão tem 4 números.'); return }
+    const card = {
+      institutionId: isCard ? institutionId || null : null,
+      last4: isCard ? last4 || null : null,
+    }
     const input = {
-      name: name.trim(), type, finish,
+      name: finalName, type, finish, ...card,
       closingDay: isCredit ? closingDay : null,
       dueDay: isCredit ? dueDay : null,
       spendingLimit: isCredit && limit > 0 ? limit : null,
+      revolvingRate: isCredit && revolving > 0 ? revolving : null,
     }
-    run(() => (wallet ? walletsApi.update(wallet.id, input) : walletsApi.create(input)))
+    run(async () => {
+      if (wallet) { await walletsApi.update(wallet.id, input); return }
+      await walletsApi.create(input)
+      if (both && isCredit) {
+        await walletsApi.create({ ...card, name: finalName, type: 'debit', finish, closingDay: null, dueDay: null, spendingLimit: null, revolvingRate: null })
+      }
+    })
   }
 
   return (
     <form id="wallet" onSubmit={save} className="space-y-6">
       <div className="flex justify-center">
-        <CardPreview name={name} finish={finish} typeLabel={typeLabel}
-          subtitle={isCredit ? `Fecha dia ${closingDay} · vence dia ${dueDay}` : undefined} />
+        <CardPreview name={name || institution?.name || ''} finish={finish} typeLabel={both && isCredit ? 'Crédito e débito' : typeLabel}
+          subtitle={[last4 && `•••• ${last4}`, isCredit && `Fecha dia ${closingDay} · vence dia ${dueDay}`].filter(Boolean).join(' · ') || undefined} />
       </div>
 
       <ListGroup>
         <FormRow label="Nome" htmlFor="w-name">
-          <Input id="w-name" variant="bare" value={name} onChange={e => setName(e.target.value)} placeholder="Nubank, Itaú…" className="text-right" />
+          <Input id="w-name" variant="bare" value={name} onChange={e => setName(e.target.value)} placeholder={institution?.name ?? 'Nubank, Itaú…'} className="text-right" />
         </FormRow>
+        {isCard && (
+          <>
+            <FormRow label="Banco" htmlFor="w-inst">
+              <SelectField id="w-inst" value={institutionId} onChange={setInstitutionId}
+                options={institutions.map(i => ({ value: i.id, label: i.name }))} />
+            </FormRow>
+            <FormRow label="Final do cartão" htmlFor="w-last4">
+              <Input id="w-last4" variant="bare" inputMode="numeric" maxLength={4} placeholder="0000" value={last4}
+                onChange={e => setLast4(e.target.value.replace(/\D/g, '').slice(0, 4))} className="w-20 text-right" />
+            </FormRow>
+          </>
+        )}
       </ListGroup>
 
       <ListGroup header="Tipo">
         <li className="flex flex-wrap gap-2 p-3">
           {WALLET_TYPES.map(t => (
-            <ChoiceChip key={t.value} selected={type === t.value} onClick={() => setType(t.value)}
+            <ChoiceChip key={t.value} selected={type === t.value && !both} onClick={() => { setType(t.value); setBoth(false) }}
               disabled={!!wallet && wallet.type !== t.value && (wallet.type === 'credit' || t.value === 'credit')}>
               {t.label}
             </ChoiceChip>
           ))}
+          {!wallet && (
+            <ChoiceChip selected={both} onClick={() => { setType('credit'); setBoth(true) }}>Crédito e débito</ChoiceChip>
+          )}
         </li>
       </ListGroup>
 
@@ -97,6 +136,14 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
           </FormRow>
           <FormRow label="Limite de gasto" htmlFor="w-limit">
             <CurrencyInput id="w-limit" variant="bare" value={limit} onChange={setLimit} placeholder="Opcional" className="text-right" />
+          </FormRow>
+        </ListGroup>
+      )}
+
+      {isCredit && (
+        <ListGroup header="Juros do rotativo (% ao mês)" footer="Está na fatura, em Pagamento em atraso. Usado para estimar o atraso.">
+          <FormRow label="Juros do rotativo" htmlFor="w-rate">
+            <DecimalField id="w-rate" decimals={2} value={revolving || institution?.revolvingRate || 0} onChange={setRevolving} className="w-20 text-right" />
           </FormRow>
         </ListGroup>
       )}

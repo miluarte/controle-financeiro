@@ -25,6 +25,8 @@ import { ReceiptScanButton } from '@/components/receipt/receipt-scan-button'
 import { useSession } from '@/hooks/use-session'
 import type { Wallet } from '@/lib/types'
 import { todayIso } from '@/lib/utils'
+import { DateField } from '@/components/shared/date-field'
+import { InstallmentProgress } from './installment-progress'
 
 export type QuickAddMode = 'expense' | 'income' | 'save'
 type Mode = QuickAddMode
@@ -57,6 +59,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
   const [pickedWalletId, setWalletId] = useState<string | null>(null)
   const [place, setPlace] = useState('')
   const [installments, setInstallments] = useState(1)
+  // compra parcelada que já estava andando antes do app: parcela atual e valor da parcela
+  const [currentInstallment, setCurrentInstallment] = useState(1)
+  const [amountIsInstallment, setAmountIsInstallment] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // leitura da nota fiscal (5.4)
@@ -77,6 +82,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
     setCategoryId(null)
     setPlace('')
     setInstallments(1)
+    setCurrentInstallment(1)
+    setAmountIsInstallment(false)
     setError(null)
     setWalletId(null)
     setReceipt(null)
@@ -106,7 +113,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
       const placeValue = place.trim() || null
       if (isCredit && installments > 1) {
         await transactionsApi.createInstallments({
-          walletId: walletId!, categoryId, total: amount, installments, firstDate: date, place: placeValue,
+          walletId: walletId!, categoryId, installments, firstDate: date, place: placeValue,
+          total: amountIsInstallment ? amount * installments : amount,
+          start: Math.min(currentInstallment, installments),
         })
       } else {
         const fromPhoto = mode === 'expense' && receipt
@@ -193,15 +202,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
             />
 
             <ListGroup>
-              <FormRow label="Data" htmlFor="date">
-                <Input
-                  id="date"
-                  type="date"
-                  variant="bare"
-                  value={date}
-                  onChange={e => setDate(e.target.value || todayIso())}
-                  className="w-auto text-right text-tint"
-                />
+              <FormRow label={isCredit && installments > 1 ? 'Data da compra' : 'Data'} htmlFor="date">
+                <DateField id="date" value={date} onChange={v => setDate(v || todayIso())} />
               </FormRow>
               <FormRow label={placeLabel} htmlFor="place">
                 <Input
@@ -218,6 +220,11 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
                   <NumberField id="installments" min={1} max={48} value={installments}
                     onChange={setInstallments} className="w-16 text-right" />
                 </FormRow>
+              )}
+              {isCredit && installments > 1 && (
+                <InstallmentProgress installments={installments} current={currentInstallment} onCurrentChange={setCurrentInstallment}
+                  amountIsInstallment={amountIsInstallment} onAmountIsInstallmentChange={setAmountIsInstallment}
+                  purchaseDate={date} />
               )}
             </ListGroup>
 

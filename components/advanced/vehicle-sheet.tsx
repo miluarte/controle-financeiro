@@ -15,6 +15,7 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { vehiclesApi } from '@/lib/api/advanced'
 import type { Vehicle, VehicleMaintenance, VehicleTrip } from '@/lib/types'
 import { formatCurrency, formatDate, todayIso } from '@/lib/utils'
+import { DateField } from '@/components/shared/date-field'
 
 interface VehicleSheetProps {
   open: boolean
@@ -83,7 +84,7 @@ function VehicleForm({ vehicle, trips, maintenance, onDone }: {
         <>
           <ListGroup header="Trajetos do mês">
             <FormRow label="Data" htmlFor="t-date">
-              <Input id="t-date" type="date" variant="bare" value={tripDate} onChange={e => setTripDate(e.target.value || todayIso())} className="w-auto text-right" />
+              <DateField id="t-date" value={tripDate} onChange={v => setTripDate(v || todayIso())} />
             </FormRow>
             <FormRow label="Km" htmlFor="t-km">
               <DecimalField id="t-km" value={tripKm} onChange={setTripKm} className="w-20 text-right" />

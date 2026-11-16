@@ -18,6 +18,7 @@ import type { Transaction } from '@/lib/types'
 import { TYPE_LABEL } from './transaction-item'
 import { receiptUrl, type ReceiptItem } from '@/lib/receipt'
 import { formatCurrency } from '@/lib/utils'
+import { DateField } from '@/components/shared/date-field'
 
 // TRA-6: abrir, editar e excluir um lançamento.
 export function TransactionEditSheet({
@@ -87,8 +88,7 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
 
       <ListGroup footer={t.installmentN ? `Parcela ${t.installmentN} de ${t.installmentsTotal}` : undefined}>
         <FormRow label="Data" htmlFor="edit-date">
-          <Input id="edit-date" type="date" variant="bare" value={date} disabled={!editable}
-            onChange={e => setDate(e.target.value || t.date)} className="w-auto text-right" />
+          <DateField id="edit-date" value={date} disabled={!editable} onChange={v => setDate(v || t.date)} />
         </FormRow>
         <FormRow label={t.type === 'income' ? 'Descrição' : 'Onde?'} htmlFor="edit-text">
           <Input id="edit-text" variant="bare" value={text} onChange={e => setText(e.target.value)}

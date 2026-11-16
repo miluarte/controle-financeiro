@@ -6,7 +6,7 @@ import { billsApi } from '@/lib/api/bills'
 import { categoriesApi } from '@/lib/api/categories'
 import { invoicesApi } from '@/lib/api/invoices'
 import { transactionsApi } from '@/lib/api/transactions'
-import { walletsApi } from '@/lib/api/wallets'
+import { institutionsApi, walletsApi } from '@/lib/api/wallets'
 import { goalsApi, subscriptionsApi, vehiclesApi } from '@/lib/api/advanced'
 import { addMonths, daysInMonth, monthRange } from '@/lib/utils'
 
@@ -92,4 +92,9 @@ export function useVehicles(month: string) {
 export function usePending(userId: string | undefined) {
   const { data, isLoading } = useSWR(userId ? ['pending', userId] : null, () => transactionsApi.getPending(userId!))
   return { pending: data ?? [], loading: isLoading }
+}
+
+export function useInstitutions() {
+  const { data } = useSWR(['institutions'], () => institutionsApi.list())
+  return data ?? []
 }

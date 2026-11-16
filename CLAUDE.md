@@ -39,6 +39,8 @@ Estrutura da tela: a página não rola. `AppShell` ocupa a tela toda (`h-app` = 
 
 Botão + (`components/layout/add-menu.tsx`) fica ao lado da barra de abas e abre um menu (`components/ui/dropdown-menu.tsx`, vidro): Gasto, Receita, Guardar (abrem o `QuickAddSheet` já no tipo) e, em "Todo mês", Conta fixa e Receita fixa (`BillFormSheet type`). É o único ponto de adicionar lançamentos e contas.
 
+Datas e meses usam `components/shared/date-field.tsx` (`DateField`, `mode="month"`): texto em português com mês abreviado ("16 nov 2026", "nov 2026") e o seletor nativo invisível por cima. Nunca `<input type="date">`/`type="month"` direto (no iPhone em inglês aparece "November 2026" e corta). Listas de escolha longas usam `SelectField` (mesmo esquema). Todo texto da interface em português.
+
 Campos de número inteiro (dia, parcelas) usam `components/shared/number-field.tsx`, nunca `<input type="number">` com clamp no onChange (impede apagar no iPhone). Valores em dinheiro usam `CurrencyInput`.
 
 Componentes em `components/ios/`: `ListGroup`, `ListRow`, `FormRow`, `SegmentedControl`, `LargeTitleHeader`, `GlassButton`. Variantes: `Button` `plain`/`nav`, `Input` `bare`/`display`. Modal: botão fechar de vidro | título | ação em cápsula preenchida.
@@ -107,6 +109,10 @@ Análise avançada (2026-11-16, backlog da spec), em Análise > Planejamento. Fo
 - Veículos: combustível = km do mês / km por litro x preço do litro; manutenção = custo / meses do intervalo.
 
 Automações do iPhone (2026-11-16): Config > Automações (`app/config/automations`) gera um token pessoal (`create_automation_token`, hash em `automation_tokens`) e mostra o passo a passo do app Atalhos para Apple Pay (automação Transação), toque duplo (atalho que pede valor e local) e SMS do banco (automação Mensagem). O Atalhos chama a Edge Function `atalho` (sem JWT; GET ou POST com `t`, `s`, `v`, `l`, `c`, `x`), que lê valor e local (também de texto de SMS) e chama `automation_capture` (só service_role): cria gasto `status = 'pending'`, acha a carteira pelo apelido aprendido (`wallet_aliases`) ou nome parecido, ignora a mesma compra em 5 min e avisa por push (`automations`). Fila de pendentes: `PendingBanner` na Home (abre sozinho com `?pendentes=1`) e `PendingSheet`/`PendingConfirm` (`components/pending/`): confirmar (categoria, carteira) ou descartar. Ao confirmar compra do Apple Pay, guarda o nome do cartão como apelido. Leituras de saldo e listas usam só `status = 'confirmed'`.
+
+Parcelas em andamento (2026-11-16): no registro de Gasto no crédito com parcelas, "Parcela atual" e "Valor total / Valor da parcela" (`InstallmentProgress`); a data vira "Data da compra". `create_installment_purchase(..., p_start)` lança só da parcela atual em diante (parcela k cai em data da compra + k-1 meses).
+
+Instituições e atraso (2026-11-16): tabela `institutions` (leitura para todos): juros do rotativo e do parcelamento (% a.m., vêm da fatura; null = não informado), mora 1% a.m., multa 2%, IOF 0,38% + 0,0082%/dia. Carteira ganha `institution_id`, `last4` e `revolving_rate` (da fatura do cliente, vence o da instituição). Cadastro de cartão: Banco, Final do cartão, Juros do rotativo e o tipo "Crédito e débito" (cria duas carteiras: crédito com fatura e débito). `lib/late-fee.ts` estima o atraso (rotativo composto pro rata, mora, multa, IOF, teto de 100% da dívida pela Lei 14.690/2023); `LateCostGroup` na fatura em aberto mostra "Se atrasar 5/15/30 dias" ou "Em atraso há N dias".
 
 Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`; contas de teste (`@example.com`) e os dados delas.
 

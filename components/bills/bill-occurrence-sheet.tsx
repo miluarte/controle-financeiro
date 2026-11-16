@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
@@ -15,6 +14,7 @@ import { useWallets } from '@/hooks/use-wallets'
 import { billsApi } from '@/lib/api/bills'
 import type { BillOccurrence } from '@/lib/types'
 import { formatCurrency, formatDate, todayIso } from '@/lib/utils'
+import { DateField } from '@/components/shared/date-field'
 
 // CON-6 e CON-9: pagar, desfazer pagamento, editar só este mês ou a série, encerrar.
 // Receita fixa usa o mesmo fluxo: marcar como recebida gera a receita na carteira escolhida.
@@ -77,7 +77,7 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
           </ListGroup>
           <ListGroup>
             <FormRow label={income ? 'Data do recebimento' : 'Data do pagamento'} htmlFor="pay-date">
-              <Input id="pay-date" type="date" variant="bare" value={payDate} onChange={e => setPayDate(e.target.value || todayIso())} className="w-auto text-right" />
+              <DateField id="pay-date" value={payDate} onChange={v => setPayDate(v || todayIso())} />
             </FormRow>
           </ListGroup>
           <Button size="lg" className="w-full" disabled={busy || !walletId}
@@ -94,7 +94,7 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
               <CurrencyInput id="occ-amount" variant="bare" value={amount} onChange={setAmount} className="text-right" />
             </FormRow>
             <FormRow label={income ? 'Dia de receber' : 'Vencimento'} htmlFor="occ-due">
-              <Input id="occ-due" type="date" variant="bare" value={dueDate} onChange={e => setDueDate(e.target.value || o.dueDate)} className="w-auto text-right" />
+              <DateField id="occ-due" value={dueDate} onChange={v => setDueDate(v || o.dueDate)} />
             </FormRow>
           </ListGroup>
           {changed && (

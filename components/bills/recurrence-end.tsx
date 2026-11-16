@@ -1,9 +1,9 @@
 'use client'
 
-import { Input } from '@/components/ui/input'
 import { FormRow } from '@/components/ios/form-row'
 import { SegmentedControl } from '@/components/ios/segmented-control'
 import { NumberField } from '@/components/shared/number-field'
+import { DateField } from '@/components/shared/date-field'
 
 export type EndMode = 'never' | 'month' | 'times'
 
@@ -27,8 +27,7 @@ export function RecurrenceEnd({ mode, onModeChange, endMonth, onEndMonthChange, 
       </li>
       {mode === 'month' && (
         <FormRow label="Último mês" htmlFor="bill-end">
-          <Input id="bill-end" type="month" variant="bare" min={minMonth} value={endMonth}
-            onChange={e => onEndMonthChange(e.target.value || minMonth)} className="w-auto text-right" />
+          <DateField id="bill-end" mode="month" min={minMonth} value={endMonth} onChange={v => onEndMonthChange(v || minMonth)} />
         </FormRow>
       )}
       {mode === 'times' && (

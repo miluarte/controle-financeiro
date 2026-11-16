@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
@@ -17,6 +16,8 @@ import { invoicesApi } from '@/lib/api/invoices'
 import { transactionsApi } from '@/lib/api/transactions'
 import type { OwnWallet } from '@/lib/types'
 import { formatCurrency, formatDate, monthLabel, todayIso } from '@/lib/utils'
+import { DateField } from '@/components/shared/date-field'
+import { LateCostGroup } from './late-cost-group'
 
 export interface InvoiceRef {
   wallet: OwnWallet
@@ -84,13 +85,14 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
           </ListGroup>
           <ListGroup>
             <FormRow label="Data do pagamento" htmlFor="inv-date">
-              <Input id="inv-date" type="date" variant="bare" value={payDate} onChange={e => setPayDate(e.target.value || todayIso())} className="w-auto text-right" />
+              <DateField id="inv-date" value={payDate} onChange={v => setPayDate(v || todayIso())} />
             </FormRow>
           </ListGroup>
           <Button size="lg" className="w-full" disabled={busy || !walletId}
             onClick={() => run(() => invoicesApi.pay(inv.wallet.id, `${inv.ref}-01`, walletId!, payDate))}>
             Pagar fatura
           </Button>
+          <LateCostGroup wallet={inv.wallet} total={inv.total} dueDate={inv.dueDate} />
         </>
       )}
 

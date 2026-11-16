@@ -109,10 +109,17 @@ export interface WalletInput {
   closingDay: number | null
   dueDay: number | null
   spendingLimit: number | null
+  institutionId?: string | null
+  last4?: string | null
+  revolvingRate?: number | null
 }
 
 export interface OwnWallet extends Wallet {
   spendingLimit: number | null
+  institutionId: string | null
+  last4: string | null
+  // juros do rotativo da fatura do cliente, % ao mês (vence o da instituição)
+  revolvingRate: number | null
   closingDayInclusive: boolean
   shareScope: 'none' | 'family' | 'selected'
 }
@@ -287,4 +294,16 @@ export interface VehicleMaintenance {
   name: string
   cost: number
   everyMonths: number
+}
+
+// Banco ou instituição do cartão, com as regras de atraso (percentuais).
+export interface Institution {
+  id: string
+  name: string
+  revolvingRate: number | null
+  installmentRate: number | null
+  lateInterest: number
+  lateFine: number
+  iofDaily: number
+  iofAdditional: number
 }

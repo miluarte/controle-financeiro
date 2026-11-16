@@ -1,6 +1,6 @@
 import type { OwnWallet, Wallet, WalletInput } from '../types'
 import { supabase, unwrap } from '../supabase/client'
-import { toOwnWallet, toWallet } from '../supabase/mappers'
+import { toInstitution, toOwnWallet, toWallet } from '../supabase/mappers'
 
 function toRow(w: Partial<WalletInput>) {
   const r: Record<string, unknown> = {}
@@ -10,7 +10,14 @@ function toRow(w: Partial<WalletInput>) {
   if (w.closingDay !== undefined) r.closing_day = w.closingDay
   if (w.dueDay !== undefined) r.due_day = w.dueDay
   if (w.spendingLimit !== undefined) r.spending_limit = w.spendingLimit
+  if (w.institutionId !== undefined) r.institution_id = w.institutionId
+  if (w.last4 !== undefined) r.last4 = w.last4
+  if (w.revolvingRate !== undefined) r.revolving_rate = w.revolvingRate
   return r
+}
+
+export const institutionsApi = {
+  list: async () => unwrap(await supabase.from('institutions').select('*').order('name')).map(toInstitution),
 }
 
 export const walletsApi = {

@@ -59,7 +59,7 @@ export default function WalletsPage() {
               return (
                 <ListRow key={w.id} onClick={() => router.push(`/cards/${w.id}`)}
                   leading={<CardPreview name="" finish={w.finish} size="sm" className="w-11" />}
-                  title={<>{w.name}{w.shareScope !== 'none' && <span className="text-muted-foreground"> · compartilhado</span>}</>}
+                  title={<>{w.name}{w.last4 && <span className="text-muted-foreground"> •{w.last4}</span>}{w.shareScope !== 'none' && <span className="text-muted-foreground"> · compartilhado</span>}</>}
                   subtitle={`Fatura de ${monthName(ref, 'short')} ${formatCurrency(current)} · próxima ${formatCurrency(next)}`
                     + (w.spendingLimit ? ` · limite ${formatCurrency(w.spendingLimit)}` : '')}
                   chevron />
@@ -74,7 +74,7 @@ export default function WalletsPage() {
             return (
               <ListRow key={w.id} onClick={() => open(w)}
                 leading={<CardPreview name="" finish={w.finish} size="sm" className="w-11" />}
-                title={<>{w.name}{profile?.defaultWalletId === w.id && <span className="text-muted-foreground"> · padrão</span>}</>}
+                title={<>{w.name}{w.last4 && <span className="text-muted-foreground"> •{w.last4}</span>}{w.type === 'debit' && <span className="text-muted-foreground"> · débito</span>}{profile?.defaultWalletId === w.id && <span className="text-muted-foreground"> · padrão</span>}</>}
                 subtitle={spent ? `${formatCurrency(spent)} em ${monthName(month, 'short')}` : `Sem gastos · ${monthName(month, 'short')}`}
                 chevron />
             )

@@ -17,6 +17,7 @@ import { automationsApi } from '@/lib/api/automations'
 import { transactionsApi } from '@/lib/api/transactions'
 import type { Transaction } from '@/lib/types'
 import { todayIso } from '@/lib/utils'
+import { DateField } from '@/components/shared/date-field'
 
 // Confirmar um gasto que chegou pela automação: ajusta valor, local, categoria e carteira.
 export function PendingConfirm({ t, onDone }: { t: Transaction; onDone: () => void }) {
@@ -57,7 +58,7 @@ export function PendingConfirm({ t, onDone }: { t: Transaction; onDone: () => vo
           <Input id="pending-place" variant="bare" value={place} onChange={e => setPlace(e.target.value)} placeholder="Opcional" className="text-right" />
         </FormRow>
         <FormRow label="Data" htmlFor="pending-date">
-          <Input id="pending-date" type="date" variant="bare" value={date} onChange={e => setDate(e.target.value || todayIso())} className="w-auto text-right" />
+          <DateField id="pending-date" value={date} onChange={v => setDate(v || todayIso())} />
         </FormRow>
       </ListGroup>
       <ListGroup header="Categoria">
