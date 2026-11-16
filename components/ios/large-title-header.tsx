@@ -5,7 +5,7 @@ import { AltArrowLeftLinearIcon } from '@solar-icons/react'
 import { GlassButton } from './glass-button'
 import { cn } from '@/lib/utils'
 
-// Título grande do iOS (Large Title). Voltar, título e ações ficam na mesma linha,
+// Título da página (title1, 28pt; mais discreto que o Large Title do iOS). Voltar, título e ações ficam na mesma linha,
 // com os botões centralizados na altura do título.
 interface LargeTitleHeaderProps {
   title: React.ReactNode
@@ -26,7 +26,7 @@ export function LargeTitleHeader({ title, eyebrow, actions, back, className }: L
             <AltArrowLeftLinearIcon />
           </GlassButton>
         )}
-        <h1 className="min-w-0 flex-1 truncate text-large-title font-bold">{title}</h1>
+        <h1 className="min-w-0 flex-1 truncate text-title1 font-bold">{title}</h1>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
       </div>
     </header>
