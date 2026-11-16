@@ -76,7 +76,7 @@ Família e cartões (2026-11-16):
 - Cada etapa gera aviso push para a outra pessoa (fila `notification_queue`).
 
 Notificações push (2026-11-16):
-- Edge Function `notify` (`supabase/functions/notify`), chamada a cada 10 min pelo pg_cron via pg_net com `x-cron-secret` (avisos por horário) e na hora por trigger em `notification_queue` (eventos e teste, `queue_only`). Cada aviso da fila é reservado antes do envio para não duplicar. Envia a fila `notification_queue` (eventos da família por trigger, teste) e avisos agendados com dedupe em `notification_log`: contas a vencer, lembrete de registro, resumo de domingo, orçamento 80%/100%, fatura de cartão compartilhado fechada.
+- Edge Function `notify` (`supabase/functions/notify`), chamada a cada 10 min pelo pg_cron via pg_net com `x-cron-secret` (avisos por horário) e na hora por trigger em `notification_queue` (eventos e teste, `queue_only`). Cada aviso da fila é reservado antes do envio para não duplicar. Envia a fila `notification_queue` (eventos da família por trigger, teste) e avisos agendados com dedupe em `notification_log`: contas a vencer, lembrete de registro, resumo de domingo, alertas inteligentes (orçamento 80%/100%; ritmo mais de 10% acima do ideal, a partir das 18h, do dia 5 até 2 dias antes do fim do mês, no máximo um por semana; gasto fora do padrão: compra das últimas 24h com 3x a média da categoria em 120 dias, mínimo R$ 50 e 5 compras de base), fatura de cartão compartilhado fechada.
 - A mesma função remove do bucket `receipts` as fotos de quem excluiu a conta (pasta sem perfil), só com a lista de perfis confirmada (ACE-5).
 - Chaves VAPID geradas pela própria função e guardadas em `private.app_secrets` (fora da API). O app pega só a pública via RPC `get_vapid_public_key`.
 - App: `lib/push.ts`, `app/config/notifications`, handlers `push`/`notificationclick` em `app/sw.ts`. No iPhone só funciona com o app na Tela de Início.
@@ -145,6 +145,8 @@ Categorias padrão (2026-11-16, migração `default_categories`): conta nova rec
 Folhas e menus: `--glass-surface-strong` = gray-50 a 94% (claro); fundo escurecido atrás da folha `--scrim` (preto 12% no claro). Cartão novo: chips Crédito e Débito podem ser marcados juntos. Nota fiscal lê parcelas (`installments`).
 
 Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`; contas de teste (`@example.com`) e os dados delas.
+
+Decisões (2026-11-16): Open Finance não será feito (atraso de um dia atrapalha o registro). ATR-6 já é garantido no banco (`private.transactions_before_write`: depois do fechamento, só o titular altera ou exclui).
 
 Pendente (spec, seção 8):
 - Backup periódico.

@@ -2,7 +2,8 @@
 // Chamada a cada 10 minutos pelo pg_cron e, na hora, quando entra aviso na fila (cabeçalho x-cron-secret).
 // 1. Envia a fila (eventos da família e testes).
 // 2. Avisos agendados por usuário: contas a vencer, lembrete de registro, resumo da semana,
-//    alertas de orçamento e lembrete de acerto quando a fatura de um cartão compartilhado fecha.
+//    alertas inteligentes (orçamento, ritmo, gasto fora do padrão) e lembrete de acerto quando a
+//    fatura de um cartão compartilhado fecha.
 import { createClient } from 'npm:@supabase/supabase-js@2.49.4'
 import webpush from 'npm:web-push@3.6.7'
 
@@ -170,22 +171,46 @@ Deno.serve(async req => {
       await alert(userId, 'weekly_summary', 'Resumo da semana', `Você gastou ${brl(total)}${diff}.${topName}`, '/analysis')
     }
 
-    // NOT-4: orçamento em 80% e 100%
+    // NOT-4: alertas inteligentes (orçamento 80% e 100%, ritmo acima do ideal, gasto fora do padrão)
     if (enabled(userId, 'smart_alerts')) {
       const month = now.date.slice(0, 7)
+      const day = Number(now.date.slice(8, 10))
+      const daysInMonth = new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0).getDate()
       const { data: budget } = await supabase.from('budgets').select('total_amount')
         .eq('user_id', userId).eq('ref_month', `${month}-01`).maybeSingle()
+      // gastos dos últimos 120 dias: base do mês e do padrão de cada categoria
+      const { data: recent } = await supabase.from('transactions').select('id, amount, date, place, category_id, created_at')
+        .eq('assigned_to', userId).eq('type', 'expense').eq('status', 'confirmed')
+        .gte('date', addDays(now.date, -120)).lte('date', now.date)
+      const rows = recent ?? []
+
       if (budget?.total_amount) {
-        const { data: tx } = await supabase.from('transactions').select('amount')
-          .eq('assigned_to', userId).eq('type', 'expense').eq('status', 'confirmed')
-          .gte('date', `${month}-01`).lte('date', now.date)
-        const spent = (tx ?? []).reduce((s, t) => s + t.amount, 0)
+        const spent = rows.filter(t => t.date >= `${month}-01`).reduce((s, t) => s + t.amount, 0)
         const ratio = spent / budget.total_amount
         if (ratio >= 1 && await once(userId, 'smart_alerts', `${month}:100`)) {
           await alert(userId, 'smart_alerts', 'Orçamento do mês estourado', `Você já gastou ${brl(spent)} de ${brl(budget.total_amount)}.`, '/analysis')
         } else if (ratio >= 0.8 && ratio < 1 && await once(userId, 'smart_alerts', `${month}:80`)) {
           await alert(userId, 'smart_alerts', '80% do orçamento usado', `Restam ${brl(budget.total_amount - spent)} para o mês.`, '/analysis')
+        } else if (ratio < 0.8 && day >= 5 && day <= daysInMonth - 2 && now.time >= '18:00') {
+          // ritmo: mais de 10% acima da reta ideal até hoje; no máximo um aviso por semana do mês
+          const ideal = Math.round(budget.total_amount * day / daysInMonth)
+          if (spent > ideal * 1.1 && await once(userId, 'smart_alerts', `${month}:pace:${Math.ceil(day / 7)}`)) {
+            await alert(userId, 'smart_alerts', 'Gastos acima do ritmo', `Você gastou ${brl(spent)}. O ideal até hoje era ${brl(ideal)}.`, '/analysis')
+          }
         }
+      }
+
+      // gasto fora do padrão: compra das últimas 24h com 3 vezes o valor comum da categoria (mín. R$ 50 e 5 compras de base)
+      const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
+      for (const t of rows.filter(r => r.created_at >= since && r.category_id && r.amount >= 5000)) {
+        const base = rows.filter(r => r.category_id === t.category_id && r.id !== t.id)
+        if (base.length < 5) continue
+        const avg = base.reduce((s, r) => s + r.amount, 0) / base.length
+        if (t.amount < avg * 3 || !(await once(userId, 'smart_alerts', `out:${t.id}`))) continue
+        const { data: c } = await supabase.from('categories').select('name').eq('id', t.category_id).maybeSingle()
+        const times = Math.round(t.amount / avg)
+        await alert(userId, 'smart_alerts', 'Gasto fora do padrão',
+          `${t.place ? `${t.place}: ` : ''}${brl(t.amount)} em ${c?.name ?? 'uma categoria'}, cerca de ${times}x o valor comum.`, '/transactions')
       }
     }
   }
