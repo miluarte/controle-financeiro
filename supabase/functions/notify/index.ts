@@ -179,7 +179,7 @@ Deno.serve(async req => {
       const { data: budget } = await supabase.from('budgets').select('total_amount')
         .eq('user_id', userId).eq('ref_month', `${month}-01`).maybeSingle()
       // gastos dos últimos 120 dias: base do mês e do padrão de cada categoria
-      const { data: recent } = await supabase.from('transactions').select('id, amount, date, place, category_id, created_at')
+      const { data: recent } = await supabase.from('transactions').select('id, amount, date, place, category_id, created_at, source, installment_group_id')
         .eq('assigned_to', userId).eq('type', 'expense').eq('status', 'confirmed')
         .gte('date', addDays(now.date, -120)).lte('date', now.date)
       const rows = recent ?? []
@@ -200,13 +200,23 @@ Deno.serve(async req => {
         }
       }
 
-      // gasto fora do padrão: compra das últimas 24h com 3 vezes o valor comum da categoria (mín. R$ 50 e 5 compras de base)
+      // gasto fora do padrão: compra de hoje ou ontem, registrada nas últimas 24h (não importada), com 3 vezes
+      // o valor comum da categoria (mín. R$ 50 e 5 compras de base). Parcelada: um aviso por compra.
       const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
-      for (const t of rows.filter(r => r.created_at >= since && r.category_id && r.amount >= 5000)) {
-        const base = rows.filter(r => r.category_id === t.category_id && r.id !== t.id)
+      const yesterdayBr = addDays(now.date, -1)
+      const fresh = rows.filter(r => r.created_at >= since && r.date >= yesterdayBr && r.category_id && r.amount >= 5000
+        && !['import', 'csv'].includes(r.source))
+      const seenGroups = new Set<string>()
+      for (const t of fresh) {
+        if (t.installment_group_id) {
+          if (seenGroups.has(t.installment_group_id)) continue
+          seenGroups.add(t.installment_group_id)
+        }
+        const base = rows.filter(r => r.category_id === t.category_id && r.id !== t.id
+          && (!t.installment_group_id || r.installment_group_id !== t.installment_group_id))
         if (base.length < 5) continue
         const avg = base.reduce((s, r) => s + r.amount, 0) / base.length
-        if (t.amount < avg * 3 || !(await once(userId, 'smart_alerts', `out:${t.id}`))) continue
+        if (t.amount < avg * 3 || !(await once(userId, 'smart_alerts', `out:${t.installment_group_id ?? t.id}`))) continue
         const { data: c } = await supabase.from('categories').select('name').eq('id', t.category_id).maybeSingle()
         const times = Math.round(t.amount / avg)
         await alert(userId, 'smart_alerts', 'Gasto fora do padrão',
