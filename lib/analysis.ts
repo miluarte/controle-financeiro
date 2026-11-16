@@ -41,9 +41,3 @@ export function freePerDay(remaining: number, month: string): number {
   return Math.floor(Math.max(0, remaining) / left)
 }
 
-// 7.4: gasto de 1 até o dia N.
-export function spendingUntilDay(transactions: Transaction[], day: number): number {
-  return transactions
-    .filter(t => t.type === 'expense' && t.status === 'confirmed' && Number(t.date.slice(8, 10)) <= day)
-    .reduce((s, t) => s + t.amount, 0)
-}
