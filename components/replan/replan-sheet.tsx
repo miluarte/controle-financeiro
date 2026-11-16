@@ -101,7 +101,7 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
             )}
           </section>
 
-          <ListGroup footer="A renda é opcional e só serve para calcular quanto sobra.">
+          <ListGroup footer="Opcional.">
             {askIncome || income != null ? (
               <FormRow label="Renda mensal" htmlFor="income">
                 <CurrencyInput id="income" variant="bare" value={incomeDraft} onChange={setIncomeDraft} className="text-right" />
@@ -121,7 +121,7 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
           <SegmentedControl<Rhythm> aria-label="Ritmo" value={rhythm} onChange={r => { setRhythm(r); setOverrides({}) }}
             options={[{ value: 'save', label: 'Economizar' }, { value: 'balance', label: 'Equilíbrio' }, { value: 'loose', label: 'Com folga' }]} />
           <p className="px-4 text-center text-footnote text-muted-foreground">
-            {rhythm === 'save' ? 'Metas 10% abaixo do que você gasta.' : rhythm === 'loose' ? 'Metas 15% acima do que você gasta.' : 'Metas no ritmo do que você já gasta.'} Toque num valor para mudar.
+            {rhythm === 'save' ? 'Metas 10% abaixo do que você gasta.' : rhythm === 'loose' ? 'Metas 15% acima do que você gasta.' : 'Metas no ritmo do que você já gasta.'}
           </p>
           {[{ title: 'Com gasto recente', list: recent }, { title: 'Sem gasto recente', list: idle }].filter(g => g.list.length).map(group => (
             <ListGroup key={group.title} header={group.title}>

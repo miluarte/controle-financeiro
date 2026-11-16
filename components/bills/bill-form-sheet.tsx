@@ -14,36 +14,39 @@ import { useCategories } from '@/hooks/use-categories'
 import { useMonth } from '@/hooks/use-month'
 import { useRefresh } from '@/hooks/use-refresh'
 import { billsApi } from '@/lib/api/bills'
-import type { BillType } from '@/lib/types'
+import type { Bill, BillType } from '@/lib/types'
 
 // CON-3, CON-4, CON-5: nova conta (fixa, recorrente ou parcelada).
 // Com type="income" vira receita fixa (salário, aluguel recebido): mesma série mensal, mas a pagar vira a receber.
+// Com bill, edita a série a partir do mês aberto (nome, valor, dia, categoria).
 interface BillFormSheetProps {
   open: boolean
   onOpenChange: (o: boolean) => void
   type?: BillType
+  bill?: Bill | null
 }
 
-export function BillFormSheet({ open, onOpenChange, type = 'expense' }: BillFormSheetProps) {
+export function BillFormSheet({ open, onOpenChange, type = 'expense', bill = null }: BillFormSheetProps) {
+  const kind = bill?.type ?? type
+  const title = bill ? (kind === 'income' ? 'Editar receita' : 'Editar conta') : kind === 'income' ? 'Nova receita fixa' : 'Nova conta'
   return (
-    <ModalSheet open={open} onOpenChange={onOpenChange} title={type === 'income' ? 'Nova receita fixa' : 'Nova conta'}
-      formId="new-bill" actionLabel="Salvar">
-      {open && <BillForm type={type} onDone={() => onOpenChange(false)} />}
+    <ModalSheet open={open} onOpenChange={onOpenChange} title={title} formId="new-bill" actionLabel="Salvar">
+      {open && <BillForm key={bill?.id ?? 'new'} type={kind} bill={bill} onDone={() => onOpenChange(false)} />}
     </ModalSheet>
   )
 }
 
-function BillForm({ type, onDone }: { type: BillType; onDone: () => void }) {
+function BillForm({ type, bill, onDone }: { type: BillType; bill: Bill | null; onDone: () => void }) {
   const income = type === 'income'
   const { month } = useMonth()
   const { categories } = useCategories()
   const refresh = useRefresh()
-  const [name, setName] = useState('')
-  const [amount, setAmount] = useState(0)
-  const [dueDay, setDueDay] = useState(10)
+  const [name, setName] = useState(bill?.name ?? '')
+  const [amount, setAmount] = useState(bill?.amount ?? 0)
+  const [dueDay, setDueDay] = useState(bill?.dueDay ?? 10)
   const [startMonth, setStartMonth] = useState(month)
-  const [dueNextMonth, setDueNextMonth] = useState(false)
-  const [categoryId, setCategoryId] = useState<string | null>(null)
+  const [dueNextMonth, setDueNextMonth] = useState(bill?.dueNextMonth ?? false)
+  const [categoryId, setCategoryId] = useState<string | null>(bill?.categoryId ?? null)
   const [recurring, setRecurring] = useState(true)
   const [installments, setInstallments] = useState(false)
   const [current, setCurrent] = useState(1)
@@ -56,6 +59,11 @@ function BillForm({ type, onDone }: { type: BillType; onDone: () => void }) {
     if (amount <= 0) { setError('Informe o valor.'); return }
     if (installments && (current < 1 || total < current)) { setError('Confira as parcelas.'); return }
     try {
+      if (bill) {
+        await billsApi.updateSeries(bill.id, month, { name: name.trim(), amount, dueDay, dueNextMonth: income ? false : dueNextMonth, categoryId })
+        await refresh(); onDone()
+        return
+      }
       await billsApi.create({
         type, name: name.trim(), amount, dueDay, dueNextMonth: income ? false : dueNextMonth, categoryId,
         recurring: recurring || installments,
@@ -79,10 +87,12 @@ function BillForm({ type, onDone }: { type: BillType; onDone: () => void }) {
         <FormRow label={income ? 'Dia de receber' : 'Dia do vencimento'} htmlFor="bill-day">
           <NumberField id="bill-day" min={1} max={31} value={dueDay} onChange={setDueDay} className="w-16 text-right" />
         </FormRow>
-        <FormRow label="Mês de referência" htmlFor="bill-month">
-          <Input id="bill-month" type="month" variant="bare" value={startMonth}
-            onChange={e => setStartMonth(e.target.value || month)} className="w-auto text-right" />
-        </FormRow>
+        {!bill && (
+          <FormRow label="Mês de referência" htmlFor="bill-month">
+            <Input id="bill-month" type="month" variant="bare" value={startMonth}
+              onChange={e => setStartMonth(e.target.value || month)} className="w-auto text-right" />
+          </FormRow>
+        )}
         {!income && (
           <FormRow label="Vence no mês seguinte">
             <Switch checked={dueNextMonth} onCheckedChange={setDueNextMonth} />
@@ -90,9 +100,12 @@ function BillForm({ type, onDone }: { type: BillType; onDone: () => void }) {
         )}
       </ListGroup>
 
+      {bill ? (
+        <p className="px-4 text-footnote text-muted-foreground">Vale deste mês em diante.</p>
+      ) : (
       <ListGroup footer={income
-        ? 'Repetindo, a receita aparece sozinha todo mês em Contas, em "A receber".'
-        : 'Repetindo, a conta aparece sozinha todo mês. Parcelada, a parcela avança a cada mês até o fim.'}>
+        ? undefined
+        : undefined}>
         <FormRow label="Repetir nos próximos meses">
           <Switch checked={recurring || installments} disabled={installments} onCheckedChange={setRecurring} />
         </FormRow>
@@ -112,6 +125,7 @@ function BillForm({ type, onDone }: { type: BillType; onDone: () => void }) {
           </>
         )}
       </ListGroup>
+      )}
 
       <ListGroup header="Categoria">
         <li className="flex flex-wrap gap-2 p-3">

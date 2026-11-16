@@ -7,7 +7,8 @@ import { categoriesApi } from '@/lib/api/categories'
 import { invoicesApi } from '@/lib/api/invoices'
 import { transactionsApi } from '@/lib/api/transactions'
 import { walletsApi } from '@/lib/api/wallets'
-import { addMonths } from '@/lib/utils'
+import { goalsApi, subscriptionsApi, vehiclesApi } from '@/lib/api/advanced'
+import { addMonths, daysInMonth, monthRange } from '@/lib/utils'
 
 // Hooks de leitura das telas da v1. Escrita: lib/api + useRefresh.
 
@@ -61,4 +62,29 @@ export function useAllMyTransactions(userId: string | undefined) {
 export function useClosings(months = 12) {
   const { data } = useSWR(['closings', months], () => analysisApi.closings(months))
   return data ?? []
+}
+
+export function useGoals() {
+  const { data, isLoading } = useSWR(['goals'], () => goalsApi.list())
+  return { goals: data ?? [], loading: isLoading }
+}
+
+export function useSubscriptions(month: string) {
+  const from = monthRange(month).start
+  const to = `${month}-${String(daysInMonth(month)).padStart(2, '0')}`
+  const { data, isLoading } = useSWR(['subscriptions', month], async () => {
+    const [list, uses] = await Promise.all([subscriptionsApi.list(), subscriptionsApi.uses(from, to)])
+    return { list, uses }
+  })
+  return { subscriptions: data?.list ?? [], uses: data?.uses ?? [], loading: isLoading }
+}
+
+export function useVehicles(month: string) {
+  const from = monthRange(month).start
+  const to = `${month}-${String(daysInMonth(month)).padStart(2, '0')}`
+  const { data, isLoading } = useSWR(['vehicles', month], async () => {
+    const [list, trips, maintenance] = await Promise.all([vehiclesApi.list(), vehiclesApi.trips(from, to), vehiclesApi.maintenance()])
+    return { list, trips, maintenance }
+  })
+  return { vehicles: data?.list ?? [], trips: data?.trips ?? [], maintenance: data?.maintenance ?? [], loading: isLoading }
 }

@@ -79,7 +79,7 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
         </ListGroup>
       ) : inv.total > 0 && (
         <>
-          <ListGroup header="Pagar com" footer="O pagamento sai do saldo nesta data. As compras já contaram nos gastos de cada mês.">
+          <ListGroup header="Pagar com" footer="Sai do saldo nesta data.">
             <WalletPicker wallets={payable} value={walletId} onChange={setWalletId} />
           </ListGroup>
           <ListGroup>

@@ -22,9 +22,9 @@ import { OnboardingStep, StepIcon } from './onboarding-step'
 const STEPS = ['welcome', 'name', 'cards', 'budget', 'notifications', 'done'] as const
 
 const HIGHLIGHTS = [
-  { title: 'Registre em segundos', text: 'Toque no + e anote gasto, receita ou o que guardou. Dá para ler a nota fiscal pela foto.' },
-  { title: 'Contas e faturas', text: 'Contas fixas, parcelas e a fatura de cada cartão no mês em que vencem.' },
-  { title: 'Análise do mês', text: 'Orçamento, ritmo de gastos e metas por categoria, com o que você registrou.' },
+  { title: 'Registre em segundos', text: 'Toque no + e anote. Dá para ler a nota pela foto.' },
+  { title: 'Contas e faturas', text: 'Contas fixas, parcelas e faturas.' },
+  { title: 'Análise do mês', text: 'Orçamento, ritmo e metas.' },
   { title: 'Família', text: 'Compartilhe cartões. Cada pessoa vê só as próprias finanças.' },
 ]
 
@@ -87,7 +87,7 @@ export function OnboardingFlow() {
       <div className="flex-1 overflow-y-auto py-8">
         {step === 'welcome' && (
           <OnboardingStep icon={<AppLogo size="lg" />} title="Boas-vindas ao Troco"
-            text="Seu dinheiro, mês a mês. Leva um minuto para deixar tudo pronto.">
+            text="Seu dinheiro, mês a mês.">
             <ListGroup>
               {HIGHLIGHTS.map(h => (
                 <li key={h.title} className="border-b border-separator px-4 py-3 last:border-b-0">
@@ -101,7 +101,7 @@ export function OnboardingFlow() {
 
         {step === 'name' && (
           <OnboardingStep icon={<StepIcon><WalletMoneyLinearIcon /></StepIcon>} title="Como podemos te chamar?"
-            text="O nome aparece na saudação e para a sua família.">
+            text="Seu nome aparece na saudação.">
             <ListGroup>
               <FormRow label="Nome" htmlFor="ob-name">
                 <Input id="ob-name" variant="bare" value={name} onChange={e => setName(e.target.value)} placeholder="Seu nome" className="text-right" />
@@ -114,9 +114,9 @@ export function OnboardingFlow() {
 
         {step === 'budget' && (
           <OnboardingStep icon={<StepIcon><ChartSquareLinearIcon /></StepIcon>} title={`Orçamento de ${monthName(month)}`}
-            text="Quanto você quer gastar no total este mês? O app mostra o ritmo e quanto fica livre por dia.">
+            text="Quanto quer gastar este mês?">
             <CurrencyInput id="ob-budget" aria-label="Orçamento do mês" variant="display" value={budget} onChange={setBudget} />
-            <p className="text-center text-footnote text-muted-foreground">Pode deixar para depois. Dá para definir na Análise.</p>
+            <p className="text-center text-footnote text-muted-foreground">Pode definir depois na Análise.</p>
           </OnboardingStep>
         )}
 
@@ -124,7 +124,7 @@ export function OnboardingFlow() {
 
         {step === 'done' && (
           <OnboardingStep icon={<StepIcon><CheckCircleLinearIcon /></StepIcon>} title="Tudo pronto"
-            text="Toque no + na barra de baixo para registrar o primeiro gasto. Tudo o que você configurou aqui pode ser mudado em Config." />
+            text="Toque no + para registrar o primeiro gasto." />
         )}
       </div>
 

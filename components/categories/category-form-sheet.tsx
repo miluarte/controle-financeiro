@@ -69,7 +69,7 @@ function Form({ c, siblings, onDone }: { c: Category; siblings: Category[]; onDo
       </ListGroup>
 
       {c.type === 'expense' && (
-        <ListGroup header="Classe" footer="Usada no replanejamento de metas: Essencial ou Desejo.">
+        <ListGroup header="Classe" >
           <li className="p-3">
             <SegmentedControl aria-label="Classe" value={klass} onChange={setKlass}
               options={[{ value: 'essential', label: 'Essencial' }, { value: 'desire', label: 'Desejo' }, { value: 'none', label: 'Nenhuma' }]} />

@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { BillFormSheet } from '@/components/bills/bill-form-sheet'
 import { BillOccurrenceSheet } from '@/components/bills/bill-occurrence-sheet'
 import { BillsMonthCard } from '@/components/bills/bills-month-card'
 import { DueBadge } from '@/components/bills/due-badge'
@@ -28,6 +29,7 @@ export default function BillsPage() {
   const { wallets } = useOwnWallets()
   const { categories } = useCategories()
   const [openBill, setOpenBill] = useState<BillOccurrence | null>(null)
+  const [editing, setEditing] = useState<BillOccurrence | null>(null)
   const [openInvoice, setOpenInvoice] = useState<InvoiceRef | null>(null)
   const catById = new Map(categories.map(c => [c.id, c]))
 
@@ -122,7 +124,9 @@ export default function BillsPage() {
           </>
         )}
       </div>
-      <BillOccurrenceSheet occurrence={openBill} onClose={() => setOpenBill(null)} />
+      <BillOccurrenceSheet occurrence={openBill} onClose={() => setOpenBill(null)}
+        onEdit={o => { setOpenBill(null); setEditing(o) }} />
+      <BillFormSheet open={!!editing} bill={editing?.bill ?? null} onOpenChange={o => { if (!o) setEditing(null) }} />
       <InvoiceSheet invoice={openInvoice} onClose={() => setOpenInvoice(null)} />
     </>
   )

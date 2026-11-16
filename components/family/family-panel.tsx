@@ -60,7 +60,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
       </section>
 
       {isAdmin && (
-        <ListGroup footer="Com as entradas pausadas, ninguém novo consegue pedir para entrar.">
+        <ListGroup footer="Ninguém novo consegue entrar.">
           <FormRow label="Pausar novas entradas">
             <Switch checked={family.entriesPaused} onCheckedChange={v => run(() => familyApi.setPaused(v))} />
           </FormRow>
@@ -97,7 +97,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
 
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
 
-      <ListGroup footer={isAdmin && active.length > 1 ? 'Se você sair, o membro mais antigo vira admin.' : undefined}>
+      <ListGroup footer={isAdmin && active.length > 1 ? 'O membro mais antigo vira admin.' : undefined}>
         <ListRow tone="destructive" title="Sair da família"
           onClick={() => { if (confirm('Sair da família? Você perde o acesso aos cartões compartilhados.')) run(() => familyApi.leave()) }} />
       </ListGroup>

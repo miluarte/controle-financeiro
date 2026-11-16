@@ -130,7 +130,7 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
         </section>
       ) : null}
 
-      <ListGroup header="Compras" footer={shared && !paidAt ? 'Toque numa compra para dizer de quem ela é.' : undefined}>
+      <ListGroup header="Compras" footer={shared && !paidAt ? 'Toque para dizer de quem é.' : undefined}>
         {list.length === 0 && <li className="p-4 text-center text-subheadline text-muted-foreground">Nenhuma compra nesta fatura.</li>}
         {list.map(t => (
           <TransactionItem key={t.id} transaction={t}

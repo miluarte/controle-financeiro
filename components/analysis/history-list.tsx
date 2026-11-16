@@ -11,7 +11,7 @@ export function HistoryList() {
   const closings = useClosings(12)
   const closingOf = (m: string) => closings.find(c => c.refMonth.slice(0, 7) === m.slice(0, 7))
   return (
-    <ListGroup header="Últimos meses" footer="Gastos à direita. O saldo final de cada mês fechado vira o saldo inicial do seguinte quando o saldo acumulado está ligado.">
+    <ListGroup header="Últimos meses">
       {history.map(h => (
         <ListRow
           key={h.month}

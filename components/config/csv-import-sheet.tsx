@@ -104,7 +104,7 @@ function Importer({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="space-y-6">
-      <ListGroup header="Colunas" footer="Confira o que cada coluna representa.">
+      <ListGroup header="Colunas">
         {rows[0].map((h, i) => (
           <li key={i} className="flex min-h-row items-center gap-3 border-b border-separator pr-4 pl-4 last:border-b-0">
             <span className="min-w-0 flex-1 truncate text-body">{h || `Coluna ${i + 1}`}</span>

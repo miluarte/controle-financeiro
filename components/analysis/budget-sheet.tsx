@@ -37,7 +37,7 @@ function Form({ month, current, onDone }: { month: string; current: number | nul
     <form id="budget" onSubmit={save} className="space-y-4">
       <CurrencyInput id="budget-value" aria-label="Orçamento" variant="display" value={value} onChange={setValue} />
       <p className="px-4 text-center text-footnote text-muted-foreground">
-        Quanto você quer gastar no total em {monthName(month)}. Guardar e pagar fatura não contam como gasto.
+        Total para gastar em {monthName(month)}.
       </p>
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
     </form>

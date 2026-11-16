@@ -48,7 +48,7 @@ function Body({ s, name, onDone }: { s: Settlement; name: string; onDone: () => 
           {s.reportedAt ? ` em ${formatDate(s.reportedAt.slice(0, 10))}` : ''}
         </p>
       </div>
-      <ListGroup header="Recebi em" footer="O valor entra como receita (Reembolso) e a fatura dessa pessoa fica quitada.">
+      <ListGroup header="Recebi em" footer="Entra como receita (Reembolso).">
         <WalletPicker wallets={mine} value={walletId} onChange={setWalletId} />
       </ListGroup>
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}

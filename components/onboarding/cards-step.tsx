@@ -36,7 +36,7 @@ export function CardsStep() {
 
   return (
     <OnboardingStep icon={<StepIcon><CardLinearIcon /></StepIcon>} title="Seus cartões"
-      text="Pix e Dinheiro já estão prontos. Cadastre seus cartões de crédito para o app montar as faturas.">
+      text="Cadastre seus cartões de crédito.">
       {cards.length > 0 && (
         <ListGroup header="Cadastrados">
           {cards.map(c => (
@@ -45,7 +45,7 @@ export function CardsStep() {
           ))}
         </ListGroup>
       )}
-      <ListGroup header="Novo cartão" footer={error ?? 'Você pode mudar a cor e o limite depois, em Config > Carteiras.'}>
+      <ListGroup header="Novo cartão" footer={error ?? 'Dá para mudar depois em Config.'}>
         <FormRow label="Nome" htmlFor="ob-card-name">
           <Input id="ob-card-name" variant="bare" value={name} onChange={e => setName(e.target.value)} placeholder="Nubank, Itaú…" className="text-right" />
         </FormRow>

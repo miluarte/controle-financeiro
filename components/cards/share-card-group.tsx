@@ -32,7 +32,7 @@ export function ShareCardGroup({ wallet, scope, members }: { wallet: OwnWallet; 
 
   return (
     <ListGroup header="Compartilhar com a família"
-      footer={error ?? 'Quem tiver acesso vê só nome, acabamento, fechamento e vencimento, e só as próprias compras.'}>
+      footer={error ?? 'Cada pessoa vê só as próprias compras.'}>
       <li className="space-y-3 p-3">
         <SegmentedControl<Scope> aria-label="Compartilhamento" value={scope}
           onChange={v => save(v, v === 'selected' ? [...selected] : [])}

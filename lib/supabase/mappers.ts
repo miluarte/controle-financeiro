@@ -1,6 +1,6 @@
 import type {
   Bill, BillOccurrence, Category, CategorySpending, InvoiceTotal, MonthHistory, MonthSummary, OwnWallet,
-  Profile, Transaction, Wallet,
+  Profile, Transaction, Wallet, Goal, Subscription, SubscriptionUse, Vehicle, VehicleTrip, VehicleMaintenance,
 } from '../types'
 
 // Banco em snake_case, front em camelCase (lib/types.ts).
@@ -161,4 +161,31 @@ export function toCategorySpending(r: Row): CategorySpending {
 
 export function toMonthHistory(r: Row): MonthHistory {
   return { month: r.month, spending: num(r.spending), income: num(r.income), saved: num(r.saved) }
+}
+
+export function toGoal(r: Row): Goal {
+  return {
+    id: r.id, name: r.name, targetAmount: num(r.target_amount), savedAmount: num(r.saved_amount),
+    targetDate: r.target_date ?? null, priority: num(r.priority),
+  }
+}
+
+export function toSubscription(r: Row): Subscription {
+  return { id: r.id, name: r.name, monthlyAmount: num(r.monthly_amount), unitPrice: numOrNull(r.unit_price), active: !!r.active }
+}
+
+export function toSubscriptionUse(r: Row): SubscriptionUse {
+  return { id: r.id, subscriptionId: r.subscription_id, usedOn: r.used_on }
+}
+
+export function toVehicle(r: Row): Vehicle {
+  return { id: r.id, name: r.name, kmPerLiter: Number(r.km_per_liter), fuelPrice: num(r.fuel_price) }
+}
+
+export function toVehicleTrip(r: Row): VehicleTrip {
+  return { id: r.id, vehicleId: r.vehicle_id, date: r.date, km: Number(r.km), note: r.note ?? null }
+}
+
+export function toVehicleMaintenance(r: Row): VehicleMaintenance {
+  return { id: r.id, vehicleId: r.vehicle_id, name: r.name, cost: num(r.cost), everyMonths: num(r.every_months) }
 }

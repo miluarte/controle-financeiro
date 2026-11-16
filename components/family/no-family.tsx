@@ -30,7 +30,7 @@ export function NoFamily() {
       </p>
 
       <form onSubmit={e => { e.preventDefault(); if (name.trim()) run(() => familyApi.create(name.trim())) }} className="space-y-3">
-        <ListGroup header="Criar família" footer="Você vira admin e recebe um código para convidar as pessoas.">
+        <ListGroup header="Criar família" footer="Você recebe um código para convidar.">
           <FormRow label="Nome" htmlFor="fam-name">
             <Input id="fam-name" variant="bare" value={name} onChange={e => setName(e.target.value)} placeholder="Família Silva" className="text-right" />
           </FormRow>
@@ -39,7 +39,7 @@ export function NoFamily() {
       </form>
 
       <form onSubmit={e => { e.preventDefault(); if (code.trim()) run(() => familyApi.join(code.trim())) }} className="space-y-3">
-        <ListGroup header="Entrar com código" footer="A entrada fica pendente até o admin aprovar.">
+        <ListGroup header="Entrar com código" footer="O admin precisa aprovar.">
           <FormRow label="Código" htmlFor="fam-code">
             <Input id="fam-code" variant="bare" value={code} maxLength={8} autoCapitalize="characters"
               onChange={e => setCode(e.target.value.toUpperCase())} placeholder="ABCD2345" className="text-right font-mono tracking-widest" />

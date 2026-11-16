@@ -54,7 +54,7 @@ export function RegistryGroup() {
   const activeWallets = wallets.filter(w => w.active).length
 
   return (
-    <ListGroup header="Registro" footer="Com o saldo acumulado ligado, o que sobra de um mês passa para o seguinte.">
+    <ListGroup header="Registro" footer="O que sobra passa para o mês seguinte.">
       <ListRow title="Categorias de gasto" trailing={`${activeExpense} ativas`} chevron onClick={() => router.push('/config/categories')} />
       <ListRow title="Categorias de receita" trailing={`${activeIncome} ativas`} chevron onClick={() => router.push('/config/categories')} />
       <ListRow title="Carteiras" trailing={`${activeWallets} ativas`} chevron onClick={() => router.push('/config/wallets')} />

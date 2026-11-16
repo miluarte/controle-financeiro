@@ -24,7 +24,7 @@ export function NotificationsStep() {
 
   return (
     <OnboardingStep icon={<StepIcon><BellLinearIcon /></StepIcon>} title="Avisos"
-      text="Lembretes de contas a vencer, resumo da semana e avisos da família.">
+      text="Contas a vencer, resumo da semana e família.">
       {state === 'needs-install' ? (
         <ListGroup header="Instale o Troco no iPhone">
           <li className="space-y-2 px-4 py-3 text-body">

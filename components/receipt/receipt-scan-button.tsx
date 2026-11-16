@@ -36,7 +36,7 @@ export function ReceiptScanButton({ onRead }: { onRead: (result: ReceiptResult, 
         {reading ? status : 'Ler nota fiscal'}
       </Button>
       <p className="px-4 text-center text-footnote text-muted-foreground">
-        {error ?? 'Dica: cubra o CPF antes de fotografar. A foto não fica guardada, a menos que você escolha.'}
+        {error ?? 'Cubra o CPF antes da foto.'}
       </p>
       <input ref={input} type="file" accept="image/*" capture="environment" className="sr-only"
         onChange={e => handleFile(e.target.files?.[0])} />

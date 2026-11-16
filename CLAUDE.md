@@ -23,7 +23,9 @@ Quando um item está **selecionado ou ativo**, trocar o ícone para a variante p
 
 ## Escopo
 
-O app segue a especificação funcional v1.0 (núcleo financeiro, família, notificações, foto de nota, replanejamento). Modelo de dados em `docs/banco-de-dados.md`. Ficam para depois: automações do iPhone (toque duplo, Apple Pay, notificação do banco) com fila de pendentes, Face ID, backup, login por código, e a camada analítica (metas com simulação de impacto, custo de deslocamento, custo por uso de assinatura), que tem modelo próprio.
+O app segue a especificação funcional v1.0 (núcleo financeiro, família, notificações, foto de nota, replanejamento). Modelo de dados em `docs/banco-de-dados.md`. Ficam para depois: automações do iPhone (toque duplo, Apple Pay, notificação do banco) com fila de pendentes, backup, login por código e Open Finance.
+
+Textos de apoio na interface (footers, dicas, legendas): curtos e diretos, uma frase. Sem explicar o óbvio.
 
 ## Design (iOS 26, Liquid Glass)
 
@@ -94,11 +96,20 @@ Login com Google (2026-11-16): `GoogleSignInButton` (`components/auth/`) na tela
 
 Onboarding (2026-11-17): `OnboardingFlow` (`components/onboarding/`) aparece no `AuthGate` enquanto `profiles.onboarding_completed_at` for nulo: boas-vindas, nome, cartões de crédito, orçamento do mês, avisos (com instrução de instalar no iPhone) e pronto. Todos os passos depois do nome podem ser pulados; "Sair" encerra.
 
+Editar conta/receita fixa (2026-11-16): "Editar conta" na folha da ocorrência abre o `BillFormSheet` com `bill` (nome, valor, dia, categoria), salvando com `updateSeries` do mês aberto em diante.
+
+Face ID (2026-11-16): trava local por aparelho via WebAuthn (`lib/app-lock.ts`): Config > Segurança cria uma chave de plataforma e guarda o id em `localStorage` (`troco-lock:<user>`). `AppLock` (`components/auth/app-lock.tsx`, dentro do `AuthGate`) pede Face ID ao abrir e após 1 min fora do app; "Entrar com senha" faz logout.
+
+Análise avançada (2026-11-16, backlog da spec), em Análise > Planejamento. Fora do fluxo de caixa. Tabelas `goals`, `subscriptions`, `subscription_uses`, `vehicles`, `vehicle_trips`, `vehicle_maintenance` (RLS por `user_id`; gatilho `private.check_owner_parent`). Cálculos em `lib/advanced.ts`, API em `lib/api/advanced.ts`, telas em `app/analysis/{goals,subscriptions,vehicles}` e `components/advanced/`.
+- Objetivos: poupança média = entradas menos gastos dos meses completos (até 12). Vários objetivos: a poupança vai inteira para a menor prioridade até completar, depois para o próximo. Com data alvo, mostra quanto falta por mês.
+- Assinaturas: dias de uso marcados no mês; custo por uso = mensal / usos; com preço avulso, mostra a diferença.
+- Veículos: combustível = km do mês / km por litro x preço do litro; manutenção = custo / meses do intervalo.
+
 Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`; contas de teste (`@example.com`) e os dados delas.
 
 Pendente (spec, seção 8):
 - Fila de pendentes e automações (toque duplo, Apple Pay, notificação do banco) com tokens.
-- Face ID, backup periódico.
+- Backup periódico.
 - Login por código de 6 dígitos (ACE-1): hoje é e-mail e senha, ou Google.
 
 ## Sobre o AGENTS.md deste repositório

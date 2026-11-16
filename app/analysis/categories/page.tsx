@@ -36,7 +36,7 @@ export default function YourCategoriesPage() {
         )}
 
         {!loading && unlocked && (
-          <ListGroup header="Média por mês" footer={`Base: ${p.baseLabel}. Toque em Replanejar para ajustar as metas a partir desses valores.`}>
+          <ListGroup header="Média por mês" footer={`Base: ${p.baseLabel}.`}>
             {p.rows.map(r => (
               <ListRow key={r.category.id}
                 leading={<TokenIcon icon={r.category.icon} color={r.category.color} />}

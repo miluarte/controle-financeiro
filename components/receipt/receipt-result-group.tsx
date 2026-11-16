@@ -20,8 +20,8 @@ export function ReceiptResultGroup({
     <ListGroup
       header="Lido da nota"
       footer={source === 'gemini'
-        ? 'Confira os dados antes de registrar.'
-        : 'Leitura feita no celular, menos precisa. Confira valor, data e local antes de registrar.'}
+        ? 'Confira antes de registrar.'
+        : 'Leitura menos precisa. Confira.'}
     >
       {items.length > 0 && (
         <li className="px-4 py-2">

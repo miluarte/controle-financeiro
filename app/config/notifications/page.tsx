@@ -16,19 +16,19 @@ import { supabase, unwrap } from '@/lib/supabase/client'
 type Setting = { type: string; enabled: boolean; time: string | null; days_before: number | null }
 
 const TYPES: { type: string; label: string; hint: string; time?: boolean; days?: boolean }[] = [
-  { type: 'bill_due', label: 'Contas a vencer', hint: 'Aviso antes e no dia do vencimento.', time: true, days: true },
-  { type: 'log_reminder', label: 'Lembrete de registro', hint: 'À noite, se nenhum gasto foi registrado no dia.', time: true },
-  { type: 'weekly_summary', label: 'Resumo da semana', hint: 'Domingo: gasto da semana, comparação e maior categoria.', time: true },
-  { type: 'smart_alerts', label: 'Alertas de orçamento', hint: 'Quando o gasto do mês chega a 80% e a 100% do orçamento.' },
-  { type: 'family_events', label: 'Eventos da família', hint: 'Compra atribuída a você, compra de membro no seu cartão, fatura fechada.' },
+  { type: 'bill_due', label: 'Contas a vencer', hint: '', time: true, days: true },
+  { type: 'log_reminder', label: 'Lembrete de registro', hint: 'Se não registrar nada no dia.', time: true },
+  { type: 'weekly_summary', label: 'Resumo da semana', hint: 'Aos domingos.', time: true },
+  { type: 'smart_alerts', label: 'Alertas de orçamento', hint: 'Em 80% e 100%.' },
+  { type: 'family_events', label: 'Eventos da família', hint: '' },
 ]
 
 const STATE_TEXT: Record<PushState, string> = {
   unsupported: 'Este navegador não recebe notificações.',
-  'needs-install': 'No iPhone, as notificações só funcionam com o app na Tela de Início: no Safari, toque em Compartilhar e depois em Adicionar à Tela de Início. Abra o Troco por lá e volte aqui.',
-  denied: 'As notificações estão bloqueadas. Libere em Ajustes do iPhone > Notificações > Troco.',
-  off: 'Ative para receber os avisos neste aparelho.',
-  on: 'Este aparelho está recebendo notificações.',
+  'needs-install': 'No iPhone, adicione o app à Tela de Início (Safari > Compartilhar) e abra por lá.',
+  denied: 'Bloqueadas. Libere em Ajustes > Notificações > Troco.',
+  off: '',
+  on: '',
 }
 
 // 5.13: notificações por tipo, com horário e antecedência, e ativação no aparelho.
@@ -63,7 +63,7 @@ export default function NotificationsPage() {
     <>
       <LargeTitleHeader back title="Notificações" />
       <div className="space-y-7 px-4 pt-2">
-        <ListGroup header="Este aparelho" footer={message ?? (state ? STATE_TEXT[state] : undefined)}>
+        <ListGroup header="Este aparelho" footer={message ?? (state ? STATE_TEXT[state] || undefined : undefined)}>
           <li className="space-y-2 p-3">
             <Button size="lg" className="w-full" disabled={busy || !state || state === 'unsupported' || state === 'needs-install' || state === 'denied'}
               onClick={toggleDevice}>
@@ -81,7 +81,7 @@ export default function NotificationsPage() {
         {TYPES.map(t => {
           const s = get(t.type)
           return (
-            <ListGroup key={t.type} footer={t.hint}>
+            <ListGroup key={t.type} footer={t.hint || undefined}>
               <FormRow label={t.label}>
                 <Switch checked={s?.enabled ?? true} onCheckedChange={v => update(t.type, { enabled: v })} />
               </FormRow>

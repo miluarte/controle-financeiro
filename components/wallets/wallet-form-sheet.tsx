@@ -88,7 +88,7 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
       </ListGroup>
 
       {isCredit && (
-        <ListGroup footer="O fechamento define em qual fatura cada compra entra.">
+        <ListGroup >
           <FormRow label="Dia do fechamento" htmlFor="w-closing">
             <NumberField id="w-closing" min={1} max={31} value={closingDay} onChange={setClosingDay} className="w-16 text-right" />
           </FormRow>

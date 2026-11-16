@@ -12,7 +12,7 @@ export function FamilyGroup() {
   const members = useFamilyMembers(!!family && status === 'active')
   const trailing = !family ? 'Criar ou entrar' : status === 'pending' ? 'Aguardando' : `${members.filter(m => m.status === 'active').length} membros`
   return (
-    <ListGroup header="Família" footer="Compartilhe cartões com quem mora com você. Cada um continua vendo só as próprias finanças.">
+    <ListGroup header="Família" footer="Compartilhe cartões. Cada um vê só o que é seu.">
       <ListRow title={family?.name ?? 'Família'} trailing={trailing} chevron onClick={() => router.push('/config/family')} />
     </ListGroup>
   )

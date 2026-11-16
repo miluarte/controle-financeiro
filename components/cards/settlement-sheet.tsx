@@ -60,7 +60,7 @@ function Form({ card, debts, onDone }: { card: Wallet; debts: CardDebt[]; onDone
           ))}
         </li>
       </ListGroup>
-      <ListGroup header="Saiu de" footer={`O pagamento sai do seu saldo e não conta como gasto novo. ${card.ownerName ?? 'O titular'} recebe um aviso para confirmar.`}>
+      <ListGroup header="Saiu de" footer={`${card.ownerName ?? 'O titular'} vai confirmar.`}>
         <WalletPicker wallets={mine} value={walletId} onChange={setWalletId} />
       </ListGroup>
       <ListGroup>

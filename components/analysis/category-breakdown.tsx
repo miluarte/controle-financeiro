@@ -47,7 +47,7 @@ export function CategoryBreakdown({ month }: { month: string }) {
 
   return (
     <div className="space-y-5">
-      <ListGroup header="Por categoria" footer="Toque numa categoria para definir a meta mensal.">
+      <ListGroup header="Por categoria" >
         {spent.length ? spent.map(row) : (
           <li className="p-4 text-center text-subheadline text-muted-foreground">Nenhum gasto neste mês.</li>
         )}

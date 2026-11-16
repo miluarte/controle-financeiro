@@ -5,6 +5,7 @@ import { CategoryBreakdown } from '@/components/analysis/category-breakdown'
 import { HistoryList } from '@/components/analysis/history-list'
 import { MonthComparison } from '@/components/analysis/month-comparison'
 import { PaceChart } from '@/components/analysis/pace-chart'
+import { AdvancedEntry } from '@/components/analysis/advanced-entry'
 import { ReplanEntry } from '@/components/analysis/replan-entry'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { MonthSelector } from '@/components/shared/month-selector'
@@ -41,6 +42,7 @@ export default function AnalysisPage() {
         />
         <CategoryBreakdown month={month} />
         <ReplanEntry />
+        <AdvancedEntry />
         <HistoryList />
       </div>
     </>

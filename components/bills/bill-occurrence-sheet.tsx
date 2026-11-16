@@ -18,15 +18,17 @@ import { formatCurrency, formatDate, todayIso } from '@/lib/utils'
 
 // CON-6 e CON-9: pagar, desfazer pagamento, editar só este mês ou a série, encerrar.
 // Receita fixa usa o mesmo fluxo: marcar como recebida gera a receita na carteira escolhida.
-export function BillOccurrenceSheet({ occurrence, onClose }: { occurrence: BillOccurrence | null; onClose: () => void }) {
+export function BillOccurrenceSheet({ occurrence, onClose, onEdit }: {
+  occurrence: BillOccurrence | null; onClose: () => void; onEdit: (o: BillOccurrence) => void
+}) {
   return (
     <ModalSheet open={!!occurrence} onOpenChange={o => { if (!o) onClose() }} title={occurrence?.bill.name ?? ''}>
-      {occurrence && <Body key={occurrence.id} o={occurrence} onDone={onClose} />}
+      {occurrence && <Body key={occurrence.id} o={occurrence} onDone={onClose} onEdit={() => onEdit(occurrence)} />}
     </ModalSheet>
   )
 }
 
-function Body({ o, onDone }: { o: BillOccurrence; onDone: () => void }) {
+function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; onEdit: () => void }) {
   const { month } = useMonth()
   const { wallets } = useWallets()
   const { profile } = useProfile()
@@ -60,8 +62,8 @@ function Body({ o, onDone }: { o: BillOccurrence; onDone: () => void }) {
 
       {o.paidAt ? (
         <ListGroup footer={income
-          ? `Recebida em ${formatDate(o.paidAt)}. A receita foi registrada nas suas transações.`
-          : `Paga em ${formatDate(o.paidAt)}. O gasto foi registrado nas suas transações.`}>
+          ? `Recebida em ${formatDate(o.paidAt)}.`
+          : `Paga em ${formatDate(o.paidAt)}.`}>
           <li className="p-3">
             <Button variant="outline" size="lg" className="w-full" disabled={busy} onClick={() => run(() => billsApi.unpay(o.id))}>
               {income ? 'Desmarcar recebimento' : 'Desmarcar pagamento'}
@@ -111,6 +113,10 @@ function Body({ o, onDone }: { o: BillOccurrence; onDone: () => void }) {
       )}
 
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+
+      <Button variant="secondary" size="lg" className="w-full" disabled={busy} onClick={onEdit}>
+        {income ? 'Editar receita' : 'Editar conta'}
+      </Button>
 
       <Button variant="ghost" size="lg" className="w-full text-destructive" disabled={busy}
         onClick={() => {

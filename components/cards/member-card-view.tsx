@@ -67,7 +67,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
         </ListGroup>
       )}
 
-      <ListGroup footer="As compras parceladas aparecem em cada fatura futura.">
+      <ListGroup >
         <ListRow title={`Próxima fatura (${monthName(nextRef, 'short')})`} trailing={formatCurrency(at(nextRef)?.open ?? 0)} />
         {previous.map(d => (
           <ListRow key={d.invoiceRef} title={`${capitalize(monthName(d.invoiceRef.slice(0, 7)))} em aberto`}

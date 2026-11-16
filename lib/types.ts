@@ -239,3 +239,50 @@ export interface MonthlyClosing {
   openingBalance: number
   closingBalance: number
 }
+
+// Camada analítica (fora do fluxo de caixa)
+export interface Goal {
+  id: string
+  name: string
+  targetAmount: number
+  savedAmount: number
+  targetDate: string | null
+  priority: number
+}
+
+export interface Subscription {
+  id: string
+  name: string
+  monthlyAmount: number
+  unitPrice: number | null
+  active: boolean
+}
+
+export interface SubscriptionUse {
+  id: string
+  subscriptionId: string
+  usedOn: string
+}
+
+export interface Vehicle {
+  id: string
+  name: string
+  kmPerLiter: number
+  fuelPrice: number
+}
+
+export interface VehicleTrip {
+  id: string
+  vehicleId: string
+  date: string
+  km: number
+  note: string | null
+}
+
+export interface VehicleMaintenance {
+  id: string
+  vehicleId: string
+  name: string
+  cost: number
+  everyMonths: number
+}
