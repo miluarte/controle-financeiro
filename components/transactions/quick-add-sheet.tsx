@@ -28,6 +28,8 @@ import { todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { InstallmentProgress } from './installment-progress'
 import { ItemsEditor } from './items-editor'
+import { RepeatGroup, repeatDefault, repeatLastMonth } from './repeat-group'
+import { billsApi } from '@/lib/api/bills'
 import { PurchaseOwnerField, useCardAccess } from './purchase-owner-field'
 import { familyApi } from '@/lib/api/family'
 import type { ReceiptItem } from '@/lib/receipt'
@@ -75,6 +77,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
   const [items, setItems] = useState<ReceiptItem[]>([])
   // cartão próprio compartilhado: de quem é a compra ('' = sua)
   const [owner, setOwner] = useState('')
+  // receita que repete todo mês vira receita fixa (Contas, "A receber")
+  const [repeat, setRepeat] = useState(() => repeatDefault(todayIso().slice(0, 7)))
 
   function onReceipt(result: ReceiptResult, image: Blob) {
     setReceipt({ result, image })
@@ -104,6 +108,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
     setAttachReceipt(false)
     setItems([])
     setOwner('')
+    setRepeat(repeatDefault(todayIso().slice(0, 7)))
   }
 
   function changeMode(next: Mode) {
@@ -129,7 +134,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
     setError(null)
     try {
       const placeValue = place.trim() || null
-      if (isCredit && installments > 1) {
+      if (mode === 'income' && repeat.on) {
+        await createRecurringIncome(placeValue)
+      } else if (isCredit && installments > 1) {
         const group = await transactionsApi.createInstallments({
           walletId: walletId!, categoryId, installments, firstDate: date, place: placeValue,
           total: amountIsInstallment ? amount * installments : amount,
@@ -170,10 +177,26 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
     }
   }
 
+  // cria a receita fixa com dia e mês da data; se a data já chegou, este mês já entra como recebido
+  async function createRecurringIncome(name: string | null) {
+    const start = date.slice(0, 7)
+    const last = repeatLastMonth(repeat, start)
+    const billId = await billsApi.create({
+      type: 'income', name: name ?? categories.find(c => c.id === categoryId)?.name ?? 'Receita',
+      amount, dueDay: Number(date.slice(8, 10)), dueNextMonth: false, categoryId, recurring: true,
+      startMonth: `${start}-01`, installmentCurrent: null, installmentsTotal: null,
+      endMonth: last ? `${last}-01` : null,
+    })
+    if (date <= todayIso()) {
+      const occurrence = (await billsApi.getMonth(start)).find(o => o.billId === billId)
+      if (occurrence) await billsApi.pay(occurrence.id, null, date)
+    }
+  }
+
   const walletQuestion =
     mode === 'save' ? (saveDirection === 'apply' ? 'De qual carteira saiu?' : 'Para qual carteira voltou?') : 'Como você pagou?'
   const placeLabel = mode === 'income' ? 'Descrição' : mode === 'save' ? 'Onde?' : 'Onde foi?'
-  const placePlaceholder = mode === 'income' ? 'Opcional' : mode === 'save' ? 'CDB, Tesouro' : 'Opcional'
+  const placePlaceholder = mode === 'income' ? (repeat.on ? 'Salário, aluguel…' : 'Opcional') : mode === 'save' ? 'CDB, Tesouro' : 'Opcional'
 
   const modeTitle = mode === 'expense' ? 'Novo gasto' : mode === 'income' ? 'Nova receita' : 'Guardar'
 
@@ -252,6 +275,10 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
                   purchaseDate={date} />
               )}
             </ListGroup>
+
+            {mode === 'income' && (
+              <RepeatGroup value={repeat} onChange={setRepeat} start={date.slice(0, 7)} lastLabel="último recebimento" />
+            )}
 
             {mode === 'expense' && receipt && (
               <ReceiptResultGroup source={receipt.result.source} items={[]}

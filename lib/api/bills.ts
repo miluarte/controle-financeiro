@@ -29,8 +29,8 @@ export const billsApi = {
     return rows.map(toBillOccurrence)
   },
 
-  create: async (b: BillInput) => {
-    unwrap(await supabase.from('bills').insert(toRow(b)))
+  create: async (b: BillInput): Promise<string> => {
+    return unwrap(await supabase.from('bills').insert(toRow(b)).select('id').single()).id as string
   },
 
   // CON-9: "só este mês" muda a ocorrência; "este e os seguintes" muda a conta e as ocorrências futuras em aberto.
@@ -56,7 +56,7 @@ export const billsApi = {
     )
   },
 
-  pay: async (occurrenceId: string, walletId: string, date: string) => {
+  pay: async (occurrenceId: string, walletId: string | null, date: string) => {
     unwrap(await supabase.rpc('pay_bill_occurrence', { p_occurrence: occurrenceId, p_wallet: walletId, p_date: date }))
   },
 

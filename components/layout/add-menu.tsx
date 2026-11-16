@@ -6,7 +6,6 @@ import {
   AddLinearIcon,
   BillListLinearIcon,
   CartLargeMinimalisticLinearIcon,
-  RepeatLinearIcon,
   SafeSquareLinearIcon,
   WalletMoneyLinearIcon,
 } from '@solar-icons/react'
@@ -30,7 +29,6 @@ const QUICK: { mode: QuickAddMode; label: string; icon: SolarIcon }[] = [
 
 const FIXED: { type: BillType; label: string; icon: SolarIcon }[] = [
   { type: 'expense', label: 'Conta fixa',   icon: BillListLinearIcon },
-  { type: 'income',  label: 'Receita fixa', icon: RepeatLinearIcon },
 ]
 
 // Botão + da barra de abas: abre um menu para escolher o que adicionar.
