@@ -17,8 +17,8 @@ import { WALLET_TYPE_ICON } from '@/lib/constants'
 import type { Transaction } from '@/lib/types'
 import { TYPE_LABEL } from './transaction-item'
 import { receiptUrl, type ReceiptItem } from '@/lib/receipt'
-import { formatCurrency } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
+import { ItemsEditor } from './items-editor'
 
 // TRA-6: abrir, editar e excluir um lançamento.
 export function TransactionEditSheet({
@@ -46,6 +46,7 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
   const [categoryId, setCategoryId] = useState(t.categoryId)
   const [walletId, setWalletId] = useState(t.walletId)
   const [text, setText] = useState(t.type === 'income' ? t.description ?? '' : t.place ?? '')
+  const [items, setItems] = useState<ReceiptItem[]>((t.sourceData?.items as ReceiptItem[] | undefined) ?? [])
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -61,6 +62,7 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
     try {
       await transactionsApi.update(t.id, {
         amount, date, categoryId, walletId,
+        ...(t.type === 'expense' && { sourceData: { ...(t.sourceData ?? {}), items } }),
         ...(t.type === 'income' ? { description: text.trim() || null } : { place: text.trim() || null }),
       })
       await refresh(); onDone()
@@ -121,22 +123,16 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
         </ListGroup>
       )}
 
-      {t.source === 'photo' && (
+      {t.type === 'expense' && <ItemsEditor items={items} onChange={setItems} total={amount} disabled={!editable} />}
+
+      {t.receiptPath && (
         <ListGroup header="Nota fiscal">
-          {((t.sourceData?.items as ReceiptItem[] | undefined) ?? []).map((i, k) => (
-            <li key={k} className="flex justify-between gap-2 border-b border-separator px-4 py-2 text-subheadline last:border-b-0">
-              <span className="truncate">{i.name}</span>
-              <span className="shrink-0 tabular-nums text-muted-foreground">{formatCurrency(i.amount)}</span>
-            </li>
-          ))}
-          {t.receiptPath && (
             <li className="p-3">
               <Button type="button" variant="secondary" className="w-full rounded-full"
                 onClick={async () => { const url = await receiptUrl(t.receiptPath!); if (url) window.open(url, '_blank') }}>
                 Ver comprovante
               </Button>
             </li>
-          )}
         </ListGroup>
       )}
 

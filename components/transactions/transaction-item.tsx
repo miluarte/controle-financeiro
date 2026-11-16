@@ -29,7 +29,9 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, not
   const title = t.place || t.description || category?.name || TYPE_LABEL[t.type]
   const walletName = wallet?.name ?? t.walletNameSnapshot
   const installment = t.installmentN && t.installmentsTotal ? `${t.installmentN} de ${t.installmentsTotal}` : null
-  const subtitle = [category?.name ?? TYPE_LABEL[t.type], walletName, installment, note].filter(Boolean).join(' · ')
+  const itemCount = Array.isArray(t.sourceData?.items) ? t.sourceData.items.length : 0
+  const items = itemCount ? `${itemCount} ${itemCount === 1 ? 'item' : 'itens'}` : null
+  const subtitle = [category?.name ?? TYPE_LABEL[t.type], walletName, installment, items, note].filter(Boolean).join(' · ')
   const inflow = INFLOW.has(t.type)
 
   return (

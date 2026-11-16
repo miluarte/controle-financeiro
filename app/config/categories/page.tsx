@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { CategoryFormSheet } from '@/components/categories/category-form-sheet'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
@@ -15,12 +16,17 @@ import type { Category, CategoryType } from '@/lib/types'
 
 const CLASS_LABEL = { essential: 'Essencial', desire: 'Desejo' } as const
 
-// CAT-1 a CAT-5: organizar categorias de gasto e de receita.
+// CAT-1 a CAT-5: organizar categorias de gasto e de receita. ?tipo=receita abre na aba de receita.
 export default function CategoriesPage() {
+  return <Suspense><Categories /></Suspense>
+}
+
+function Categories() {
+  const params = useSearchParams()
   const { categories } = useAllCategories()
   const usage = useCategoryUsage()
   const refresh = useRefresh()
-  const [type, setType] = useState<CategoryType>('expense')
+  const [type, setType] = useState<CategoryType>(params.get('tipo') === 'receita' ? 'income' : 'expense')
   const [newName, setNewName] = useState('')
   const [editing, setEditing] = useState<Category | null>(null)
   const [error, setError] = useState<string | null>(null)

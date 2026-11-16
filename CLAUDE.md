@@ -114,6 +114,8 @@ Parcelas em andamento (2026-11-16): no registro de Gasto no crédito com parcela
 
 Instituições e atraso (2026-11-16): tabela `institutions` (leitura para todos): juros do rotativo e do parcelamento (% a.m., vêm da fatura; null = não informado), mora 1% a.m., multa 2%, IOF 0,38% + 0,0082%/dia. Carteira ganha `institution_id`, `last4` e `revolving_rate` (da fatura do cliente, vence o da instituição). Cadastro de cartão: Banco, Final do cartão, Juros do rotativo e o tipo "Crédito e débito" (cria duas carteiras: crédito com fatura e débito). `lib/late-fee.ts` estima o atraso (rotativo composto pro rata, mora, multa, IOF, teto de 100% da dívida pela Lei 14.690/2023); `LateCostGroup` na fatura em aberto mostra "Se atrasar 5/15/30 dias" ou "Em atraso há N dias".
 
+Itens da compra e repetidas (2026-11-16): gasto guarda os itens em `source_data.items` (`[{name, amount}]`, vindos da nota ou digitados em `ItemsEditor` na edição); a lista mostra "N itens" e a busca acha pelo nome do item. Decisão: sem campo de descrição separado no gasto; o local é o título e os itens são o detalhe. `lib/duplicates.ts` acha compras repetidas (mesmo valor e carteira, até 1 dia, mesmo local); em Transações, `DuplicatesSheet` apaga uma ou marca "não é repetida" (`source_data.not_duplicate`). Nota fiscal: "Fotografar nota" ou "Da galeria". Config > Categorias de receita abre `/config/categories?tipo=receita`.
+
 Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`; contas de teste (`@example.com`) e os dados delas.
 
 Pendente (spec, seção 8):

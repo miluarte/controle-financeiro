@@ -6,7 +6,11 @@ import { SearchField } from '@/components/ios/search-field'
 import { SegmentedControl } from '@/components/ios/segmented-control'
 import { MonthSelector } from '@/components/shared/month-selector'
 import { TransactionDayList } from '@/components/transactions/transaction-day-list'
+import { DuplicatesSheet } from '@/components/transactions/duplicates-sheet'
 import { TransactionEditSheet } from '@/components/transactions/transaction-edit-sheet'
+import { ListGroup } from '@/components/ios/list-group'
+import { ListRow } from '@/components/ios/list-row'
+import { findDuplicates } from '@/lib/duplicates'
 import { TransactionsSummary } from '@/components/transactions/transactions-summary'
 import { useCategories } from '@/hooks/use-categories'
 import { useMonth } from '@/hooks/use-month'
@@ -35,6 +39,8 @@ export default function TransactionsPage() {
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<Filter>('all')
   const [editing, setEditing] = useState<Transaction | null>(null)
+  const [showDuplicates, setShowDuplicates] = useState(false)
+  const duplicates = useMemo(() => findDuplicates(transactions), [transactions])
 
   const visible = useMemo(() => {
     const types = FILTER_TYPES[filter]
@@ -44,7 +50,8 @@ export default function TransactionsPage() {
     return transactions.filter(t => {
       if (types && !types.includes(t.type)) return false
       if (!q) return true
-      const hay = [t.place, t.description, t.categoryId && catName.get(t.categoryId), t.walletId && walletName.get(t.walletId)]
+      const itemNames = Array.isArray(t.sourceData?.items) ? (t.sourceData.items as { name: string }[]).map(i => i.name) : []
+      const hay = [t.place, t.description, t.categoryId && catName.get(t.categoryId), t.walletId && walletName.get(t.walletId), ...itemNames]
         .filter(Boolean).join(' ')
       return normalize(hay).includes(q)
     })
@@ -54,7 +61,7 @@ export default function TransactionsPage() {
     <>
       <LargeTitleHeader title="Transações" actions={<MonthSelector />} />
       <div className="space-y-5 px-4 pt-2">
-        <SearchField placeholder="Buscar local, descrição, categoria" value={query} onChange={e => setQuery(e.target.value)} />
+        <SearchField placeholder="Buscar local, item, categoria" value={query} onChange={e => setQuery(e.target.value)} />
         <SegmentedControl
           aria-label="Filtro"
           value={filter}
@@ -66,6 +73,12 @@ export default function TransactionsPage() {
             { value: 'saved', label: 'Guardado' },
           ]}
         />
+        {duplicates.length > 0 && (
+          <ListGroup>
+            <ListRow chevron onClick={() => setShowDuplicates(true)}
+              title={`${duplicates.length} ${duplicates.length === 1 ? 'compra parece repetida' : 'compras parecem repetidas'}`} />
+          </ListGroup>
+        )}
         <TransactionsSummary transactions={visible} />
         {loading ? (
           <p className="text-subheadline text-muted-foreground">Carregando…</p>
@@ -74,6 +87,7 @@ export default function TransactionsPage() {
         )}
       </div>
       <TransactionEditSheet transaction={editing} onClose={() => setEditing(null)} />
+      <DuplicatesSheet open={showDuplicates} pairs={duplicates} onOpenChange={setShowDuplicates} />
     </>
   )
 }
