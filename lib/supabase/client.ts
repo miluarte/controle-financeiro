@@ -4,9 +4,9 @@ import { createClient } from '@supabase/supabase-js'
 // navegador de qualquer forma). A segurança dos dados vem do RLS no banco:
 // cada usuário só lê e grava as próprias linhas. As variáveis de ambiente
 // sobrescrevem os valores padrão se definidas (.env.local ou painel da Vercel).
-const SUPABASE_URL =
+export const SUPABASE_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://ievipjugroamsrxolvip.supabase.co'
-const SUPABASE_PUBLISHABLE_KEY =
+export const SUPABASE_PUBLISHABLE_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? 'sb_publishable_YqB4o4diCY3xigGAmcLWGg_yG4abJvL'
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {

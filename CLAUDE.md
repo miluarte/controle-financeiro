@@ -90,6 +90,8 @@ Fechamento mensal (2026-11-17): `monthly_closings` guarda saldo inicial, entrada
 
 API pública (2026-11-17): funções auxiliares das políticas e funções de gatilho ficam no schema `private` (não publicado pelo PostgREST). No `public` só ficam as RPCs que o app chama. Função nova auxiliar vai para `private` e é chamada como `private.nome(...)`.
 
+Login com Google (2026-11-16): `GoogleSignInButton` (`components/auth/`) na tela de entrada, `signInWithOAuth` voltando para `/home`. Antes de redirecionar, confere em `/auth/v1/settings` se o provedor está ligado; se não, avisa. Configuração do provedor (Client ID/Secret do Google Cloud, URLs de redirecionamento) é feita no painel do Supabase.
+
 Onboarding (2026-11-17): `OnboardingFlow` (`components/onboarding/`) aparece no `AuthGate` enquanto `profiles.onboarding_completed_at` for nulo: boas-vindas, nome, cartões de crédito, orçamento do mês, avisos (com instrução de instalar no iPhone) e pronto. Todos os passos depois do nome podem ser pulados; "Sair" encerra.
 
 Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`; contas de teste (`@example.com`) e os dados delas.
@@ -97,7 +99,7 @@ Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`; contas de
 Pendente (spec, seção 8):
 - Fila de pendentes e automações (toque duplo, Apple Pay, notificação do banco) com tokens.
 - Face ID, backup periódico.
-- Login por código de 6 dígitos (ACE-1): hoje é e-mail e senha.
+- Login por código de 6 dígitos (ACE-1): hoje é e-mail e senha, ou Google.
 
 ## Sobre o AGENTS.md deste repositório
 

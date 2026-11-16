@@ -8,6 +8,7 @@ import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { SegmentedControl } from '@/components/ios/segmented-control'
 import { AppLogo } from '@/components/shared/app-logo'
+import { GoogleSignInButton } from './google-sign-in-button'
 
 type Mode = 'signin' | 'signup'
 
@@ -105,6 +106,13 @@ export function AuthForm() {
           {submitting ? 'Aguarde…' : mode === 'signin' ? 'Entrar' : 'Criar conta'}
         </Button>
       </form>
+
+      <div className="mt-6 flex items-center gap-3 text-footnote text-muted-foreground">
+        <span className="h-px flex-1 bg-separator" />ou<span className="h-px flex-1 bg-separator" />
+      </div>
+      <div className="mt-6">
+        <GoogleSignInButton onError={m => { setInfo(null); setError(m) }} />
+      </div>
     </div>
   )
 }
