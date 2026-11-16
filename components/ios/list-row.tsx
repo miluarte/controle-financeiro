@@ -32,11 +32,13 @@ interface ListRowProps extends VariantProps<typeof rowVariants> {
   onClick?: () => void
   // deslizar para a esquerda revela a lixeira
   onDelete?: () => void
+  // sem o <li> próprio (quando outro componente já cria o item, ex.: SortableList)
+  bare?: boolean
   className?: string
 }
 
 export function ListRow({
-  leading, title, subtitle, trailing, chevron, onClick, onDelete, tone, className,
+  leading, title, subtitle, trailing, chevron, onClick, onDelete, bare, tone, className,
 }: ListRowProps) {
   const centered = tone === 'tint' || tone === 'destructive'
   const content = (
@@ -67,9 +69,6 @@ export function ListRow({
     <div className={cn(rowVariants({ tone, interactive: false }), className)}>{content}</div>
   )
 
-  return (
-    <li className="group/row">
-      {onDelete ? <SwipeActions onDelete={onDelete}>{row}</SwipeActions> : row}
-    </li>
-  )
+  const body = onDelete ? <SwipeActions onDelete={onDelete}>{row}</SwipeActions> : row
+  return bare ? body : <li className="group/row">{body}</li>
 }

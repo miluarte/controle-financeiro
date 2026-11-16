@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
@@ -16,10 +15,10 @@ import { categoriesApi } from '@/lib/api/categories'
 import { COLOR_TOKENS, ICON_TOKENS } from '@/lib/constants'
 import type { Category } from '@/lib/types'
 
-// CAT-5 e CAT-6: renomear, ícone, cor, classe, mover, arquivar e excluir.
+// CAT-5 e CAT-6: renomear, ícone, cor, classe, arquivar e excluir (a ordem muda arrastando na lista).
 export function CategoryFormSheet({
-  category, siblings, onClose,
-}: { category: Category | null; siblings: Category[]; onClose: () => void }) {
+  category, onClose,
+}: { category: Category | null; onClose: () => void }) {
   const del = useDeleteAction({ title: `Excluir "${category?.name ?? ''}"?`, remove: () => categoriesApi.remove(category!.id), onDone: onClose })
   const archive = useArchiveAction(onClose)
   return (
@@ -27,38 +26,27 @@ export function CategoryFormSheet({
       <ModalSheet open={!!category} onOpenChange={o => { if (!o) onClose() }} title="Categoria" formId="category" actionLabel="Salvar"
         onDelete={del.ask}
         secondaryAction={category ? archive.action(category.active, () => categoriesApi.update(category.id, { active: !category.active })) : undefined}>
-        {category && <Form key={category.id} c={category} siblings={siblings} onDone={onClose} />}
+        {category && <Form key={category.id} c={category} onDone={onClose} />}
       </ModalSheet>
       {del.sheet}
     </>
   )
 }
 
-function Form({ c, siblings, onDone }: { c: Category; siblings: Category[]; onDone: () => void }) {
+function Form({ c, onDone }: { c: Category; onDone: () => void }) {
   const refresh = useRefresh()
   const [name, setName] = useState(c.name)
   const [icon, setIcon] = useState(c.icon)
   const [color, setColor] = useState(c.color)
   const [klass, setKlass] = useState<'essential' | 'desire' | 'none'>(c.class ?? 'none')
   const [error, setError] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-  const index = siblings.findIndex(s => s.id === c.id)
 
-  async function run(fn: () => Promise<unknown>, close = true) {
-    setBusy(true); setError(null)
-    try { await fn(); await refresh(); if (close) onDone() }
+  async function run(fn: () => Promise<unknown>) {
+    setError(null)
+    try { await fn(); await refresh(); onDone() }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível concluir.') }
-    finally { setBusy(false) }
   }
 
-  // reordenar: troca a posição com o vizinho e renumera a lista
-  function move(delta: number) {
-    const list = [...siblings]
-    const j = index + delta
-    if (j < 0 || j >= list.length) return
-    ;[list[index], list[j]] = [list[j], list[index]]
-    run(() => Promise.all(list.map((s, i) => categoriesApi.update(s.id, { sort_order: i }))), false)
-  }
 
   function save(e: React.FormEvent) {
     e.preventDefault()
@@ -103,13 +91,6 @@ function Form({ c, siblings, onDone }: { c: Category; siblings: Category[]; onDo
               <TokenIcon active={color === k} icon={icon} color={k} size="sm" />
             </ChoiceChip>
           ))}
-        </li>
-      </ListGroup>
-
-      <ListGroup header="Posição">
-        <li className="grid grid-cols-2 gap-2 p-3">
-          <Button type="button" variant="secondary" disabled={busy || index <= 0} onClick={() => move(-1)}>Subir</Button>
-          <Button type="button" variant="secondary" disabled={busy || index < 0 || index >= siblings.length - 1} onClick={() => move(1)}>Descer</Button>
         </li>
       </ListGroup>
 

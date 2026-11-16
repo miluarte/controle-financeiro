@@ -8,6 +8,7 @@ import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { SegmentedControl } from '@/components/ios/segmented-control'
+import { SortableList } from '@/components/ios/sortable-list'
 import { TokenIcon } from '@/components/shared/token-icon'
 import { useAllCategories, useCategoryUsage } from '@/hooks/use-data'
 import { useRefresh } from '@/hooks/use-refresh'
@@ -53,12 +54,21 @@ function Categories() {
     }
   }
 
-  const row = (c: Category) => {
+  // nova ordem das ativas: grava a posição só das que mudaram
+  async function reorder(ids: string[]) {
+    try {
+      await Promise.all(ids.map((id, i) => active[i]?.id === id ? null : categoriesApi.update(id, { sort_order: i })))
+    } finally {
+      await refresh()
+    }
+  }
+
+  const row = (c: Category, bare = false) => {
     const n = usage.get(c.id) ?? 0
     const parts = [n ? `${n} ${n === 1 ? 'lançamento' : 'lançamentos'}` : 'Sem lançamentos']
     if (c.class) parts.push(CLASS_LABEL[c.class])
     return (
-      <ListRow key={c.id} onClick={() => setEditing(c)}
+      <ListRow key={c.id} bare={bare} onClick={() => setEditing(c)}
         leading={<TokenIcon icon={c.icon} color={c.color} />}
         title={c.active ? c.name : <span className="text-muted-foreground">{c.name}</span>}
         subtitle={parts.join(' · ')} chevron />
@@ -82,10 +92,12 @@ function Categories() {
           </ListGroup>
         </form>
 
-        <ListGroup header={`Ativas · ${active.length}`}>{active.map(row)}</ListGroup>
-        {archived.length > 0 && <ListGroup header="Arquivadas">{archived.map(row)}</ListGroup>}
+        <ListGroup header={`Ativas · ${active.length}`} footer="Segure e arraste para mudar a ordem.">
+          <SortableList items={active} getId={c => c.id} onReorder={reorder} renderItem={c => row(c, true)} />
+        </ListGroup>
+        {archived.length > 0 && <ListGroup header="Arquivadas">{archived.map(c => row(c))}</ListGroup>}
       </div>
-      <CategoryFormSheet category={editing} siblings={editing ? active : []} onClose={() => setEditing(null)} />
+      <CategoryFormSheet category={editing} onClose={() => setEditing(null)} />
     </>
   )
 }
