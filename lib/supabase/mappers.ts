@@ -120,6 +120,7 @@ export function toBill(r: Row): Bill {
     startMonth: r.start_month,
     installmentCurrent: numOrNull(r.installment_current),
     installmentsTotal: numOrNull(r.installments_total),
+    endMonth: r.end_month ?? null,
     active: !!r.active,
   }
 }

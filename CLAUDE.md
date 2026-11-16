@@ -59,6 +59,7 @@ Front v1 completo (2026-11-15), publicado na main (Vercel):
 - Abas (NAV-1): Contas (`/bills`), Home (`/home`), Análise (`/analysis`), Config (`/config`). Seletor de mês compartilhado (`MonthProvider`, `MonthSelector`).
 - Home: saudação, saldo do mês (caixa), ocultar valores, primeiros passos (o passo do toque duplo foi trocado por "cadastrar um cartão" até as automações existirem), últimas transações, botão + (registro rápido de Gasto/Receita/Guardar, parcelas no crédito).
 - Transações (`/transactions`, via "Ver todas"): busca, filtro, resumo, edição e exclusão (parcela ou compra inteira).
+- Fim da recorrência (2026-11-16): `bills.end_month` (último mês, null = sem fim); no formulário "Sem fim / Até o mês / Nº de vezes" (`RecurrenceEnd`), com prévia "Último recebimento/pagamento em …". `ensure_bill_occurrences` não gera ocorrência depois de `end_month`.
 - Receita fixa (2026-11-18): `bills.type` = `expense` ou `income`. Receita fixa aparece em Contas no grupo "A receber" (fora do total de contas); "Marcar como recebida" gera receita (`pay_bill_occurrence`), nunca em cartão de crédito. Não gera aviso de vencimento.
 - Contas: contas fixas/recorrentes/parceladas (`bills` + `bill_occurrences`, geradas por `ensure_bill_occurrences`), pagar gerando gasto, desfazer, editar só este mês ou a série, encerrar; fatura de cada cartão que vence no mês, com compras e pagamento (`pay_invoice`). Regras de fatura no cliente em `lib/invoice.ts`.
 - Análise: orçamento do mês, ritmo (gráfico SVG próprio), resta e livre por dia, comparação com o mês anterior até o mesmo dia, gastos por categoria com meta (`category_goals`), categorias sem gasto recolhidas, histórico de 6 meses. Cálculos em `lib/analysis.ts`.
@@ -92,7 +93,7 @@ Fechamento mensal (2026-11-17): `monthly_closings` guarda saldo inicial, entrada
 
 API pública (2026-11-17): funções auxiliares das políticas e funções de gatilho ficam no schema `private` (não publicado pelo PostgREST). No `public` só ficam as RPCs que o app chama. Função nova auxiliar vai para `private` e é chamada como `private.nome(...)`.
 
-Login com Google (2026-11-16): `GoogleSignInButton` (`components/auth/`) na tela de entrada, `signInWithOAuth` voltando para `/home`. Antes de redirecionar, confere em `/auth/v1/settings` se o provedor está ligado; se não, avisa. Configuração do provedor (Client ID/Secret do Google Cloud, URLs de redirecionamento) é feita no painel do Supabase.
+Login com Google (2026-11-16, oculto por enquanto: `GOOGLE_LOGIN = false` em `auth-form.tsx`): `GoogleSignInButton` (`components/auth/`) na tela de entrada, `signInWithOAuth` voltando para `/home`. Antes de redirecionar, confere em `/auth/v1/settings` se o provedor está ligado; se não, avisa. Configuração do provedor (Client ID/Secret do Google Cloud, URLs de redirecionamento) é feita no painel do Supabase.
 
 Onboarding (2026-11-17): `OnboardingFlow` (`components/onboarding/`) aparece no `AuthGate` enquanto `profiles.onboarding_completed_at` for nulo: boas-vindas, nome, cartões de crédito, orçamento do mês, avisos (com instrução de instalar no iPhone) e pronto. Todos os passos depois do nome podem ser pulados; "Sair" encerra.
 

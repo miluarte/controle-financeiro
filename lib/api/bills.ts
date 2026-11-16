@@ -14,6 +14,7 @@ function toRow(b: Partial<BillInput>) {
   if (b.startMonth !== undefined) r.start_month = b.startMonth
   if (b.installmentCurrent !== undefined) r.installment_current = b.installmentCurrent
   if (b.installmentsTotal !== undefined) r.installments_total = b.installmentsTotal
+  if (b.endMonth !== undefined) r.end_month = b.endMonth
   return r
 }
 

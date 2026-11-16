@@ -14,6 +14,8 @@ import { useCategories } from '@/hooks/use-categories'
 import { useMonth } from '@/hooks/use-month'
 import { useRefresh } from '@/hooks/use-refresh'
 import { billsApi } from '@/lib/api/bills'
+import { addMonths, capitalize, monthLabel } from '@/lib/utils'
+import { RecurrenceEnd, type EndMode } from './recurrence-end'
 import type { Bill, BillType } from '@/lib/types'
 
 // CON-3, CON-4, CON-5: nova conta (fixa, recorrente ou parcelada).
@@ -51,7 +53,26 @@ function BillForm({ type, bill, onDone }: { type: BillType; bill: Bill | null; o
   const [installments, setInstallments] = useState(false)
   const [current, setCurrent] = useState(1)
   const [total, setTotal] = useState(12)
+  const [endMode, setEndMode] = useState<EndMode>(bill?.endMonth ? 'month' : 'never')
+  const [endMonth, setEndMonth] = useState(bill?.endMonth?.slice(0, 7) ?? addMonths(month, 11))
+  const [times, setTimes] = useState(12)
   const [error, setError] = useState<string | null>(null)
+
+  // série que repete sem ser parcelada pode ter fim
+  const base = bill ? bill.startMonth.slice(0, 7) : startMonth
+  const repeats = bill ? bill.recurring && bill.installmentsTotal == null : recurring && !installments
+  const lastMonth = installments
+    ? addMonths(startMonth, total - current)
+    : !repeats ? null
+    : endMode === 'month' ? (endMonth < base ? base : endMonth)
+    : endMode === 'times' ? addMonths(base, times - 1)
+    : null
+  const resolvedEnd = repeats && endMode !== 'never' && lastMonth ? `${lastMonth}-01` : null
+  // mês do último pagamento/recebimento (vencimento no mês seguinte empurra um mês)
+  const lastDue = lastMonth && (dueNextMonth && !income ? addMonths(lastMonth, 1) : lastMonth)
+  const preview = lastDue
+    ? `${income ? 'Último recebimento' : installments ? 'Última parcela' : 'Último pagamento'} em ${monthLabel(lastDue)}`
+    : null
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
@@ -60,7 +81,7 @@ function BillForm({ type, bill, onDone }: { type: BillType; bill: Bill | null; o
     if (installments && (current < 1 || total < current)) { setError('Confira as parcelas.'); return }
     try {
       if (bill) {
-        await billsApi.updateSeries(bill.id, month, { name: name.trim(), amount, dueDay, dueNextMonth: income ? false : dueNextMonth, categoryId })
+        await billsApi.updateSeries(bill.id, month, { name: name.trim(), amount, dueDay, dueNextMonth: income ? false : dueNextMonth, categoryId, endMonth: resolvedEnd })
         await refresh(); onDone()
         return
       }
@@ -70,6 +91,7 @@ function BillForm({ type, bill, onDone }: { type: BillType; bill: Bill | null; o
         startMonth: `${startMonth}-01`,
         installmentCurrent: installments ? current : null,
         installmentsTotal: installments ? total : null,
+        endMonth: resolvedEnd,
       })
       await refresh(); onDone()
     } catch (err) {
@@ -100,21 +122,18 @@ function BillForm({ type, bill, onDone }: { type: BillType; bill: Bill | null; o
         )}
       </ListGroup>
 
-      {bill ? (
-        <p className="px-4 text-footnote text-muted-foreground">Vale deste mês em diante.</p>
-      ) : (
-      <ListGroup footer={income
-        ? undefined
-        : undefined}>
-        <FormRow label="Repetir nos próximos meses">
-          <Switch checked={recurring || installments} disabled={installments} onCheckedChange={setRecurring} />
-        </FormRow>
-        {!income && (
+      <ListGroup footer={preview ? capitalize(preview) + '.' : bill ? 'Vale deste mês em diante.' : undefined}>
+        {!bill && (
+          <FormRow label="Repetir nos próximos meses">
+            <Switch checked={recurring || installments} disabled={installments} onCheckedChange={setRecurring} />
+          </FormRow>
+        )}
+        {!bill && !income && (
           <FormRow label="Parcelada">
             <Switch checked={installments} onCheckedChange={setInstallments} />
           </FormRow>
         )}
-        {installments && (
+        {!bill && installments && (
           <>
             <FormRow label="Parcela atual" htmlFor="bill-current">
               <NumberField id="bill-current" min={1} max={360} value={current} onChange={setCurrent} className="w-16 text-right" />
@@ -124,8 +143,11 @@ function BillForm({ type, bill, onDone }: { type: BillType; bill: Bill | null; o
             </FormRow>
           </>
         )}
+        {repeats && (
+          <RecurrenceEnd mode={endMode} onModeChange={setEndMode} endMonth={endMonth} onEndMonthChange={setEndMonth}
+            minMonth={base} times={times} onTimesChange={setTimes} />
+        )}
       </ListGroup>
-      )}
 
       <ListGroup header="Categoria">
         <li className="flex flex-wrap gap-2 p-3">

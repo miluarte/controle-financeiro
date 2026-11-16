@@ -10,6 +10,9 @@ import { SegmentedControl } from '@/components/ios/segmented-control'
 import { AppLogo } from '@/components/shared/app-logo'
 import { GoogleSignInButton } from './google-sign-in-button'
 
+// Login com Google desligado por enquanto; o botão volta trocando para true.
+const GOOGLE_LOGIN = false
+
 type Mode = 'signin' | 'signup'
 
 const ERROR_PT: Record<string, string> = {
@@ -107,12 +110,16 @@ export function AuthForm() {
         </Button>
       </form>
 
-      <div className="mt-6 flex items-center gap-3 text-footnote text-muted-foreground">
-        <span className="h-px flex-1 bg-separator" />ou<span className="h-px flex-1 bg-separator" />
-      </div>
-      <div className="mt-6">
-        <GoogleSignInButton onError={m => { setInfo(null); setError(m) }} />
-      </div>
+      {GOOGLE_LOGIN && (
+        <>
+          <div className="mt-6 flex items-center gap-3 text-footnote text-muted-foreground">
+            <span className="h-px flex-1 bg-separator" />ou<span className="h-px flex-1 bg-separator" />
+          </div>
+          <div className="mt-6">
+            <GoogleSignInButton onError={m => { setInfo(null); setError(m) }} />
+          </div>
+        </>
+      )}
     </div>
   )
 }

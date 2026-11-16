@@ -139,11 +139,13 @@ export interface Bill {
   startMonth: string
   installmentCurrent: number | null
   installmentsTotal: number | null
+  endMonth: string | null
   active: boolean
 }
 
 export interface BillInput {
   type: BillType
+  endMonth: string | null
   name: string
   amount: number
   dueDay: number
