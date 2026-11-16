@@ -91,7 +91,7 @@ export function OnboardingFlow() {
   const nextLabel = step === 'welcome' ? 'Começar' : step === 'done' ? 'Começar a usar' : 'Continuar'
 
   return (
-    <div className="flex min-h-dvh flex-col px-4 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-dvh flex-col px-4 lg:mx-auto lg:w-full lg:max-w-md lg:py-12 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div className="flex items-center justify-between">
         <span className="w-16" />
         <StepDots step={i} total={STEPS.length} />

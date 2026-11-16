@@ -1,6 +1,6 @@
 # Troco — instruções do projeto
 
-Sistema de controle financeiro pessoal, web app pensado para o iPhone. Desktop (2026-11-16): a partir de `lg`, `SideNav` (logo, "Adicionar" e as abas) no lugar da barra de abas, conteúdo centralizado em `max-w-3xl` e folhas `Sheet side="bottom"` como cartão centralizado (`max-w-lg`). O celular não muda: qualquer ajuste de desktop vai em classes `lg:`.
+Sistema de controle financeiro pessoal, web app pensado para o iPhone. Desktop (2026-11-16): a partir de `lg`, `SideNav` (logo, "Adicionar" e as abas) no lugar da barra de abas, conteúdo centralizado em `max-w-3xl` e folhas `Sheet side="bottom"` como cartão centralizado (`max-w-lg`); login e passo a passo inicial em coluna central (`max-w-sm` e `max-w-md`). O celular não muda: qualquer ajuste de desktop vai em classes `lg:`.
 
 ## Git
 
