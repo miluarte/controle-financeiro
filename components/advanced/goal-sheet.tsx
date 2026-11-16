@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
+import { useDeleteAction } from '@/components/ios/use-delete-action'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { NumberField } from '@/components/shared/number-field'
 import { useRefresh } from '@/hooks/use-refresh'
@@ -17,10 +17,15 @@ import { DateField } from '@/components/shared/date-field'
 export function GoalSheet({ open, goal, nextPriority, onOpenChange }: {
   open: boolean; goal: Goal | null; nextPriority: number; onOpenChange: (o: boolean) => void
 }) {
+  const del = useDeleteAction({ title: 'Excluir este objetivo?', remove: () => goalsApi.remove(goal!.id), onDone: () => onOpenChange(false) })
   return (
-    <ModalSheet open={open} onOpenChange={onOpenChange} title={goal ? 'Objetivo' : 'Novo objetivo'} formId="goal-form" actionLabel="Salvar">
-      {open && <GoalForm key={goal?.id ?? 'new'} goal={goal} nextPriority={nextPriority} onDone={() => onOpenChange(false)} />}
-    </ModalSheet>
+    <>
+      <ModalSheet open={open} onOpenChange={onOpenChange} title={goal ? 'Objetivo' : 'Novo objetivo'} formId="goal-form" actionLabel="Salvar"
+        onDelete={goal ? del.ask : undefined}>
+        {open && <GoalForm key={goal?.id ?? 'new'} goal={goal} nextPriority={nextPriority} onDone={() => onOpenChange(false)} />}
+      </ModalSheet>
+      {del.sheet}
+    </>
   )
 }
 
@@ -66,12 +71,6 @@ function GoalForm({ goal, nextPriority, onDone }: { goal: Goal | null; nextPrior
       </ListGroup>
       <p className="px-4 text-footnote text-muted-foreground">Prioridade 1 recebe a poupança primeiro.</p>
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
-      {goal && (
-        <Button type="button" variant="ghost" size="lg" className="w-full text-destructive"
-          onClick={() => { if (confirm('Excluir este objetivo?')) run(() => goalsApi.remove(goal.id)) }}>
-          Excluir objetivo
-        </Button>
-      )}
     </form>
   )
 }

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
+import { useDeleteAction } from '@/components/ios/use-delete-action'
 import { SegmentedControl } from '@/components/ios/segmented-control'
 import { ChoiceChip } from '@/components/shared/choice-chip'
 import { TokenIcon } from '@/components/shared/token-icon'
@@ -18,10 +19,15 @@ import type { Category } from '@/lib/types'
 export function CategoryFormSheet({
   category, siblings, onClose,
 }: { category: Category | null; siblings: Category[]; onClose: () => void }) {
+  const del = useDeleteAction({ title: `Excluir "${category?.name ?? ''}"?`, remove: () => categoriesApi.remove(category!.id), onDone: onClose })
   return (
-    <ModalSheet open={!!category} onOpenChange={o => { if (!o) onClose() }} title="Categoria" formId="category" actionLabel="Salvar">
-      {category && <Form key={category.id} c={category} siblings={siblings} onDone={onClose} />}
-    </ModalSheet>
+    <>
+      <ModalSheet open={!!category} onOpenChange={o => { if (!o) onClose() }} title="Categoria" formId="category" actionLabel="Salvar"
+        onDelete={del.ask}>
+        {category && <Form key={category.id} c={category} siblings={siblings} onDone={onClose} />}
+      </ModalSheet>
+      {del.sheet}
+    </>
   )
 }
 
@@ -110,10 +116,6 @@ function Form({ c, siblings, onDone }: { c: Category; siblings: Category[]; onDo
         <Button type="button" variant="secondary" size="lg" className="w-full" disabled={busy}
           onClick={() => run(() => categoriesApi.update(c.id, { active: !c.active }))}>
           {c.active ? 'Arquivar' : 'Reativar'}
-        </Button>
-        <Button type="button" variant="ghost" size="lg" className="w-full text-destructive" disabled={busy}
-          onClick={() => { if (confirm(`Excluir "${c.name}"?`)) run(() => categoriesApi.remove(c.id)) }}>
-          Excluir
         </Button>
       </div>
     </form>

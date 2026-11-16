@@ -46,8 +46,8 @@ export function ItemsEditor({ items, onChange, total, disabled }: {
         <li className="flex items-center gap-2 px-4">
           <Input aria-label="Item" variant="bare" value={name} onChange={e => setName(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add() } }}
-            placeholder="Adicionar item" className="min-w-0 flex-1" />
-          <CurrencyInput aria-label="Valor do item" variant="bare" value={amount} onChange={setAmount} placeholder="Valor" className="w-28 text-right" />
+            placeholder="Novo item" className="min-w-0 flex-1" />
+          <CurrencyInput aria-label="Valor do item" variant="bare" value={amount} onChange={setAmount} placeholder="Valor" className="w-24 text-right" />
           <Button type="button" variant="plain" disabled={!name.trim()} onClick={add}>Incluir</Button>
         </li>
       )}

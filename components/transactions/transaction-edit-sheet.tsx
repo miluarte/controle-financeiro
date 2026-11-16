@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
+import { ActionSheet } from '@/components/ios/action-sheet'
 import { ModalSheet } from '@/components/ios/modal-sheet'
 import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
@@ -24,16 +25,40 @@ import { ItemsEditor } from './items-editor'
 export function TransactionEditSheet({
   transaction, onClose,
 }: { transaction: Transaction | null; onClose: () => void }) {
+  const refresh = useRefresh()
+  const [asking, setAsking] = useState(false)
+  const t = transaction
+
+  async function remove(all: boolean) {
+    if (!t) return
+    try {
+      if (all && t.installmentGroupId) await transactionsApi.removeInstallmentGroup(t.installmentGroupId)
+      else await transactionsApi.remove(t.id)
+      await refresh(); onClose()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Não foi possível excluir.')
+    }
+  }
+
   return (
-    <ModalSheet
-      open={!!transaction}
-      onOpenChange={o => { if (!o) onClose() }}
-      title={transaction ? TYPE_LABEL[transaction.type] : ''}
-      formId="edit-transaction"
-      actionLabel="Salvar"
-    >
-      {transaction && <EditForm key={transaction.id} t={transaction} onDone={onClose} />}
-    </ModalSheet>
+    <>
+      <ModalSheet
+        open={!!t}
+        onOpenChange={o => { if (!o) onClose() }}
+        title={t ? TYPE_LABEL[t.type] : ''}
+        formId="edit-transaction"
+        actionLabel="Salvar"
+        onDelete={() => setAsking(true)}
+      >
+        {t && <EditForm key={t.id} t={t} onDone={onClose} />}
+      </ModalSheet>
+      <ActionSheet open={asking} onOpenChange={setAsking}
+        title={t?.installmentGroupId ? 'O que você quer excluir?' : 'Excluir este lançamento?'}
+        actions={t?.installmentGroupId
+          ? [{ label: 'Só esta parcela', destructive: true, onSelect: () => remove(false) },
+             { label: 'A compra inteira', destructive: true, onSelect: () => remove(true) }]
+          : [{ label: 'Excluir', destructive: true, onSelect: () => remove(false) }]} />
+    </>
   )
 }
 
@@ -48,7 +73,7 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
   const [text, setText] = useState(t.type === 'income' ? t.description ?? '' : t.place ?? '')
   const [items, setItems] = useState<ReceiptItem[]>((t.sourceData?.items as ReceiptItem[] | undefined) ?? [])
   const [error, setError] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
+  const [, setBusy] = useState(false)
 
   const editable = ['expense', 'income', 'save_apply', 'save_redeem'].includes(t.type)
   const catType = t.type === 'income' ? 'income' : 'expense'
@@ -68,19 +93,6 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
       await refresh(); onDone()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível salvar.')
-    } finally { setBusy(false) }
-  }
-
-  async function remove(all: boolean) {
-    const msg = all ? 'Excluir todas as parcelas desta compra?' : 'Excluir este lançamento?'
-    if (!confirm(msg)) return
-    setBusy(true); setError(null)
-    try {
-      if (all && t.installmentGroupId) await transactionsApi.removeInstallmentGroup(t.installmentGroupId)
-      else await transactionsApi.remove(t.id)
-      await refresh(); onDone()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Não foi possível excluir.')
     } finally { setBusy(false) }
   }
 
@@ -138,16 +150,6 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
 
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
 
-      <div className="space-y-2">
-        <Button type="button" variant="destructive" size="lg" className="w-full" disabled={busy} onClick={() => remove(false)}>
-          {t.installmentGroupId ? 'Excluir esta parcela' : 'Excluir lançamento'}
-        </Button>
-        {t.installmentGroupId && (
-          <Button type="button" variant="ghost" size="lg" className="w-full text-destructive" disabled={busy} onClick={() => remove(true)}>
-            Excluir a compra inteira
-          </Button>
-        )}
-      </div>
     </form>
   )
 }

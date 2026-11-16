@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
+import { useDeleteAction } from '@/components/ios/use-delete-action'
 import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { DecimalField } from '@/components/shared/decimal-field'
@@ -24,11 +25,16 @@ import { CardPreview } from './card-preview'
 export function WalletFormSheet({
   open, wallet, onClose,
 }: { open: boolean; wallet: OwnWallet | null; onClose: () => void }) {
+  const del = useDeleteAction({ title: 'Excluir esta carteira?', remove: () => walletsApi.remove(wallet!.id), onDone: onClose })
   return (
+    <>
+    {del.sheet}
     <ModalSheet open={open} onOpenChange={o => { if (!o) onClose() }}
-      title={wallet ? 'Editar carteira' : 'Nova carteira'} formId="wallet" actionLabel="Salvar">
+      title={wallet ? 'Editar carteira' : 'Nova carteira'} formId="wallet" actionLabel="Salvar"
+      onDelete={wallet ? del.ask : undefined}>
       {open && <Form key={wallet?.id ?? 'new'} wallet={wallet} onDone={onClose} />}
     </ModalSheet>
+    </>
   )
 }
 
@@ -172,10 +178,6 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
           <Button type="button" variant="secondary" size="lg" className="w-full" disabled={busy}
             onClick={() => run(() => walletsApi.setActive(wallet.id, !wallet.active))}>
             {wallet.active ? 'Arquivar' : 'Reativar'}
-          </Button>
-          <Button type="button" variant="ghost" size="lg" className="w-full text-destructive" disabled={busy}
-            onClick={() => { if (confirm('Excluir esta carteira?')) run(() => walletsApi.remove(wallet.id)) }}>
-            Excluir
           </Button>
         </div>
       )}

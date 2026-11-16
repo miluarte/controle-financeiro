@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
+import { useDeleteAction } from '@/components/ios/use-delete-action'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { useRefresh } from '@/hooks/use-refresh'
 import { subscriptionsApi } from '@/lib/api/advanced'
@@ -16,13 +16,18 @@ import { UseCalendar } from './use-calendar'
 export function SubscriptionSheet({ open, subscription, month, usedDays, onOpenChange }: {
   open: boolean; subscription: Subscription | null; month: string; usedDays: string[]; onOpenChange: (o: boolean) => void
 }) {
+  const del = useDeleteAction({ title: 'Excluir esta assinatura?', remove: () => subscriptionsApi.remove(subscription!.id), onDone: () => onOpenChange(false) })
   return (
-    <ModalSheet open={open} onOpenChange={onOpenChange} title={subscription?.name ?? 'Nova assinatura'} formId="sub-form" actionLabel="Salvar">
+    <>
+    {del.sheet}
+    <ModalSheet open={open} onOpenChange={onOpenChange} title={subscription?.name ?? 'Nova assinatura'} formId="sub-form" actionLabel="Salvar"
+      onDelete={subscription ? del.ask : undefined}>
       {open && (
         <SubscriptionForm key={subscription?.id ?? 'new'} subscription={subscription} month={month}
           usedDays={usedDays} onDone={() => onOpenChange(false)} />
       )}
     </ModalSheet>
+    </>
   )
 }
 
@@ -73,12 +78,6 @@ function SubscriptionForm({ subscription, month, usedDays, onDone }: {
       )}
 
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
-      {subscription && (
-        <Button type="button" variant="ghost" size="lg" className="w-full text-destructive"
-          onClick={() => { if (confirm('Excluir esta assinatura?')) run(() => subscriptionsApi.remove(subscription.id)) }}>
-          Excluir assinatura
-        </Button>
-      )}
     </form>
   )
 }

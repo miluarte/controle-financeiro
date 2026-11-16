@@ -8,6 +8,7 @@ import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { ModalSheet } from '@/components/ios/modal-sheet'
+import { useDeleteAction } from '@/components/ios/use-delete-action'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { DecimalField } from '@/components/shared/decimal-field'
 import { NumberField } from '@/components/shared/number-field'
@@ -27,14 +28,19 @@ interface VehicleSheetProps {
 
 // Veículo: consumo e preço do combustível, trajetos do mês e manutenção preventiva.
 export function VehicleSheet({ open, vehicle, trips, maintenance, onOpenChange }: VehicleSheetProps) {
+  const del = useDeleteAction({ title: 'Excluir este veículo e os trajetos?', remove: () => vehiclesApi.remove(vehicle!.id), onDone: () => onOpenChange(false) })
   return (
-    <ModalSheet open={open} onOpenChange={onOpenChange} title={vehicle?.name ?? 'Novo veículo'} formId="vehicle-form" actionLabel="Salvar">
+    <>
+    {del.sheet}
+    <ModalSheet open={open} onOpenChange={onOpenChange} title={vehicle?.name ?? 'Novo veículo'} formId="vehicle-form" actionLabel="Salvar"
+      onDelete={vehicle ? del.ask : undefined}>
       {open && (
         <VehicleForm key={vehicle?.id ?? 'new'} vehicle={vehicle} onDone={() => onOpenChange(false)}
           trips={trips.filter(t => t.vehicleId === vehicle?.id)}
           maintenance={maintenance.filter(m => m.vehicleId === vehicle?.id)} />
       )}
     </ModalSheet>
+    </>
   )
 }
 
@@ -123,12 +129,6 @@ function VehicleForm({ vehicle, trips, maintenance, onDone }: {
       )}
 
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
-      {vehicle && (
-        <Button type="button" variant="ghost" size="lg" className="w-full text-destructive"
-          onClick={() => { if (confirm('Excluir este veículo e os trajetos?')) run(() => vehiclesApi.remove(vehicle.id)) }}>
-          Excluir veículo
-        </Button>
-      )}
     </form>
   )
 }

@@ -19,6 +19,8 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         // botão de texto da barra de navegação do iOS (Cancelar, Salvar)
         plain: "text-tint active:opacity-50 disabled:text-muted-foreground disabled:opacity-100",
+        // ação de excluir discreta (texto vermelho, sem fundo)
+        "plain-destructive": "text-destructive active:opacity-50 disabled:opacity-40",
       },
       size: {
         default:

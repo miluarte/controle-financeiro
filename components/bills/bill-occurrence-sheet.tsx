@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
+import { useDeleteAction } from '@/components/ios/use-delete-action'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { WalletPicker } from '@/components/shared/wallet-picker'
 import { useMonth } from '@/hooks/use-month'
@@ -21,10 +22,21 @@ import { DateField } from '@/components/shared/date-field'
 export function BillOccurrenceSheet({ occurrence, onClose, onEdit }: {
   occurrence: BillOccurrence | null; onClose: () => void; onEdit: (o: BillOccurrence) => void
 }) {
+  const { month } = useMonth()
+  const income = occurrence?.bill.type === 'income'
+  const del = useDeleteAction({
+    title: income ? 'Encerrar esta receita? Os meses recebidos continuam.' : 'Encerrar esta conta? Os meses pagos continuam.',
+    label: 'Encerrar a partir deste mês',
+    remove: () => billsApi.endSeries(occurrence!.billId, month), onDone: onClose,
+  })
   return (
-    <ModalSheet open={!!occurrence} onOpenChange={o => { if (!o) onClose() }} title={occurrence?.bill.name ?? ''}>
-      {occurrence && <Body key={occurrence.id} o={occurrence} onDone={onClose} onEdit={() => onEdit(occurrence)} />}
-    </ModalSheet>
+    <>
+      <ModalSheet open={!!occurrence} onOpenChange={o => { if (!o) onClose() }} title={occurrence?.bill.name ?? ''}
+        onDelete={del.ask} deleteLabel="Encerrar">
+        {occurrence && <Body key={occurrence.id} o={occurrence} onDone={onClose} onEdit={() => onEdit(occurrence)} />}
+      </ModalSheet>
+      {del.sheet}
+    </>
   )
 }
 
@@ -116,16 +128,6 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
 
       <Button variant="secondary" size="lg" className="w-full" disabled={busy} onClick={onEdit}>
         {income ? 'Editar receita' : 'Editar conta'}
-      </Button>
-
-      <Button variant="ghost" size="lg" className="w-full text-destructive" disabled={busy}
-        onClick={() => {
-          const msg = income
-            ? 'Encerrar esta receita a partir deste mês? Os meses já recebidos continuam no histórico.'
-            : 'Encerrar esta conta a partir deste mês? Os meses já pagos continuam no histórico.'
-          if (confirm(msg)) run(() => billsApi.endSeries(o.billId, month))
-        }}>
-        {income ? 'Encerrar receita' : 'Encerrar conta'}
       </Button>
     </div>
   )
