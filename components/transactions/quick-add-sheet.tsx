@@ -34,6 +34,7 @@ import { billsApi } from '@/lib/api/bills'
 import { PurchaseOwnerField, useCardAccess } from './purchase-owner-field'
 import { familyApi } from '@/lib/api/family'
 import type { ReceiptItem } from '@/lib/receipt'
+import { useCategorySuggest } from '@/hooks/use-category-suggest'
 
 export type QuickAddMode = 'expense' | 'income' | 'save'
 type Mode = QuickAddMode
@@ -56,6 +57,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
   const { profile } = useProfile()
   const refreshMonth = useRefresh()
   const { session } = useSession()
+  const suggest = useCategorySuggest()
 
   const [mode, setMode] = useState<Mode>(initialMode)
   const [saveDirection, setSaveDirection] = useState<SaveDirection>('apply')
@@ -90,7 +92,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
     if (result.amount) setAmount(result.amount)
     if (result.place) setPlace(result.place)
     if (result.date) setDate(result.date)
-    if (result.categoryId) setCategoryId(result.categoryId)
+    // categoria: a da leitura, senão a do seu histórico/palavras-chave (sem IA)
+    const cat = result.categoryId ?? suggest(result.place, result.items)
+    if (cat) setCategoryId(cat)
     if (result.items.length) setItems(result.items)
     // forma de pagamento da nota: final do cartão ou tipo (crédito, débito, Pix, dinheiro)
     const wallet = walletForReceipt(wallets, result)
@@ -151,7 +155,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
         if (items.length) await transactionsApi.setGroupItems(group, items)
         if (assignTo) {
           // assign_purchase vale para todas as parcelas em aberto da compra
-          const first = await transactionsApi.firstOfGroup(group)
+          const [first] = await transactionsApi.idsOfGroup(group)
           if (first) await familyApi.assignPurchase(first, assignTo)
         }
       } else {
@@ -265,6 +269,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
                   variant="bare"
                   value={place}
                   onChange={e => setPlace(e.target.value)}
+                  onBlur={() => { if (mode === 'expense' && !categoryId) { const cat = suggest(place, items); if (cat) setCategoryId(cat) } }}
                   placeholder={placePlaceholder}
                   className="text-right"
                 />

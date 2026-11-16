@@ -18,6 +18,7 @@ import { installmentFirstDate, parseStatement, pdfLines, type StatementItem } fr
 import type { OwnWallet } from '@/lib/types'
 import { daysInMonth, formatCurrency, formatDate } from '@/lib/utils'
 import { LoadingDots } from '@/components/shared/loading-dots'
+import { useCategorySuggest } from '@/hooks/use-category-suggest'
 
 // Conferir a fatura com o PDF do banco: o que falta no app, o que sobra e o que bate.
 export function ReconcileSheet({ open, onOpenChange, wallet, invoiceRef, dueDate }: {
@@ -41,6 +42,7 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
   wallet: OwnWallet; invoiceRef: string; dueDate: string; initialFile?: File
 }) {
   const refresh = useRefresh()
+  const suggest = useCategorySuggest()
   const input = useRef<HTMLInputElement>(null)
   const [status, setStatus] = useState<string | null>(null)
   const [bankTotal, setBankTotal] = useState<number | null>(null)
@@ -101,14 +103,14 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
     const who = owners[keyOf(item)]
     if (item.installmentN && item.installmentsTotal) {
       const group = await transactionsApi.createInstallments({
-        walletId: wallet.id, categoryId: null, place: item.description, installments: item.installmentsTotal,
+        walletId: wallet.id, categoryId: suggest(item.description), place: item.description, installments: item.installmentsTotal,
         total: item.amount * item.installmentsTotal, firstDate: installmentFirstDate(item, invoiceRef), start: item.installmentN,
       })
       // assign_purchase já vale para todas as parcelas em aberto da compra
       if (who && who !== me) { const [first] = await transactionsApi.idsOfGroup(group); if (first) await familyApi.assignPurchase(first, who) }
     } else {
       const tx = await transactionsApi.create({
-        type: 'expense', amount: item.amount, date: dateInInvoice(item.date), categoryId: null,
+        type: 'expense', amount: item.amount, date: dateInInvoice(item.date), categoryId: suggest(item.description),
         walletId: wallet.id, place: item.description, description: null, source: 'import',
       })
       if (who && who !== me) await familyApi.assignPurchase(tx.id, who)

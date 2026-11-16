@@ -97,12 +97,6 @@ export const transactionsApi = {
     return (data?.date as string | undefined) ?? null
   },
 
-  // primeira parcela lançada de uma compra parcelada (para atribuir a compra a alguém)
-  firstOfGroup: async (groupId: string): Promise<string | null> => {
-    const { data } = await supabase.from('transactions').select('id').eq('installment_group_id', groupId).order('date').limit(1).maybeSingle()
-    return (data?.id as string | undefined) ?? null
-  },
-
   createInstallments: async (args: {
     walletId: string; categoryId: string | null; total: number; installments: number
     firstDate: string; place: string | null; start?: number
@@ -117,6 +111,12 @@ export const transactionsApi = {
       p_start: args.start ?? 1,
     })) as string
   },
+
+  // local e categoria dos gastos recentes, para sugerir categoria sem IA (lib/category-suggest.ts)
+  placeHistory: async (): Promise<{ place: string | null; categoryId: string | null }[]> =>
+    unwrap(await supabase.from('transactions').select('place, category_id').eq('type', 'expense').eq('status', 'confirmed')
+      .not('category_id', 'is', null).not('place', 'is', null).order('date', { ascending: false }).limit(2000))
+      .map(r => ({ place: r.place as string | null, categoryId: r.category_id as string | null })),
 
   idsOfGroup: async (groupId: string) =>
     unwrap(await supabase.from('transactions').select('id').eq('installment_group_id', groupId)).map(r => r.id as string),

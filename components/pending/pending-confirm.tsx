@@ -18,6 +18,7 @@ import { transactionsApi } from '@/lib/api/transactions'
 import type { Transaction } from '@/lib/types'
 import { todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
+import { useCategorySuggest } from '@/hooks/use-category-suggest'
 
 // Confirmar um gasto que chegou pela automação: ajusta valor, local, categoria e carteira.
 export function PendingConfirm({ t, onDone }: { t: Transaction; onDone: () => void }) {
@@ -28,7 +29,8 @@ export function PendingConfirm({ t, onDone }: { t: Transaction; onDone: () => vo
   const [amount, setAmount] = useState(t.amount)
   const [place, setPlace] = useState(t.place ?? '')
   const [date, setDate] = useState(t.date)
-  const [categoryId, setCategoryId] = useState<string | null>(t.categoryId)
+  const suggest = useCategorySuggest()
+  const [categoryId, setCategoryId] = useState<string | null>(() => t.categoryId ?? suggest(t.place))
   const [walletId, setWalletId] = useState<string | null>(t.walletId ?? profile?.defaultWalletId ?? null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)

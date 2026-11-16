@@ -15,6 +15,7 @@ import { WalletPicker } from '@/components/shared/wallet-picker'
 import { StatementImport } from './statement-import'
 import type { NewTransaction } from '@/lib/types'
 import { formatCurrency, formatDate, parseCents } from '@/lib/utils'
+import { useCategorySuggest } from '@/hooks/use-category-suggest'
 
 // DAD-2: importar CSV ou OFX (extrato) com prévia, mapeamento e duplicadas, ou a fatura do cartão em PDF
 // (StatementImport: compras que faltam, com parcela atual e quem fez a compra).
@@ -34,6 +35,7 @@ function Importer({ onDone }: { onDone: () => void }) {
   const { wallets } = useWallets()
   const { profile } = useProfile()
   const refresh = useRefresh()
+  const suggest = useCategorySuggest()
   const [rows, setRows] = useState<string[][] | null>(null)
   const [fields, setFields] = useState<ImportField[]>([])
   const [existing, setExisting] = useState<Set<string>>(new Set())
@@ -72,7 +74,8 @@ function Importer({ onDone }: { onDone: () => void }) {
       const catKey = `${type === 'income' ? 'income' : 'expense'}:${norm(get('category'))}`
       const tx: NewTransaction | null = date && amount ? {
         type, amount, date,
-        categoryId: type.startsWith('save') ? null : cat.get(catKey) ?? null,
+        // sem categoria no arquivo: sugere pelo histórico e palavras-chave do local
+        categoryId: type.startsWith('save') ? null : cat.get(catKey) ?? (type === 'expense' ? suggest(place ?? description) : null),
         walletId: type === 'income' ? null : wal.get(norm(get('wallet'))) ?? targetWallet,
         place: type === 'income' ? null : place ?? description,
         description: type === 'income' ? description ?? place : description,
@@ -81,7 +84,7 @@ function Importer({ onDone }: { onDone: () => void }) {
       const duplicate = !!tx && existing.has(`${tx.date}|${tx.amount}|${norm(tx.place ?? tx.description ?? '')}`)
       return { tx, duplicate }
     })
-  }, [rows, fields, categories, wallets, existing, targetWallet])
+  }, [rows, fields, categories, wallets, existing, targetWallet, suggest])
 
   const valid = preview.filter(p => p.tx && !p.duplicate)
   const invalid = preview.filter(p => !p.tx).length

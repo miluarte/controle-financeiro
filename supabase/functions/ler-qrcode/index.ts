@@ -1,7 +1,8 @@
 // Troco: leitura da NFC-e pelo QR code (spec 5.4, passo 7).
 // Entrada: { url } (o texto do QR code). Abre a consulta pública da Sefaz do estado (só sites .gov.br)
-// e devolve os dados da nota. O modelo padrão de página (usado pela maioria dos estados) é lido direto;
-// o Gemini, quando configurado, sugere a categoria e cobre estados com página diferente.
+// e devolve os dados da nota. O modelo padrão de página (usado pela maioria dos estados) é lido direto,
+// sem IA; a categoria é sugerida no app (histórico e palavras-chave). O Gemini só entra quando a página
+// vem num formato que o leitor não conhece.
 // Saída: { ok: true, chave, amount (centavos), place, date, items, categoryId, payment, cardLast4, installments }
 //    ou { ok: false, reason } para o app cair na leitura da foto.
 import { createClient } from 'npm:@supabase/supabase-js@2.49.4'
@@ -45,6 +46,13 @@ function paymentOf(t: string): { payment: Payment; cardLast4: string | null } {
     : /DINHEIRO/.test(n) ? 'dinheiro' : null
   const last4 = n.match(/(?:\*{2,}|X{2,}|FINAL\s*)\s*(\d{4})\b/)?.[1] ?? null
   return { payment, cardLast4: last4 }
+}
+
+// Razão social mais legível: tira LTDA, ME, EIRELI, S/A e deixa só a primeira letra maiúscula.
+function cleanName(name: string | null) {
+  if (!name) return null
+  const base = name.replace(/\s+(LTDA|ME|MEI|EPP|EIRELI|S\/?A|S\.A\.?)\.?(\s|$).*/i, '').replace(/\s+/g, ' ').trim()
+  return base.toLowerCase().replace(/(^|\s)(\p{L})/gu, (_, sp, c) => sp + c.toUpperCase()) || null
 }
 
 // Página no modelo padrão das Sefaz (txtTopo, txtTit, valor, totalNumb, "Emissão:").
@@ -152,9 +160,14 @@ Deno.serve(async req => {
   }
 
   const t = parseTemplate(html)
-  const { data: cats } = await supabase.from('categories').select('id, name').eq('type', 'expense').eq('active', true)
+  const readByTemplate = t.amount > 0 && (!!t.place || t.items.length > 0)
+  let cats: { id: string; name: string }[] = []
+  let g: Awaited<ReturnType<typeof askGemini>> = null
   const key = Deno.env.get('GEMINI_API_KEY')
-  const g = key ? await askGemini(key, text(html), (cats ?? []).map(c => c.name)).catch(() => null) : null
+  if (!readByTemplate && key) {
+    cats = (await supabase.from('categories').select('id, name').eq('type', 'expense').eq('active', true)).data ?? []
+    g = await askGemini(key, text(html), cats.map(c => c.name)).catch(() => null)
+  }
 
   const amount = t.amount || Math.round(Number(g?.total || 0) * 100) || offlineAmount
   if (!amount) return json({ ok: false, reason: 'unreadable', chave })
@@ -162,13 +175,13 @@ Deno.serve(async req => {
   const gItems = (g?.items ?? []).map(i => ({ name: String(i.name ?? '').slice(0, 60), amount: Math.round(Number(i.amount || 0) * 100) }))
   const gDate = /^\d{4}-\d{2}-\d{2}$/.test(g?.date ?? '') ? g!.date! : null
   const gPay = ['credito', 'debito', 'pix', 'dinheiro'].includes(g?.payment ?? '') ? g!.payment as Payment : null
-  const category = (cats ?? []).find(c => c.name.toLowerCase() === (g?.category ?? '').toLowerCase())
+  const category = cats.find(c => c.name.toLowerCase() === (g?.category ?? '').toLowerCase())
 
   return json({
     ok: true,
     chave,
     amount,
-    place: ((g?.place ?? '').trim() || t.place || '').slice(0, 80) || null,
+    place: (cleanName(t.place) || (g?.place ?? '').trim()).slice(0, 80) || null,
     date: t.date ?? gDate,
     items: (t.items.length ? t.items : gItems).slice(0, 30),
     categoryId: category?.id ?? null,
