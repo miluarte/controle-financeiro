@@ -225,6 +225,8 @@ export interface FamilyMember {
   role: 'admin' | 'member'
   status: 'pending' | 'active'
   joinedAt: string | null
+  // pessoa sem o app (convidada pelo titular para receber compras)
+  isGuest?: boolean
 }
 
 export interface CardDebt {

@@ -27,7 +27,11 @@ export const familyApi = {
       role: r.role as FamilyMember['role'],
       status: r.status as FamilyMember['status'],
       joinedAt: (r.joined_at as string) ?? null,
+      isGuest: !!r.is_guest,
     })),
+
+  // pessoa que usa o cartão mas não tem o app
+  addGuest: async (name: string) => unwrap(await supabase.rpc('add_family_guest', { p_name: name })) as string,
 
   create: async (name: string) => { unwrap(await supabase.rpc('create_family', { p_name: name })) },
   join: async (code: string) => { unwrap(await supabase.rpc('join_family', { p_code: code })) },

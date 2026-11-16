@@ -24,6 +24,7 @@ import { ConfirmSettlementSheet } from './confirm-settlement-sheet'
 import { SplitSheet } from './split-sheet'
 import { InvoiceNavigator } from './invoice-navigator'
 import { ShareCardGroup } from './share-card-group'
+import { personStatementPdf, shareOrDownload } from '@/lib/person-statement-pdf'
 
 // CAR-5 e VIS-3: visão do titular. Fatura total, fatia de cada pessoa, limite, compras e compartilhamento.
 export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
@@ -71,6 +72,17 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
   const catById = new Map(categories.map(c => [c.id, c]))
   const due = invoiceDueDate(wallet, ref)
 
+  // fatura só da pessoa (ex.: quem não tem o app) para ela conferir e pagar
+  async function exportFor(id: string) {
+    const person = people.find(p => p.userId === id)
+    const blob = await personStatementPdf({
+      cardName: wallet.name, cardLast4: wallet.last4, ownerName: profile?.name || 'titular',
+      personName: id === me ? (profile?.name || 'você') : person?.name ?? 'Membro',
+      invoiceRef: ref, dueDate: due, purchases: list.filter(t => t.owner === id),
+    })
+    await shareOrDownload(blob, `Fatura ${wallet.name} ${ref} - ${person?.name ?? 'membro'}.pdf`)
+  }
+
   return (
     <div className="space-y-7">
       <InvoiceNavigator value={ref} onChange={setRef}
@@ -93,6 +105,7 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
                     {settledBy.get(id) ? <span className="text-footnote text-success"> · {formatCurrency(settledBy.get(id)!)} acertado</span> : null}
                   </span>
                   <span className="text-subheadline font-semibold tabular-nums">{formatCurrency(v)}</span>
+                  <Button variant="plain" size="nav" aria-label={`Fatura de ${nameOf(id)} em PDF`} onClick={() => exportFor(id)}>PDF</Button>
                 </li>
               )
             })}

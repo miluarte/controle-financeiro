@@ -14,6 +14,7 @@ import { useSession } from '@/hooks/use-session'
 import { familyApi } from '@/lib/api/family'
 import type { Family } from '@/lib/types'
 import { MemberAvatar } from './member-avatar'
+import { GuestForm } from './guest-form'
 
 // FAM-3, FAM-5 e FAM-7: código, membros, aprovação, remoção e saída.
 export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: boolean }) {
@@ -91,9 +92,12 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
               : undefined}
             leading={<MemberAvatar name={m.name} color={m.avatarColor} />}
             title={m.userId === me ? `${m.name} (você)` : m.name}
+            subtitle={m.isGuest ? 'Sem o app' : undefined}
             trailing={m.role === 'admin' ? <Badge variant="secondary">Admin</Badge> : undefined} />
         ))}
       </ListGroup>
+
+      <GuestForm onAdd={name => run(() => familyApi.addGuest(name))} />
 
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
 
