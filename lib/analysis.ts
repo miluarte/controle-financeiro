@@ -41,3 +41,10 @@ export function freePerDay(remaining: number, month: string): number {
   return Math.floor(Math.max(0, remaining) / left)
 }
 
+
+// Média por dia: o que já foi gasto até hoje ÷ dias que já passaram (hoje conta).
+// Compras com data futura (parcelas ainda por vir no mês) ficam de fora. Mês fechado: total ÷ dias do mês.
+export function averagePerDay(cumulative: number[], day: number): number {
+  if (day <= 0) return 0
+  return Math.round(cumulative[day - 1] / day)
+}

@@ -3,7 +3,6 @@
 import { BudgetCard } from '@/components/analysis/budget-card'
 import { CategoryBreakdown } from '@/components/analysis/category-breakdown'
 import { HistoryList } from '@/components/analysis/history-list'
-import { PaceChart } from '@/components/analysis/pace-chart'
 import { AdvancedEntry } from '@/components/analysis/advanced-entry'
 import { ReplanEntry } from '@/components/analysis/replan-entry'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
@@ -27,8 +26,7 @@ export default function AnalysisPage() {
     <>
       <LargeTitleHeader title="Análise" actions={<MonthSelector />} />
       <div className="space-y-7 px-4 pt-2">
-        <BudgetCard month={month} spent={spent} budget={budget} />
-        {budget ? <PaceChart cumulative={cumulative} budget={budget} day={day} /> : null}
+        <BudgetCard month={month} spent={spent} budget={budget} cumulative={cumulative} day={day} />
         <CategoryBreakdown month={month} />
         <ReplanEntry />
         <AdvancedEntry />
