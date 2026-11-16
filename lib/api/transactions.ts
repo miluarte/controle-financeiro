@@ -91,6 +91,12 @@ export const transactionsApi = {
   update: async (id: string, t: Partial<NewTransaction>) =>
     toTransaction(unwrap(await supabase.from('transactions').update(toRow(t)).eq('id', id).select('*').single())),
 
+  // NFC-e já registrada (mesma chave de acesso do QR code): data do lançamento, ou null
+  findByChave: async (chave: string): Promise<string | null> => {
+    const { data } = await supabase.from('transactions').select('date').contains('source_data', { chave }).limit(1).maybeSingle()
+    return (data?.date as string | undefined) ?? null
+  },
+
   // primeira parcela lançada de uma compra parcelada (para atribuir a compra a alguém)
   firstOfGroup: async (groupId: string): Promise<string | null> => {
     const { data } = await supabase.from('transactions').select('id').eq('installment_group_id', groupId).order('date').limit(1).maybeSingle()

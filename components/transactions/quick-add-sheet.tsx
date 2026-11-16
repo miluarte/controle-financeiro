@@ -74,6 +74,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
   // leitura da nota fiscal (5.4)
   const [receipt, setReceipt] = useState<{ result: ReceiptResult; image: Blob } | null>(null)
   const [attachReceipt, setAttachReceipt] = useState(false)
+  // mesma NFC-e já registrada antes (pela chave do QR code)
+  const [duplicateOn, setDuplicateOn] = useState<string | null>(null)
   // itens da compra: vêm da nota ou são digitados
   const [items, setItems] = useState<ReceiptItem[]>([])
   // cartão próprio compartilhado: de quem é a compra ('' = sua)
@@ -83,6 +85,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
 
   function onReceipt(result: ReceiptResult, image: Blob) {
     setReceipt({ result, image })
+    setDuplicateOn(null)
+    if (result.chave) transactionsApi.findByChave(result.chave).then(setDuplicateOn).catch(() => {})
     if (result.amount) setAmount(result.amount)
     if (result.place) setPlace(result.place)
     if (result.date) setDate(result.date)
@@ -107,6 +111,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
     setWalletId(null)
     setReceipt(null)
     setAttachReceipt(false)
+    setDuplicateOn(null)
     setItems([])
     setOwner('')
     setRepeat(repeatDefault(todayIso().slice(0, 7)))
@@ -155,7 +160,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
         const created = await transactionsApi.create({
           ...(fromPhoto ? {
             source: 'photo',
-            sourceData: { reader: receipt.result.source, items },
+            sourceData: { reader: receipt.result.source, items, ...(receipt.result.chave ? { chave: receipt.result.chave } : {}) },
             receiptPath,
           } : mode === 'expense' && items.length ? { sourceData: { items } } : {}),
           type: mode === 'save' ? (saveDirection === 'apply' ? 'save_apply' : 'save_redeem') : mode,
@@ -282,7 +287,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
             )}
 
             {mode === 'expense' && receipt && (
-              <ReceiptResultGroup source={receipt.result.source} items={[]}
+              <ReceiptResultGroup source={receipt.result.source} items={[]} duplicateOn={duplicateOn}
                 attach={attachReceipt} onAttachChange={setAttachReceipt} attachDisabled={isCredit && installments > 1} />
             )}
 

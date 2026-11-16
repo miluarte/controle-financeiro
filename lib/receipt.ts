@@ -3,8 +3,9 @@ import { supabase } from './supabase/client'
 import { parseCents, todayIso } from './utils'
 
 // 5.4: leitura de nota fiscal por foto.
-// 1. Gemini (Edge Function ler-nota). 2. Se não der (sem chave, limite gratuito, erro),
-// leitura local com Tesseract.js no próprio celular, mais simples e menos precisa.
+// 1. QR code da NFC-e na foto: consulta a Sefaz (Edge Function ler-qrcode), dados oficiais da nota.
+// 2. Sem QR (ou Sefaz fora): Gemini lê a foto (Edge Function ler-nota). 3. Se não der (sem chave,
+// limite gratuito, erro), leitura local com Tesseract.js no próprio celular, mais simples e menos precisa.
 
 export interface ReceiptItem { name: string; amount: number }
 
@@ -14,7 +15,9 @@ export interface ReceiptResult {
   date: string | null     // AAAA-MM-DD
   items: ReceiptItem[]
   categoryId: string | null
-  source: 'gemini' | 'ocr'
+  source: 'sefaz' | 'gemini' | 'ocr'
+  // chave de acesso da NFC-e (44 dígitos), quando veio do QR code
+  chave?: string | null
   // forma de pagamento impressa na nota, quando aparece
   payment: 'credito' | 'debito' | 'pix' | 'dinheiro' | null
   cardLast4: string | null
@@ -77,6 +80,47 @@ function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promi
 
 export type ReceiptStatus = (text: string) => void
 
+// Procura o QR code na foto (no celular, com jsQR). Tenta a foto inteira e depois a metade de baixo
+// ampliada, onde o QR costuma ficar no cupom.
+export async function findQrCode(file: File): Promise<string | null> {
+  const { default: jsQR } = await import('jsqr')
+  const bitmap = await loadImage(file)
+  const tries: { sy: number; sh: number; max: number }[] = [
+    { sy: 0, sh: 1, max: 1400 },
+    { sy: 0.45, sh: 0.55, max: 1600 },
+    { sy: 0, sh: 1, max: 2200 },
+  ]
+  for (const t of tries) {
+    const sy = Math.round(bitmap.height * t.sy)
+    const sh = Math.round(bitmap.height * t.sh)
+    const scale = Math.min(1, t.max / Math.max(bitmap.width, sh))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.round(bitmap.width * scale)
+    canvas.height = Math.round(sh * scale)
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })!
+    ctx.drawImage(bitmap, 0, sy, bitmap.width, sh, 0, 0, canvas.width, canvas.height)
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const code = jsQR(img.data, img.width, img.height)
+    if (code?.data) return code.data
+  }
+  return null
+}
+
+// QR da NFC-e aponta para a consulta da Sefaz do estado (site .gov.br)
+export const isSefazUrl = (text: string) => {
+  try { return /(^|\.)gov\.br$/i.test(new URL(text.trim()).hostname) } catch { return false }
+}
+
+async function readWithSefaz(url: string): Promise<ReceiptResult | null> {
+  try {
+    const { data, error } = await withTimeout(supabase.functions.invoke('ler-qrcode', { body: { url } }), 30_000, 'sefaz-timeout')
+    if (error || !data?.ok || !data.amount) return null
+    return { payment: null, cardLast4: null, installments: 1, ...data, source: 'sefaz' }
+  } catch {
+    return null
+  }
+}
+
 async function readWithGemini(image: Blob): Promise<ReceiptResult | null> {
   try {
     const { data, error } = await withTimeout(supabase.functions.invoke('ler-nota', {
@@ -126,8 +170,13 @@ async function readWithOcr(image: Blob, onStatus?: ReceiptStatus): Promise<Recei
 }
 
 export async function readReceipt(file: File, onStatus?: ReceiptStatus): Promise<{ result: ReceiptResult; image: Blob }> {
-  onStatus?.('Preparando a foto…')
-  const image = await prepareImage(file)
+  onStatus?.('Procurando o QR code…')
+  const [qr, image] = await Promise.all([findQrCode(file).catch(() => null), prepareImage(file)])
+  if (qr && isSefazUrl(qr)) {
+    onStatus?.('Consultando a Sefaz…')
+    const fromSefaz = await readWithSefaz(qr)
+    if (fromSefaz) return { result: fromSefaz, image }
+  }
   onStatus?.('Lendo a nota…')
   const result = (await readWithGemini(image)) ?? (await readWithOcr(image, onStatus))
   return { result, image }
