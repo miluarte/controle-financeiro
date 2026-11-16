@@ -4,9 +4,8 @@ import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { BottomNav } from './bottom-nav'
 
-// A página em si não rola: o app ocupa a tela inteira (altura em --app-height, medida pelo
-// IosViewportFix) e só o <main> rola. Assim a barra de abas fica presa ao fundo da tela mesmo
-// quando o iPhone, com o app na Tela de Início, calcula errado a área visível ao abrir.
+// A página em si não rola: o app ocupa a área visível (altura em --app-height, medida no <head>
+// do app/layout.tsx) e só o <main> rola. A barra de abas fica presa ao fundo dessa área.
 // Respeita as áreas seguras (notch em cima, indicador de início embaixo).
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()

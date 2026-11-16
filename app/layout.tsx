@@ -40,9 +40,17 @@ export const viewport: Viewport = {
   ],
 }
 
+// Altura do AppShell = área que o navegador realmente desenha (innerHeight), medida antes da
+// primeira pintura e a cada mudança. Assim a barra de abas nunca fica fora da tela, mesmo quando
+// o iPhone, com o app na Tela de Início, entrega uma área menor que a tela (WebKit 301108).
+const APP_HEIGHT_SCRIPT = `(function(){var d=document.documentElement;function s(){d.style.setProperty('--app-height',window.innerHeight+'px')}s();addEventListener('resize',s);addEventListener('pageshow',s);addEventListener('orientationchange',function(){setTimeout(s,300)});if(window.visualViewport)visualViewport.addEventListener('resize',s)})()`
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className="h-full" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: APP_HEIGHT_SCRIPT }} />
+      </head>
       <body className="h-full bg-background font-sans text-foreground">
         <SerwistProvider swUrl="/serwist/sw.js" disable={process.env.NODE_ENV !== 'production'}>
           <Providers>

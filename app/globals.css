@@ -95,7 +95,7 @@
 }
 
 :root {
-  /* altura útil da tela (AppShell, classe h-app); no app instalado é a tela inteira (100lvh) */
+  /* altura útil da tela (AppShell, classe h-app); o script do app/layout.tsx troca pela medida real */
   --app-height: 100dvh;
 
   /* Cores do sistema iOS (modo claro) */
@@ -270,11 +270,6 @@
     inset 0 1px 0 0 var(--glass-highlight),
     0 16px 48px -12px var(--glass-shadow);
 }
-
-@media (display-mode: standalone) {
-  :root { --app-height: 100lvh; }
-}
-:root[data-standalone] { --app-height: 100lvh; }
 
 @layer base {
   * {
