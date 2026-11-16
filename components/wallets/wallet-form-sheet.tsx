@@ -7,6 +7,7 @@ import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
 import { useDeleteAction } from '@/components/ios/use-delete-action'
+import { useArchiveAction } from '@/components/ios/use-archive-action'
 import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { DecimalField } from '@/components/shared/decimal-field'
@@ -26,12 +27,14 @@ export function WalletFormSheet({
   open, wallet, onClose,
 }: { open: boolean; wallet: OwnWallet | null; onClose: () => void }) {
   const del = useDeleteAction({ title: 'Excluir esta carteira?', remove: () => walletsApi.remove(wallet!.id), onDone: onClose })
+  const archive = useArchiveAction(onClose)
   return (
     <>
     {del.sheet}
     <ModalSheet open={open} onOpenChange={o => { if (!o) onClose() }}
       title={wallet ? 'Editar carteira' : 'Nova carteira'} formId="wallet" actionLabel="Salvar"
-      onDelete={wallet ? del.ask : undefined}>
+      onDelete={wallet ? del.ask : undefined}
+      secondaryAction={wallet ? archive.action(wallet.active, () => walletsApi.setActive(wallet.id, !wallet.active)) : undefined}>
       {open && <Form key={wallet?.id ?? 'new'} wallet={wallet} onDone={onClose} />}
     </ModalSheet>
     </>
@@ -174,19 +177,11 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
 
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
 
-      {wallet && (
-        <div className="space-y-2">
-          {!isDefault && wallet.active && !isCredit && (
-            <Button type="button" variant="secondary" size="lg" className="w-full" disabled={busy}
-              onClick={() => run(() => profileApi.update(profile!.id, { default_wallet_id: wallet.id }))}>
-              Usar como carteira padrão
-            </Button>
-          )}
-          <Button type="button" variant="secondary" size="lg" className="w-full" disabled={busy}
-            onClick={() => run(() => walletsApi.setActive(wallet.id, !wallet.active))}>
-            {wallet.active ? 'Arquivar' : 'Reativar'}
-          </Button>
-        </div>
+      {wallet && !isDefault && wallet.active && !isCredit && (
+        <Button type="button" variant="secondary" size="lg" className="w-full" disabled={busy}
+          onClick={() => run(() => profileApi.update(profile!.id, { default_wallet_id: wallet.id }))}>
+          Usar como carteira padrão
+        </Button>
       )}
     </form>
   )

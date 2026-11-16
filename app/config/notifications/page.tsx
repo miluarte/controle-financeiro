@@ -64,13 +64,13 @@ export default function NotificationsPage() {
       <LargeTitleHeader back title="Notificações" />
       <div className="space-y-7 px-4 pt-2">
         <ListGroup header="Este aparelho" footer={message ?? (state ? STATE_TEXT[state] || undefined : undefined)}>
-          <li className="space-y-2 p-3">
-            <Button size="lg" className="w-full" disabled={busy || !state || state === 'unsupported' || state === 'needs-install' || state === 'denied'}
+          <li className={state === 'on' ? 'grid grid-cols-2 gap-3 p-3' : 'p-3'}>
+            <Button size="lg" variant={state === 'on' ? 'secondary' : 'default'} className="w-full" disabled={busy || !state || state === 'unsupported' || state === 'needs-install' || state === 'denied'}
               onClick={toggleDevice}>
-              {state === 'on' ? 'Desativar neste aparelho' : 'Ativar notificações'}
+              {state === 'on' ? 'Desativar' : 'Ativar notificações'}
             </Button>
             {state === 'on' && (
-              <Button variant="secondary" size="lg" className="w-full" disabled={busy}
+              <Button size="lg" className="w-full" disabled={busy}
                 onClick={async () => { await sendTest(); setMessage('Teste enviado. Deve chegar em alguns segundos.') }}>
                 Enviar teste
               </Button>

@@ -8,7 +8,8 @@ import { GlassButton } from './glass-button'
 // Folha modal padrão do app (iOS 26): fechar de vidro | título | ação principal em cápsula.
 // O conteúdo vai num <form id={formId}>; a ação do topo envia esse formulário.
 // Com onDelete (edição de algo que pode ser excluído): "Excluir" discreto no topo e o botão
-// de salvar vai para baixo, grande.
+// de salvar vai para baixo, grande. Com secondaryAction (ex.: Arquivar), as duas ficam lado a lado,
+// cada uma com metade da largura.
 interface ModalSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -18,11 +19,12 @@ interface ModalSheetProps {
   actionDisabled?: boolean
   onDelete?: () => void
   deleteLabel?: string
+  secondaryAction?: { label: string; onClick: () => void; disabled?: boolean }
   children: React.ReactNode
 }
 
 export function ModalSheet({
-  open, onOpenChange, title, formId, actionLabel, actionDisabled, onDelete, deleteLabel = 'Excluir', children,
+  open, onOpenChange, title, formId, actionLabel, actionDisabled, onDelete, deleteLabel = 'Excluir', secondaryAction, children,
 }: ModalSheetProps) {
   const saveBelow = !!onDelete && !!formId && !!actionLabel
   return (
@@ -47,7 +49,14 @@ export function ModalSheet({
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-2 pb-6">
           {children}
           {saveBelow && (
-            <Button type="submit" form={formId} size="lg" className="w-full" disabled={actionDisabled}>{actionLabel}</Button>
+            <div className={secondaryAction ? 'grid grid-cols-2 gap-3' : undefined}>
+              {secondaryAction && (
+                <Button type="button" variant="secondary" size="lg" disabled={secondaryAction.disabled} onClick={secondaryAction.onClick}>
+                  {secondaryAction.label}
+                </Button>
+              )}
+              <Button type="submit" form={formId} size="lg" className="w-full" disabled={actionDisabled}>{actionLabel}</Button>
+            </div>
           )}
         </div>
       </SheetContent>

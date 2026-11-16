@@ -154,13 +154,13 @@ export function OnboardingFlow() {
       </div>
 
       {error && <p className="pb-2 text-center text-footnote text-destructive">{error}</p>}
-      <div className="space-y-2">
+      <div className={optional ? 'grid grid-cols-2 gap-3' : undefined}>
+        {optional && (
+          <Button variant="secondary" size="lg" onClick={skip} disabled={busy}>Pular</Button>
+        )}
         <Button size="lg" className="w-full" onClick={next} disabled={busy || (step === 'name' && !name.trim())}>
           {nextLabel}
         </Button>
-        {optional && (
-          <Button variant="ghost" size="lg" className="w-full" onClick={skip} disabled={busy}>Pular</Button>
-        )}
       </div>
     </div>
   )
