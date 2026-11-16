@@ -8,24 +8,24 @@
 
 :root {
   /* Superfícies */
-  --surface-page: var(--color-gray-50);          /* fundo das telas */
+  --surface-page: var(--color-zinc-50);          /* fundo das telas */
   --surface-raised: var(--color-white);          /* listas agrupadas, cards, folhas */
-  --surface-sunken: var(--color-gray-100);       /* chips, campos, trilhos de controle */
-  --surface-strong: var(--color-gray-200);       /* botões neutros, trilho de chave desligada */
+  --surface-sunken: var(--color-zinc-100);       /* chips, campos, trilhos de controle */
+  --surface-strong: var(--color-zinc-200);       /* botões neutros, trilho de chave desligada */
   --surface-selected: var(--color-white);        /* item escolhido no controle segmentado */
 
   /* Texto */
-  --text-primary: var(--color-gray-950);
-  --text-secondary: var(--color-gray-500);
+  --text-primary: var(--color-zinc-950);
+  --text-secondary: var(--color-zinc-500);
   --text-on-action: var(--color-white);          /* texto sobre a ação principal */
   --text-on-danger: var(--color-white);          /* texto e ícone sobre vermelho (ex.: lixeira ao deslizar) */
 
   /* Linhas */
-  --line-subtle: var(--color-gray-200);          /* divisores e bordas */
-  --focus-ring: color-mix(in oklab, var(--color-gray-950) 30%, transparent);
+  --line-subtle: var(--color-zinc-200);          /* divisores e bordas */
+  --focus-ring: color-mix(in oklab, var(--color-zinc-950) 30%, transparent);
 
   /* Ações */
-  --action-primary: var(--color-gray-950);       /* cor principal: botões, abas e seleção */
+  --action-primary: var(--color-zinc-950);       /* cor principal: botões, abas e seleção */
 
   /* Estados */
   --status-danger: var(--color-red-500);
@@ -42,28 +42,28 @@
 
   /* Vidro (Liquid Glass): bem transparente e pouco desfocado, como no iOS */
   --glass-surface: color-mix(in oklab, var(--color-white) 22%, transparent);
-  --glass-surface-strong: color-mix(in oklab, var(--color-gray-50) 94%, transparent); /* folhas e menus: fundo da tela */
+  --glass-surface-strong: color-mix(in oklab, var(--color-zinc-50) 94%, transparent); /* folhas e menus: fundo da tela */
   --scrim: color-mix(in oklab, var(--color-black) 12%, transparent);                  /* escurece o fundo atrás das folhas */
   --glass-edge: color-mix(in oklab, var(--color-white) 70%, transparent);
   --glass-highlight: color-mix(in oklab, var(--color-white) 95%, transparent);
   --glass-shade: color-mix(in oklab, var(--color-black) 4%, transparent);
   --glass-shadow: color-mix(in oklab, var(--color-black) 12%, transparent);
-  --glass-lens: color-mix(in oklab, var(--color-gray-950) 7%, transparent);
+  --glass-lens: color-mix(in oklab, var(--color-zinc-950) 7%, transparent);
   --glass-blur: 6px;
   --glass-blur-strong: 14px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --surface-page: var(--color-gray-950);
-    --surface-raised: var(--color-gray-900);
-    --surface-sunken: var(--color-gray-800);
-    --surface-strong: var(--color-gray-700);
-    --surface-selected: var(--color-gray-600);
+    --surface-page: var(--color-zinc-950);
+    --surface-raised: var(--color-zinc-900);
+    --surface-sunken: var(--color-zinc-800);
+    --surface-strong: var(--color-zinc-700);
+    --surface-selected: var(--color-zinc-600);
     --text-primary: var(--color-white);
-    --text-secondary: var(--color-gray-400);
-    --text-on-action: var(--color-gray-950);
-    --line-subtle: var(--color-gray-800);
+    --text-secondary: var(--color-zinc-400);
+    --text-on-action: var(--color-zinc-950);
+    --line-subtle: var(--color-zinc-800);
     --focus-ring: color-mix(in oklab, var(--color-white) 35%, transparent);
     --action-primary: var(--color-white);
     --status-danger: var(--color-red-400);
@@ -75,8 +75,8 @@
     --data-3: var(--color-amber-400);
     --data-4: var(--color-purple-400);
     --data-5: var(--color-pink-400);
-    --glass-surface: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
-    --glass-surface-strong: color-mix(in oklab, var(--color-gray-900) 94%, transparent);
+    --glass-surface: color-mix(in oklab, var(--color-zinc-900) 30%, transparent);
+    --glass-surface-strong: color-mix(in oklab, var(--color-zinc-900) 94%, transparent);
     --scrim: color-mix(in oklab, var(--color-black) 45%, transparent);
     --glass-edge: color-mix(in oklab, var(--color-white) 14%, transparent);
     --glass-highlight: color-mix(in oklab, var(--color-white) 22%, transparent);
@@ -87,15 +87,15 @@
 }
 
 :root[data-theme="dark"] {
-  --surface-page: var(--color-gray-950);
-  --surface-raised: var(--color-gray-900);
-  --surface-sunken: var(--color-gray-800);
-  --surface-strong: var(--color-gray-700);
-  --surface-selected: var(--color-gray-600);
+  --surface-page: var(--color-zinc-950);
+  --surface-raised: var(--color-zinc-900);
+  --surface-sunken: var(--color-zinc-800);
+  --surface-strong: var(--color-zinc-700);
+  --surface-selected: var(--color-zinc-600);
   --text-primary: var(--color-white);
-  --text-secondary: var(--color-gray-400);
-  --text-on-action: var(--color-gray-950);
-  --line-subtle: var(--color-gray-800);
+  --text-secondary: var(--color-zinc-400);
+  --text-on-action: var(--color-zinc-950);
+  --line-subtle: var(--color-zinc-800);
   --focus-ring: color-mix(in oklab, var(--color-white) 35%, transparent);
   --action-primary: var(--color-white);
   --status-danger: var(--color-red-400);
@@ -107,8 +107,8 @@
   --data-3: var(--color-amber-400);
   --data-4: var(--color-purple-400);
   --data-5: var(--color-pink-400);
-  --glass-surface: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
-  --glass-surface-strong: color-mix(in oklab, var(--color-gray-900) 94%, transparent);
+  --glass-surface: color-mix(in oklab, var(--color-zinc-900) 30%, transparent);
+  --glass-surface-strong: color-mix(in oklab, var(--color-zinc-900) 94%, transparent);
   --scrim: color-mix(in oklab, var(--color-black) 45%, transparent);
   --glass-edge: color-mix(in oklab, var(--color-white) 14%, transparent);
   --glass-highlight: color-mix(in oklab, var(--color-white) 22%, transparent);

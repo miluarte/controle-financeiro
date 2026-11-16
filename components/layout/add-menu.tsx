@@ -11,6 +11,7 @@ import {
 } from '@solar-icons/react'
 import { BillFormSheet } from '@/components/bills/bill-form-sheet'
 import { glassButtonVariants } from '@/components/ios/glass-button'
+import { buttonVariants } from '@/components/ui/button'
 import { QuickAddSheet, type QuickAddMode } from '@/components/transactions/quick-add-sheet'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel,
@@ -31,8 +32,8 @@ const FIXED: { type: BillType; label: string; icon: SolarIcon }[] = [
   { type: 'expense', label: 'Conta fixa',   icon: BillListLinearIcon },
 ]
 
-// Botão + da barra de abas: abre um menu para escolher o que adicionar.
-export function AddMenu() {
+// Botão + da barra de abas (ou "Adicionar" no menu lateral do desktop): abre o menu do que adicionar.
+export function AddMenu({ variant = 'tab' }: { variant?: 'tab' | 'sidebar' }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [quick, setQuick] = useState<{ mode: QuickAddMode; n: number } | null>(null)
   const [quickOpen, setQuickOpen] = useState(false)
@@ -55,13 +56,19 @@ export function AddMenu() {
   return (
     <>
       <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-        <DropdownMenuTrigger
-          aria-label="Adicionar"
-          className={cn(glassButtonVariants(), 'size-tabbar text-tint [&_svg]:size-7')}
-        >
-          <Icon />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        {variant === 'sidebar' ? (
+          <DropdownMenuTrigger aria-label="Adicionar" className={cn(buttonVariants({ size: 'lg' }), 'w-full rounded-full')}>
+            <Icon />Adicionar
+          </DropdownMenuTrigger>
+        ) : (
+          <DropdownMenuTrigger
+            aria-label="Adicionar"
+            className={cn(glassButtonVariants(), 'size-tabbar text-tint [&_svg]:size-7')}
+          >
+            <Icon />
+          </DropdownMenuTrigger>
+        )}
+        <DropdownMenuContent {...(variant === 'sidebar' ? { side: 'bottom' as const, align: 'start' as const } : {})}>
           <DropdownMenuGroup>
             <DropdownMenuLabel>Registrar</DropdownMenuLabel>
             {QUICK.map(({ mode, label, icon: ItemIcon }) => (

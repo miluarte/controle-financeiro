@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 const logoVariants = cva('shrink-0 rounded-[22%] shadow-sm', {
   variants: {
     size: {
+      sm: 'size-9',
       md: 'size-14',
       lg: 'size-20',
     },

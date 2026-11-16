@@ -1,6 +1,10 @@
 # Troco — instruções do projeto
 
-Sistema de controle financeiro pessoal, uso individual, web app com foco exclusivo em mobile por enquanto (restilização geral fica pra depois, não otimizar layout pra desktop nesta fase).
+Sistema de controle financeiro pessoal, web app pensado para o iPhone. Desktop (2026-11-16): a partir de `lg`, `SideNav` (logo, "Adicionar" e as abas) no lugar da barra de abas, conteúdo centralizado em `max-w-3xl` e folhas `Sheet side="bottom"` como cartão centralizado (`max-w-lg`). O celular não muda: qualquer ajuste de desktop vai em classes `lg:`.
+
+## Git
+
+Commits e pull requests sem linha de coautoria (`Co-Authored-By`) nem atribuição ao Claude: o repositório não deve listar o Claude como contribuidor.
 
 ## Stack
 
@@ -31,7 +35,7 @@ Textos de apoio na interface (footers, dicas, legendas): curtos e diretos, uma f
 
 Cor principal: preto (no modo escuro, branco). Logo: a imagem oficial em `public/favicon_io/apple-touch-icon.png` via `components/shared/app-logo.tsx`; não trocar.
 
-Cores: fonte única em `app/theme.css`, variáveis semânticas de uso (não de componente): superfícies (`--surface-page`, `--surface-raised`, `--surface-sunken`, `--surface-strong`, `--surface-selected`), texto (`--text-primary`, `--text-secondary`, `--text-on-action`), linhas (`--line-subtle`, `--focus-ring`), ação (`--action-primary`), estados (`--status-danger/success/warning/info`), dados (`--data-1..5`) e vidro (`--glass-*`, `--glass-blur`). Todas apontam para a paleta do Tailwind (`var(--color-gray-50)` etc.; `@import "tailwindcss" theme(static)` emite a paleta inteira), com claro e escuro resolvidos lá. Em `app/globals.css` os nomes que os componentes usam (`--background`, `--muted-foreground`, `--separator`, `--fill`, `--tint`…) só apontam para essas variáveis; não pôr cor ali nem nos componentes. Cinzas: escala `gray` (claro: página gray-50, cards brancos, linhas gray-200; escuro: página gray-950, cards gray-900, linhas gray-800). Título de página `LargeTitleHeader` em `text-title1`. Escala Dynamic Type (`text-large-title`, `text-title1..3`, `text-headline`, `text-body`, `text-subheadline`, `text-footnote`, `text-caption1/2`), `h-row` (44pt), `h-tabbar`, `rounded-glass`. Fonte do sistema (SF). Modo escuro automático por `prefers-color-scheme`.
+Cores: fonte única em `app/theme.css`, variáveis semânticas de uso (não de componente): superfícies (`--surface-page`, `--surface-raised`, `--surface-sunken`, `--surface-strong`, `--surface-selected`), texto (`--text-primary`, `--text-secondary`, `--text-on-action`), linhas (`--line-subtle`, `--focus-ring`), ação (`--action-primary`), estados (`--status-danger/success/warning/info`), dados (`--data-1..5`) e vidro (`--glass-*`, `--glass-blur`). Todas apontam para a paleta do Tailwind (`var(--color-gray-50)` etc.; `@import "tailwindcss" theme(static)` emite a paleta inteira), com claro e escuro resolvidos lá. Em `app/globals.css` os nomes que os componentes usam (`--background`, `--muted-foreground`, `--separator`, `--fill`, `--tint`…) só apontam para essas variáveis; não pôr cor ali nem nos componentes. Cinzas: escala `zinc` (claro: página zinc-50, cards brancos, linhas zinc-200; escuro: página zinc-950, cards zinc-900, linhas zinc-800). O token de categoria `gray` também usa zinc. Título de página `LargeTitleHeader` em `text-title1`. Escala Dynamic Type (`text-large-title`, `text-title1..3`, `text-headline`, `text-body`, `text-subheadline`, `text-footnote`, `text-caption1/2`), `h-row` (44pt), `h-tabbar`, `rounded-glass`. Fonte do sistema (SF). Modo escuro automático por `prefers-color-scheme`.
 
 Liquid Glass: utilitários `glass` e `glass-strong` (vidro bem transparente com pouco desfoque, 6px e 14px, borda clara e brilho no topo, tokens `--glass-*` em `app/theme.css`). Usados na barra de abas flutuante em cápsula (aba ativa com "lente" `bg-glass-lens`), nos botões circulares de vidro (`GlassButton`) e na folha modal flutuante (`Sheet side="bottom"`). Controles em cápsula (botão grande, controle segmentado, chips); listas agrupadas com `rounded-3xl`.
 
@@ -142,7 +146,7 @@ Juros do rotativo pelo PDF: `parseStatement` lê "Juros do rotativo X% a.m." (`r
 
 Categorias padrão (2026-11-16, migração `default_categories`): conta nova recebe 13 categorias de gasto (Alimentação, Transporte, Saúde, Assinaturas, Lazer, Moradia, Educação, Tecnologia e equipamentos, Vestuário e beleza, Pet, Presentes, Dívidas e parcelamentos, Outros) e 6 de receita, com ícone e cor sugeridos. Tokens: 57 ícones (`ICON_TOKENS`, par Linear/Bold em `token-icon.tsx`) e 18 cores (`COLOR_TOKENS`).
 
-Folhas e menus: `--glass-surface-strong` = gray-50 a 94% (claro); fundo escurecido atrás da folha `--scrim` (preto 12% no claro). Cartão novo: chips Crédito e Débito podem ser marcados juntos. Nota fiscal lê parcelas (`installments`).
+Folhas e menus: `--glass-surface-strong` = zinc-50 a 94% (claro); fundo escurecido atrás da folha `--scrim` (preto 12% no claro). Cartão novo: chips Crédito e Débito podem ser marcados juntos. Nota fiscal lê parcelas (`installments`).
 
 Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`; contas de teste (`@example.com`) e os dados delas.
 

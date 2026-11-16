@@ -261,7 +261,7 @@ export const COLOR_CLASSES: Record<ColorToken, string> = {
   yellow:  'bg-yellow-100 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400',
   amber:   'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400',
   orange:  'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400',
-  gray:    'bg-gray-100 text-gray-600 dark:bg-gray-500/35 dark:text-gray-100',
+  gray:    'bg-zinc-100 text-zinc-600 dark:bg-zinc-500/35 dark:text-zinc-100',
 }
 
 // Item selecionado: círculo de cor sólida e ícone branco, legível tanto no chip preto
@@ -284,7 +284,7 @@ export const ACTIVE_COLOR_CLASSES: Record<ColorToken, string> = {
   yellow:  'bg-yellow-500 text-white',
   amber:   'bg-amber-500 text-white',
   orange:  'bg-orange-500 text-white',
-  gray:    'bg-gray-500 text-white',
+  gray:    'bg-zinc-500 text-white',
 }
 
 const SIZE: Record<string, { wrap: string; icon: string }> = {
