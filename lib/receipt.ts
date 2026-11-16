@@ -1,3 +1,4 @@
+import type { Wallet } from './types'
 import { supabase } from './supabase/client'
 import { parseCents, todayIso } from './utils'
 
@@ -14,6 +15,17 @@ export interface ReceiptResult {
   items: ReceiptItem[]
   categoryId: string | null
   source: 'gemini' | 'ocr'
+  // forma de pagamento impressa na nota, quando aparece
+  payment: 'credito' | 'debito' | 'pix' | 'dinheiro' | null
+  cardLast4: string | null
+}
+
+// Na leitura local: "CRÉDITO", "DÉBITO", "PIX", "DINHEIRO" e o final do cartão ("****1234", "final 1234").
+function paymentFromText(text: string): Pick<ReceiptResult, 'payment' | 'cardLast4'> {
+  const t = text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toUpperCase()
+  const payment = /CREDITO/.test(t) ? 'credito' : /DEBITO/.test(t) ? 'debito' : /\bPIX\b/.test(t) ? 'pix' : /DINHEIRO/.test(t) ? 'dinheiro' : null
+  const last4 = t.match(/(?:\*{2,}|X{2,}|FINAL\s*)\s*(\d{4})\b/)?.[1] ?? null
+  return { payment, cardLast4: last4 }
 }
 
 // Reduz a foto para no máximo 1600 px e JPEG, para caber no envio e ler mais rápido.
@@ -68,7 +80,7 @@ async function readWithGemini(image: Blob): Promise<ReceiptResult | null> {
       body: { image: await toBase64(image), mimeType: 'image/jpeg' },
     }), 25_000, 'gemini-timeout')
     if (error || !data?.ok || !data.amount) return null
-    return { ...data, source: 'gemini' }
+    return { payment: null, cardLast4: null, ...data, source: 'gemini' }
   } catch {
     return null
   }
@@ -107,7 +119,7 @@ async function readWithOcr(image: Blob, onStatus?: ReceiptStatus): Promise<Recei
   const date = d ? `${d[3].length === 2 ? `20${d[3]}` : d[3]}-${d[2]}-${d[1]}` : null
   const place = lines.find(l => /[a-zà-ú]{3,}/i.test(l) && !/cnpj|cpf|cupom|nota|fiscal|documento|\d{2}\.\d{3}/i.test(l)) ?? null
 
-  return { amount, place: place?.slice(0, 60) ?? null, date: date && date <= todayIso() ? date : null, items: [], categoryId: null, source: 'ocr' }
+  return { amount, place: place?.slice(0, 60) ?? null, date: date && date <= todayIso() ? date : null, items: [], categoryId: null, source: 'ocr', ...paymentFromText(data.text) }
 }
 
 export async function readReceipt(file: File, onStatus?: ReceiptStatus): Promise<{ result: ReceiptResult; image: Blob }> {
@@ -129,4 +141,21 @@ export async function uploadReceipt(userId: string, image: Blob): Promise<string
 export async function receiptUrl(path: string): Promise<string | null> {
   const { data } = await supabase.storage.from('receipts').createSignedUrl(path, 60 * 10)
   return data?.signedUrl ?? null
+}
+
+// Carteira que bate com a forma de pagamento da nota: primeiro pelo final do cartão
+// (preferindo crédito ou débito conforme a nota), depois pelo tipo quando só existe uma.
+export function walletForReceipt(wallets: Wallet[], r: Pick<ReceiptResult, 'payment' | 'cardLast4'>): string | null {
+  const own = wallets.filter(w => !w.ownerName && w.active)
+  const type = r.payment === 'credito' ? 'credit' : r.payment === 'debito' ? 'debit' : r.payment === 'pix' ? 'pix' : r.payment === 'dinheiro' ? 'cash' : null
+  if (r.cardLast4) {
+    const byCard = own.filter(w => w.last4 === r.cardLast4)
+    const match = byCard.find(w => w.type === type) ?? byCard[0]
+    if (match) return match.id
+  }
+  if (type) {
+    const byType = own.filter(w => w.type === type)
+    if (byType.length === 1) return byType[0].id
+  }
+  return null
 }

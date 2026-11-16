@@ -98,28 +98,28 @@
   /* altura útil da tela (AppShell, classe h-app); o script do app/layout.tsx troca pela medida real */
   --app-height: 100dvh;
 
-  /* Cores do sistema iOS (modo claro) */
-  --background: #f2f2f7;          /* systemGroupedBackground */
+  /* Cores: escala gray do Tailwind (modo claro); vermelho, verde e gráficos do iOS */
+  --background: #f9fafb;          /* gray-50 */
   --foreground: #000000;          /* label */
-  --card: #ffffff;                /* secondarySystemGroupedBackground */
+  --card: #ffffff;
   --card-foreground: #000000;
-  --popover: #f2f2f7;
+  --popover: #f9fafb;             /* gray-50 */
   --popover-foreground: #000000;
   --primary: #000000;             /* cor principal: preto */
   --primary-foreground: #ffffff;
-  --secondary: #e5e5ea;           /* systemGray5 */
+  --secondary: #e5e7eb;           /* gray-200 */
   --secondary-foreground: #000000;
-  --muted: #e5e5ea;
-  --muted-foreground: rgb(60 60 67 / 0.6);  /* secondaryLabel */
-  --accent: #e5e5ea;
+  --muted: #f3f4f6;               /* gray-100 */
+  --muted-foreground: #6b7280;    /* gray-500 */
+  --accent: #f3f4f6;              /* gray-100 */
   --accent-foreground: #000000;
   --destructive: #ff3b30;         /* systemRed */
   --success: #34c759;             /* systemGreen */
   --tint: #000000;
-  --separator: rgb(60 60 67 / 0.29);
-  --fill: rgb(118 118 128 / 0.12);          /* tertiarySystemFill */
+  --separator: #e5e7eb;           /* gray-200 */
+  --fill: #f3f4f6;                /* gray-100 */
   --grouped: #ffffff;
-  --bar: rgb(249 249 249 / 0.94);           /* barra de abas e navegação */
+  --bar: rgb(249 250 251 / 0.94);  /* gray-50 */
   --segment: #ffffff;                       /* segmento selecionado */
   /* Liquid Glass (iOS 26) */
   --glass: rgb(255 255 255 / 0.5);
@@ -129,8 +129,8 @@
   --glass-shade: rgb(0 0 0 / 0.04);
   --glass-shadow: rgb(0 0 0 / 0.12);
   --glass-lens: rgb(0 0 0 / 0.07);
-  --border: rgb(60 60 67 / 0.29);
-  --input: rgb(118 118 128 / 0.12);
+  --border: #e5e7eb;              /* gray-200 */
+  --input: #f3f4f6;               /* gray-100 */
   --ring: rgb(0 0 0 / 0.3);
   --chart-1: #007aff;
   --chart-2: #34c759;
@@ -138,113 +138,113 @@
   --chart-4: #af52de;
   --chart-5: #ff2d55;
   --radius: 0.625rem;
-  --sidebar: #f2f2f7;
+  --sidebar: #f9fafb;
   --sidebar-foreground: #000000;
   --sidebar-primary: #000000;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e5e5ea;
+  --sidebar-accent: #f3f4f6;
   --sidebar-accent-foreground: #000000;
-  --sidebar-border: rgb(60 60 67 / 0.29);
+  --sidebar-border: #e5e7eb;
   --sidebar-ring: rgb(0 0 0 / 0.3);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    /* Cores do sistema iOS (modo escuro) */
-    --background: #000000;
+    /* Cores: escala gray do Tailwind (modo escuro) */
+    --background: #030712;          /* gray-950 */
     --foreground: #ffffff;
-    --card: #1c1c1e;
+    --card: #111827;                /* gray-900 */
     --card-foreground: #ffffff;
-    --popover: #1c1c1e;
+    --popover: #111827;
     --popover-foreground: #ffffff;
     --primary: #ffffff;
     --primary-foreground: #000000;
-    --secondary: #2c2c2e;
+    --secondary: #1f2937;           /* gray-800 */
     --secondary-foreground: #ffffff;
-    --muted: #2c2c2e;
-    --muted-foreground: rgb(235 235 245 / 0.6);
-    --accent: #2c2c2e;
+    --muted: #1f2937;
+    --muted-foreground: #9ca3af;    /* gray-400 */
+    --accent: #1f2937;
     --accent-foreground: #ffffff;
     --destructive: #ff453a;
     --success: #30d158;
     --tint: #ffffff;
-    --separator: rgb(84 84 88 / 0.6);
-    --fill: rgb(118 118 128 / 0.24);
-    --grouped: #1c1c1e;
-    --bar: rgb(22 22 22 / 0.94);
-    --segment: #636366;
-    --glass: rgb(44 44 46 / 0.45);
-    --glass-strong: rgb(44 44 46 / 0.7);
+    --separator: #1f2937;           /* gray-800 */
+    --fill: #1f2937;                /* gray-800 */
+    --grouped: #111827;             /* gray-900 */
+    --bar: rgb(17 24 39 / 0.94);     /* gray-900 */
+    --segment: #4b5563;             /* gray-600 */
+    --glass: rgb(31 41 55 / 0.45);   /* gray-800 */
+    --glass-strong: rgb(31 41 55 / 0.7);
     --glass-border: rgb(255 255 255 / 0.14);
     --glass-highlight: rgb(255 255 255 / 0.22);
     --glass-shade: rgb(0 0 0 / 0.25);
     --glass-shadow: rgb(0 0 0 / 0.5);
     --glass-lens: rgb(255 255 255 / 0.14);
-    --border: rgb(84 84 88 / 0.6);
-    --input: rgb(118 118 128 / 0.24);
+    --border: #1f2937;
+    --input: #1f2937;
     --ring: rgb(255 255 255 / 0.35);
     --chart-1: #0a84ff;
     --chart-2: #30d158;
     --chart-3: #ff9f0a;
     --chart-4: #bf5af2;
     --chart-5: #ff375f;
-    --sidebar: #1c1c1e;
+    --sidebar: #111827;
     --sidebar-foreground: #ffffff;
     --sidebar-primary: #ffffff;
     --sidebar-primary-foreground: #000000;
-    --sidebar-accent: #2c2c2e;
+    --sidebar-accent: #1f2937;
     --sidebar-accent-foreground: #ffffff;
-    --sidebar-border: rgb(84 84 88 / 0.6);
+    --sidebar-border: #1f2937;
     --sidebar-ring: rgb(255 255 255 / 0.35);
   }
 }
 
 :root[data-theme="dark"] {
-  /* Cores do sistema iOS (modo escuro) */
-  --background: #000000;
+  /* Cores: escala gray do Tailwind (modo escuro) */
+  --background: #030712;          /* gray-950 */
   --foreground: #ffffff;
-  --card: #1c1c1e;
+  --card: #111827;                /* gray-900 */
   --card-foreground: #ffffff;
-  --popover: #1c1c1e;
+  --popover: #111827;
   --popover-foreground: #ffffff;
   --primary: #ffffff;
   --primary-foreground: #000000;
-  --secondary: #2c2c2e;
+  --secondary: #1f2937;           /* gray-800 */
   --secondary-foreground: #ffffff;
-  --muted: #2c2c2e;
-  --muted-foreground: rgb(235 235 245 / 0.6);
-  --accent: #2c2c2e;
+  --muted: #1f2937;
+  --muted-foreground: #9ca3af;    /* gray-400 */
+  --accent: #1f2937;
   --accent-foreground: #ffffff;
   --destructive: #ff453a;
   --success: #30d158;
   --tint: #ffffff;
-  --separator: rgb(84 84 88 / 0.6);
-  --fill: rgb(118 118 128 / 0.24);
-  --grouped: #1c1c1e;
-  --bar: rgb(22 22 22 / 0.94);
-  --segment: #636366;
-  --glass: rgb(44 44 46 / 0.45);
-  --glass-strong: rgb(44 44 46 / 0.7);
+  --separator: #1f2937;           /* gray-800 */
+  --fill: #1f2937;                /* gray-800 */
+  --grouped: #111827;             /* gray-900 */
+  --bar: rgb(17 24 39 / 0.94);     /* gray-900 */
+  --segment: #4b5563;             /* gray-600 */
+  --glass: rgb(31 41 55 / 0.45);   /* gray-800 */
+  --glass-strong: rgb(31 41 55 / 0.7);
   --glass-border: rgb(255 255 255 / 0.14);
   --glass-highlight: rgb(255 255 255 / 0.22);
   --glass-shade: rgb(0 0 0 / 0.25);
   --glass-shadow: rgb(0 0 0 / 0.5);
   --glass-lens: rgb(255 255 255 / 0.14);
-  --border: rgb(84 84 88 / 0.6);
-  --input: rgb(118 118 128 / 0.24);
+  --border: #1f2937;
+  --input: #1f2937;
   --ring: rgb(255 255 255 / 0.35);
   --chart-1: #0a84ff;
   --chart-2: #30d158;
   --chart-3: #ff9f0a;
   --chart-4: #bf5af2;
   --chart-5: #ff375f;
-  --sidebar: #1c1c1e;
+  --sidebar: #111827;
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #ffffff;
   --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #2c2c2e;
+  --sidebar-accent: #1f2937;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgb(84 84 88 / 0.6);
+  --sidebar-border: #1f2937;
   --sidebar-ring: rgb(255 255 255 / 0.35);
 }
 

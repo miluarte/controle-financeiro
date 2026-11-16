@@ -29,6 +29,7 @@ export interface Wallet {
   sortOrder: number
   // cartão de outra pessoa da família, compartilhado comigo
   ownerName: string | null
+  last4?: string | null
 }
 
 export type CategoryType = 'expense' | 'income'

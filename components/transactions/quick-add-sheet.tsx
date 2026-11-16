@@ -19,7 +19,7 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { useWallets } from '@/hooks/use-wallets'
 import { transactionsApi } from '@/lib/api/transactions'
 import { WALLET_TYPE_ICON } from '@/lib/constants'
-import { uploadReceipt, type ReceiptResult } from '@/lib/receipt'
+import { uploadReceipt, walletForReceipt, type ReceiptResult } from '@/lib/receipt'
 import { ReceiptResultGroup } from '@/components/receipt/receipt-result-group'
 import { ReceiptScanButton } from '@/components/receipt/receipt-scan-button'
 import { useSession } from '@/hooks/use-session'
@@ -79,6 +79,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
     if (result.date) setDate(result.date)
     if (result.categoryId) setCategoryId(result.categoryId)
     if (result.items.length) setItems(result.items)
+    // forma de pagamento da nota: final do cartão ou tipo (crédito, débito, Pix, dinheiro)
+    const wallet = walletForReceipt(wallets, result)
+    if (wallet) setWalletId(wallet)
   }
 
   function reset() {

@@ -37,6 +37,7 @@ export function toWallet(r: Row): Wallet {
     active: r.active ?? true,
     sortOrder: num(r.sort_order),
     ownerName: r.owner_name ?? null,
+    last4: r.last4 ?? null,
   }
 }
 
