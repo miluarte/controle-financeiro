@@ -20,6 +20,7 @@ import { TYPE_LABEL } from './transaction-item'
 import { receiptUrl, type ReceiptItem } from '@/lib/receipt'
 import { DateField } from '@/components/shared/date-field'
 import { ItemsEditor } from './items-editor'
+import { PrepayGroup } from './prepay-group'
 
 // TRA-6: abrir, editar e excluir um lançamento.
 export function TransactionEditSheet({
@@ -136,6 +137,10 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
       )}
 
       {t.type === 'expense' && <ItemsEditor items={items} onChange={setItems} total={amount} disabled={!editable} />}
+
+      {t.type === 'expense' && t.invoiceRef && wallets.some(w => w.id === t.walletId && w.type === 'credit' && !w.ownerName) && (
+        <PrepayGroup t={t} onDone={onDone} />
+      )}
 
       {t.receiptPath && (
         <ListGroup header="Nota fiscal">

@@ -39,7 +39,7 @@ export function DataGroup() {
         <ListRow leading={<DownloadMinimalisticLinearIcon className="size-6 text-muted-foreground" />}
           title={exporting ? 'Exportando…' : 'Exportar transações (CSV)'} onClick={exporting ? undefined : exportCsv} />
         <ListRow leading={<UploadMinimalisticLinearIcon className="size-6 text-muted-foreground" />}
-          title="Importar transações (CSV)" chevron onClick={() => setImporting(true)} />
+          title="Importar extrato (CSV ou OFX)" chevron onClick={() => setImporting(true)} />
       </ListGroup>
       <CsvImportSheet open={importing} onOpenChange={setImporting} />
     </>

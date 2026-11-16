@@ -23,7 +23,8 @@ export interface InvoiceRef {
   wallet: OwnWallet
   ref: string       // AAAA-MM
   dueDate: string   // AAAA-MM-DD
-  total: number
+  total: number      // a pagar (sem as compras já pagas antes)
+  prepaid?: number   // compras desta fatura pagas antes
   paidAt: string | null
 }
 
@@ -67,6 +68,9 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
         <p className="text-subheadline text-muted-foreground">
           Fatura de {monthLabel(inv.ref)} · vence {formatDate(inv.dueDate)}
         </p>
+        {!!inv.prepaid && (
+          <p className="text-footnote text-muted-foreground">{formatCurrency(inv.prepaid)} já pago antes</p>
+        )}
       </div>
 
       {inv.paidAt ? (
@@ -78,7 +82,7 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
             </Button>
           </li>
         </ListGroup>
-      ) : inv.total > 0 && (
+      ) : inv.total > 0 ? (
         <>
           <ListGroup header="Pagar com" footer="Sai do saldo nesta data.">
             <WalletPicker wallets={payable} value={walletId} onChange={setWalletId} />
@@ -94,6 +98,8 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
           </Button>
           <LateCostGroup wallet={inv.wallet} total={inv.total} dueDate={inv.dueDate} />
         </>
+      ) : !!inv.prepaid && (
+        <p className="px-4 text-center text-footnote text-muted-foreground">Todas as compras desta fatura já foram pagas.</p>
       )}
 
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}

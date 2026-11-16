@@ -12,6 +12,7 @@ export function AdvancedEntry() {
       <ListRow title="Objetivos" subtitle="Quando cada um fica pronto" chevron onClick={() => router.push('/analysis/goals')} />
       <ListRow title="Assinaturas" subtitle="Custo por uso" chevron onClick={() => router.push('/analysis/subscriptions')} />
       <ListRow title="Veículos" subtitle="Custo de deslocamento" chevron onClick={() => router.push('/analysis/vehicles')} />
+      <ListRow title="Simular crédito" subtitle="Empréstimo, cheque especial, cartão" chevron onClick={() => router.push('/analysis/credit')} />
     </ListGroup>
   )
 }

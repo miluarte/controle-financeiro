@@ -116,6 +116,12 @@ Instituições e atraso (2026-11-16): tabela `institutions` (leitura para todos)
 
 Itens da compra e repetidas (2026-11-16): gasto guarda os itens em `source_data.items` (`[{name, amount}]`, vindos da nota ou digitados em `ItemsEditor` na edição); a lista mostra "N itens" e a busca acha pelo nome do item. Decisão: sem campo de descrição separado no gasto; o local é o título e os itens são o detalhe. `lib/duplicates.ts` acha compras repetidas (mesmo valor e carteira, até 1 dia, mesmo local); em Transações, `DuplicatesSheet` apaga uma ou marca "não é repetida" (`source_data.not_duplicate`). Nota fiscal: "Fotografar nota" ou "Da galeria". Config > Categorias de receita abre `/config/categories?tipo=receita`.
 
+Pagar compra antes da fatura (2026-11-16): na edição de um gasto no próprio cartão de crédito, "Pagar esta compra/parcela antes da fatura" (`PrepayGroup`, RPC `prepay_purchase`): cria um `invoice_payment` da carteira escolhida e liga em `transactions.prepaid_by`; "Desfazer" (`undo_prepay_purchase`). `invoice_totals` ganhou `prepaid`; a fatura mostra e cobra `total - prepaid` (também `pay_invoice` sem valor). Fatura toda paga antes conta como paga.
+
+Taxas por banco (2026-11-16): `institutions.bcb_names` (nomes no Banco Central) e `priority` (Nubank, Santander, Porto Seguro, Caixa, Mercado Pago, Itaú primeiro). Edge Function `taxas-bcb` (pg_cron `troco-bcb-rates`, segunda 9h17 UTC) lê a API Olinda do BCB (`TaxasJurosDiariaPorInicioPeriodo`, pessoa física, semana mais recente) e grava `institution_rates` (rotativo, parcelado, cheque especial, pessoal, consignados, veículo, bens). Atraso do cartão usa: taxa da fatura no cartão > da instituição > média do BCB. Fórmulas em `lib/finance.ts` (Tabela Price + IOF; rotativo/cheque especial com juros compostos por dia + IOF, teto de 100%). Simulador em `/analysis/credit` (Análise > Planejamento > Simular crédito).
+
+Importar extrato: Config > Dados aceita CSV ou OFX (`parseOfx` em `lib/csv.ts`; no OFX de cartão, créditos/pagamentos ficam de fora) e pergunta em qual carteira lançar.
+
 Removidos (2026-11-16): tabelas `app_news`, `news_reads` e `feedback`; contas de teste (`@example.com`) e os dados delas.
 
 Pendente (spec, seção 8):

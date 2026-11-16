@@ -14,9 +14,11 @@ export interface LateRules {
 
 export const LEGAL_DEFAULTS: LateRules = { revolving: null, lateInterest: 1, lateFine: 2, iofDaily: 0.0082, iofAdditional: 0.38 }
 
-export function lateRules(wallet: OwnWallet, institution: Institution | undefined): LateRules {
+// Taxa do rotativo: a da fatura do cliente (no cartão), a informada na instituição ou, por último,
+// a média do banco no Banco Central.
+export function lateRules(wallet: OwnWallet, institution: Institution | undefined, bcbRevolving?: number | null): LateRules {
   return {
-    revolving: wallet.revolvingRate ?? institution?.revolvingRate ?? null,
+    revolving: wallet.revolvingRate ?? institution?.revolvingRate ?? bcbRevolving ?? null,
     lateInterest: institution?.lateInterest ?? LEGAL_DEFAULTS.lateInterest,
     lateFine: institution?.lateFine ?? LEGAL_DEFAULTS.lateFine,
     iofDaily: institution?.iofDaily ?? LEGAL_DEFAULTS.iofDaily,

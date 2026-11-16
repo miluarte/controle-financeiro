@@ -2,7 +2,7 @@
 
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
-import { useInstitutions } from '@/hooks/use-data'
+import { useInstitutionRates, useInstitutions } from '@/hooks/use-data'
 import { daysBetween, lateCost, lateRules } from '@/lib/late-fee'
 import type { OwnWallet } from '@/lib/types'
 import { formatCurrency, todayIso } from '@/lib/utils'
@@ -11,12 +11,14 @@ import { formatCurrency, todayIso } from '@/lib/utils'
 export function LateCostGroup({ wallet, total, dueDate }: { wallet: OwnWallet; total: number; dueDate: string }) {
   const institutions = useInstitutions()
   const institution = institutions.find(i => i.id === wallet.institutionId)
-  const rules = lateRules(wallet, institution)
+  const bcb = useInstitutionRates().find(r => r.institutionId === wallet.institutionId && r.product === 'card_revolving')
+  const rules = lateRules(wallet, institution, bcb?.monthlyRate)
+  const fromBcb = wallet.revolvingRate == null && institution?.revolvingRate == null && bcb != null
   const late = daysBetween(dueDate, todayIso())
   const scenarios = late > 0 ? [late] : [5, 15, 30]
   const footer = rules.revolving == null
-    ? 'Sem juros do rotativo: informe no cartão, em Config > Carteiras.'
-    : `Rotativo ${rules.revolving.toLocaleString('pt-BR')}% a.m. + mora ${rules.lateInterest}% + multa ${rules.lateFine}% + IOF. Estimativa.`
+    ? 'Sem juros do rotativo: escolha o banco do cartão ou informe a taxa da fatura.'
+    : `Rotativo ${rules.revolving.toLocaleString('pt-BR')}% a.m.${fromBcb ? ' (média do banco)' : ''} + mora ${rules.lateInterest}% + multa ${rules.lateFine}% + IOF. Estimativa.`
 
   return (
     <ListGroup header={late > 0 ? `Em atraso há ${late} ${late === 1 ? 'dia' : 'dias'}` : 'Se atrasar'} footer={footer}>

@@ -73,6 +73,14 @@ export const transactionsApi = {
     unwrap(await supabase.from('transactions').update({ ...toRow(t), status: 'confirmed' }).eq('id', id))
   },
 
+  // Pagar uma compra do cartão (ou uma parcela) antes da fatura.
+  prepay: async (id: string, fromWalletId: string, date: string) => {
+    unwrap(await supabase.rpc('prepay_purchase', { p_transaction: id, p_from_wallet: fromWalletId, p_date: date }))
+  },
+  undoPrepay: async (id: string) => {
+    unwrap(await supabase.rpc('undo_prepay_purchase', { p_transaction: id }))
+  },
+
   update: async (id: string, t: Partial<NewTransaction>) =>
     toTransaction(unwrap(await supabase.from('transactions').update(toRow(t)).eq('id', id).select('*').single())),
 

@@ -70,6 +70,8 @@ export interface Transaction {
   status: 'confirmed' | 'pending'
   receiptPath: string | null
   sourceData: Record<string, unknown> | null
+  // pagamento antecipado desta compra (antes da fatura)
+  prepaidBy: string | null
 }
 
 export interface NewTransaction {
@@ -182,6 +184,8 @@ export interface InvoiceTotal {
   assignedTo: string
   total: number
   purchases: number
+  // compras desta fatura já pagas antes (antecipadas)
+  prepaid: number
 }
 
 export interface Invoice {
@@ -302,8 +306,21 @@ export interface Institution {
   name: string
   revolvingRate: number | null
   installmentRate: number | null
+  priority: number
   lateInterest: number
   lateFine: number
   iofDaily: number
   iofAdditional: number
+}
+
+export type CreditProduct = 'card_revolving' | 'card_installment' | 'overdraft' | 'personal_loan'
+  | 'payroll_inss' | 'payroll_private' | 'payroll_public' | 'vehicle' | 'other_goods'
+
+// Taxa média do banco no Banco Central (semana mais recente), % ao mês.
+export interface InstitutionRate {
+  institutionId: string
+  product: CreditProduct
+  monthlyRate: number
+  periodStart: string
+  periodEnd: string
 }

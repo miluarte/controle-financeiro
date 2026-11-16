@@ -1,6 +1,6 @@
 import type {
   Bill, BillOccurrence, Category, CategorySpending, InvoiceTotal, MonthHistory, MonthSummary, OwnWallet,
-  Profile, Transaction, Wallet, Goal, Institution, Subscription, SubscriptionUse, Vehicle, VehicleTrip, VehicleMaintenance,
+  Profile, Transaction, Wallet, Goal, Institution, InstitutionRate, Subscription, SubscriptionUse, Vehicle, VehicleTrip, VehicleMaintenance,
 } from '../types'
 
 // Banco em snake_case, front em camelCase (lib/types.ts).
@@ -76,6 +76,7 @@ export function toTransaction(r: Row): Transaction {
     status: r.status,
     receiptPath: r.receipt_path ?? null,
     sourceData: r.source_data ?? null,
+    prepaidBy: r.prepaid_by ?? null,
   }
 }
 
@@ -149,6 +150,7 @@ export function toInvoiceTotal(r: Row): InvoiceTotal {
     assignedTo: r.assigned_to,
     total: num(r.total),
     purchases: num(r.purchases),
+    prepaid: num(r.prepaid),
   }
 }
 
@@ -197,6 +199,14 @@ export function toVehicleMaintenance(r: Row): VehicleMaintenance {
 export function toInstitution(r: Row): Institution {
   return {
     id: r.id, name: r.name, revolvingRate: numOrNull(r.revolving_rate), installmentRate: numOrNull(r.installment_rate),
+    priority: num(r.priority),
     lateInterest: num(r.late_interest), lateFine: num(r.late_fine), iofDaily: num(r.iof_daily), iofAdditional: num(r.iof_additional),
+  }
+}
+
+export function toInstitutionRate(r: Row): InstitutionRate {
+  return {
+    institutionId: r.institution_id, product: r.product, monthlyRate: Number(r.monthly_rate),
+    periodStart: r.period_start, periodEnd: r.period_end,
   }
 }

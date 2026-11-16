@@ -98,3 +98,22 @@ export function parseType(v: string) {
   const key = v.normalize('NFD').replace(/\p{Diacritic}/gu, '').trim().toLowerCase()
   return TYPE_FROM_PT[key] ?? null
 }
+
+// Extrato OFX (bancos e cartões) para as mesmas linhas do CSV: Data, Tipo, Valor, Local.
+// Em extrato de cartão, valores positivos são pagamentos e créditos da fatura e ficam de fora.
+export function parseOfx(text: string): string[][] {
+  const card = /<CREDITCARDMSGSRSV1>/i.test(text)
+  const tag = (block: string, name: string) => block.match(new RegExp(`<${name}>([^<\\r\\n]*)`, 'i'))?.[1]?.trim() ?? ''
+  const rows: string[][] = [['Data', 'Tipo', 'Valor', 'Local']]
+  for (const m of text.matchAll(/<STMTTRN>([\s\S]*?)<\/STMTTRN>/gi)) {
+    const b = m[1]
+    const d = tag(b, 'DTPOSTED')
+    const amount = Number(tag(b, 'TRNAMT'))
+    if (!/^\d{8}/.test(d) || !Number.isFinite(amount) || amount === 0) continue
+    if (card && amount > 0) continue
+    const date = `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`
+    const value = Math.abs(amount).toFixed(2).replace('.', ',')
+    rows.push([date, amount < 0 ? 'Gasto' : 'Receita', value, tag(b, 'MEMO') || tag(b, 'NAME')])
+  }
+  return rows
+}

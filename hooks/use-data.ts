@@ -98,3 +98,8 @@ export function useInstitutions() {
   const { data } = useSWR(['institutions'], () => institutionsApi.list())
   return data ?? []
 }
+
+export function useInstitutionRates() {
+  const { data } = useSWR(['institution-rates'], () => institutionsApi.rates())
+  return data ?? []
+}

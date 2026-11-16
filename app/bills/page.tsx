@@ -39,11 +39,14 @@ export default function BillsPage() {
     // CON-8: a fatura de cada cartão que vence neste mês entra junto com as contas
     for (const w of wallets.filter(w => w.type === 'credit' && w.active)) {
       const ref = invoiceRefDueIn(w, month)
-      const total = totals.filter(t => t.walletId === w.id && t.invoiceRef.slice(0, 7) === ref).reduce((s, t) => s + t.total, 0)
+      const own = totals.filter(t => t.walletId === w.id && t.invoiceRef.slice(0, 7) === ref)
+      // o que já foi pago antes (compras antecipadas) sai do valor a pagar
+      const total = own.reduce((s, t) => s + t.total - t.prepaid, 0)
+      const prepaid = own.reduce((s, t) => s + t.prepaid, 0)
       const paidAt = paidInvoices.find(p => p.walletId === w.id && p.refMonth.slice(0, 7) === ref)?.paidAt ?? null
-      if (total === 0 && !paidAt) continue
+      if (total === 0 && prepaid === 0 && !paidAt) continue
       const due = invoiceDueDate(w, ref)
-      list.push({ kind: 'invoice', due, amount: total, paid: !!paidAt, inv: { wallet: w, ref, dueDate: due, total, paidAt } })
+      list.push({ kind: 'invoice', due, amount: total, paid: !!paidAt || (total === 0 && prepaid > 0), inv: { wallet: w, ref, dueDate: due, total, prepaid, paidAt } })
     }
     return list.sort((a, b) => a.due.localeCompare(b.due))
   }, [occurrences, wallets, totals, paidInvoices, month])

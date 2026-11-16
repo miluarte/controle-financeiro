@@ -69,7 +69,7 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
   const used = totals
     .filter(t => t.walletId === wallet.id && t.invoiceRef.slice(0, 7) >= openRef)
     .filter(t => !paid.some(p => p.walletId === wallet.id && p.refMonth === t.invoiceRef && p.paidAt))
-    .reduce((s, t) => s + t.total, 0)
+    .reduce((s, t) => s + t.total - t.prepaid, 0)
   const catById = new Map(categories.map(c => [c.id, c]))
   const due = invoiceDueDate(wallet, ref)
 

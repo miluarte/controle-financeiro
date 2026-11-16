@@ -34,7 +34,7 @@ export default function WalletsPage() {
     if (t.type === 'expense' && t.walletId) spentBy.set(t.walletId, (spentBy.get(t.walletId) ?? 0) + t.amount)
   }
   const invoiceTotal = (walletId: string, ref: string) =>
-    totals.filter(t => t.walletId === walletId && t.invoiceRef.slice(0, 7) === ref).reduce((s, t) => s + t.total, 0)
+    totals.filter(t => t.walletId === walletId && t.invoiceRef.slice(0, 7) === ref).reduce((s, t) => s + t.total - t.prepaid, 0)
 
   const active = wallets.filter(w => w.active)
   const cards = active.filter(w => w.type === 'credit')

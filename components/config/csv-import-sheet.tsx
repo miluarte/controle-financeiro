@@ -10,14 +10,15 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { useSession } from '@/hooks/use-session'
 import { useWallets } from '@/hooks/use-wallets'
 import { transactionsApi } from '@/lib/api/transactions'
-import { FIELD_LABEL, guessField, parseCsv, parseDate, parseType, type ImportField } from '@/lib/csv'
+import { FIELD_LABEL, guessField, parseCsv, parseDate, parseOfx, parseType, type ImportField } from '@/lib/csv'
+import { WalletPicker } from '@/components/shared/wallet-picker'
 import type { NewTransaction } from '@/lib/types'
 import { formatCurrency, formatDate, parseCents } from '@/lib/utils'
 
-// DAD-2: importar CSV com prévia, mapeamento de colunas e detecção de duplicadas.
+// DAD-2: importar CSV ou OFX (extrato do banco ou do cartão) com prévia, mapeamento de colunas e detecção de duplicadas.
 export function CsvImportSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   return (
-    <ModalSheet open={open} onOpenChange={onOpenChange} title="Importar CSV">
+    <ModalSheet open={open} onOpenChange={onOpenChange} title="Importar extrato">
       {open && <Importer onDone={() => onOpenChange(false)} />}
     </ModalSheet>
   )
@@ -36,9 +37,13 @@ function Importer({ onDone }: { onDone: () => void }) {
   const [existing, setExisting] = useState<Set<string>>(new Set())
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  // carteira para as linhas que não dizem qual é (num extrato OFX, todas)
+  const [targetWalletId, setTargetWalletId] = useState<string | null>(null)
+  const targetWallet = targetWalletId ?? profile?.defaultWalletId ?? null
 
   async function onFile(file: File) {
-    const parsed = parseCsv(await file.text())
+    const text = await file.text()
+    const parsed = /\.ofx$/i.test(file.name) || /<OFX>/i.test(text) ? parseOfx(text) : parseCsv(text)
     if (parsed.length < 2) { setMessage('O arquivo não tem linhas para importar.'); return }
     setRows(parsed)
     setFields(parsed[0].map(guessField))
@@ -64,7 +69,7 @@ function Importer({ onDone }: { onDone: () => void }) {
       const tx: NewTransaction | null = date && amount ? {
         type, amount, date,
         categoryId: type.startsWith('save') ? null : cat.get(catKey) ?? null,
-        walletId: type === 'income' ? null : wal.get(norm(get('wallet'))) ?? profile?.defaultWalletId ?? null,
+        walletId: type === 'income' ? null : wal.get(norm(get('wallet'))) ?? targetWallet,
         place: type === 'income' ? null : place ?? description,
         description: type === 'income' ? description ?? place : description,
         source: 'csv',
@@ -72,7 +77,7 @@ function Importer({ onDone }: { onDone: () => void }) {
       const duplicate = !!tx && existing.has(`${tx.date}|${tx.amount}|${norm(tx.place ?? tx.description ?? '')}`)
       return { tx, duplicate }
     })
-  }, [rows, fields, categories, wallets, existing, profile?.defaultWalletId])
+  }, [rows, fields, categories, wallets, existing, targetWallet])
 
   const valid = preview.filter(p => p.tx && !p.duplicate)
   const invalid = preview.filter(p => !p.tx).length
@@ -91,11 +96,11 @@ function Importer({ onDone }: { onDone: () => void }) {
     return (
       <div className="space-y-4">
         <p className="px-4 text-center text-subheadline text-muted-foreground">
-          Escolha um arquivo .csv com colunas como data, tipo, valor, categoria, carteira e local.
+          Arquivo .csv ou .ofx (extrato do banco ou do cartão).
         </p>
         <label className="flex h-12.5 cursor-pointer items-center justify-center rounded-full bg-tint text-headline font-semibold text-primary-foreground">
           Escolher arquivo
-          <input type="file" accept=".csv,text/csv" className="sr-only" onChange={e => e.target.files?.[0] && onFile(e.target.files[0])} />
+          <input type="file" accept=".csv,.ofx,text/csv,application/x-ofx" className="sr-only" onChange={e => e.target.files?.[0] && onFile(e.target.files[0])} />
         </label>
         {message && <p className="px-4 text-footnote text-destructive">{message}</p>}
       </div>
@@ -114,6 +119,10 @@ function Importer({ onDone }: { onDone: () => void }) {
             </select>
           </li>
         ))}
+      </ListGroup>
+
+      <ListGroup header="Lançar em">
+        <WalletPicker wallets={wallets.filter(w => !w.ownerName)} value={targetWallet} onChange={setTargetWalletId} />
       </ListGroup>
 
       <ListGroup header={`Prévia · ${valid.length} para importar`}
