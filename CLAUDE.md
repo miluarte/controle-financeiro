@@ -43,7 +43,7 @@ Estrutura da tela: a página não rola. `AppShell` ocupa a tela toda (`h-app` = 
 
 Botão + (`components/layout/add-menu.tsx`) fica ao lado da barra de abas e abre um menu (`components/ui/dropdown-menu.tsx`, vidro): Gasto, Receita, Guardar (abrem o `QuickAddSheet` já no tipo) e, em "Todo mês", Conta fixa (`BillFormSheet`). Receita fixa é criada pela própria Receita, com "Repetir todo mês" (`RepeatGroup`). É o único ponto de adicionar lançamentos e contas.
 
-Datas e meses usam `components/shared/date-field.tsx` (`DateField`, `mode="month"`): texto em português com mês abreviado ("16 nov 2026", "nov 2026") e o seletor nativo invisível por cima. Nunca `<input type="date">`/`type="month"` direto (no iPhone em inglês aparece "November 2026" e corta). Listas de escolha longas usam `SelectField` (mesmo esquema). Todo texto da interface em português.
+Datas e meses usam `components/shared/date-field.tsx` (`DateField`, `mode="month"`): texto em português com mês abreviado ("16 nov 2026", "nov 2026") e o seletor nativo invisível por cima. Nunca `<input type="date">`/`type="month"` direto (no iPhone em inglês aparece "November 2026" e corta). No desktop (`useFinePointer`, `pointer: fine`), mês abre `MonthGrid` num `Popover` (`components/ui/popover.tsx`), no `MonthSelector` e no `DateField mode="month"`, porque Safari e Firefox de desktop não têm seletor de mês; data abre o calendário do navegador (`showPicker`). Listas de escolha longas usam `SelectField` (mesmo esquema). Todo texto da interface em português.
 
 Campos de número inteiro (dia, parcelas) usam `components/shared/number-field.tsx`, nunca `<input type="number">` com clamp no onChange (impede apagar no iPhone). Valores em dinheiro usam `CurrencyInput`.
 
