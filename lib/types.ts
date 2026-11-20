@@ -29,6 +29,8 @@ export interface Wallet {
   sortOrder: number
   // cartão de outra pessoa da família, compartilhado comigo
   ownerName: string | null
+  // titular do cartão (eu, nas minhas carteiras)
+  ownerId: string | null
   last4?: string | null
 }
 
@@ -73,6 +75,8 @@ export interface Transaction {
   sourceData: Record<string, unknown> | null
   // pagamento antecipado desta compra (antes da fatura)
   prepaidBy: string | null
+  // titular do cartão quando a compra ainda não tem cartão definido (pendente)
+  holderId: string | null
 }
 
 export interface NewTransaction {
@@ -86,6 +90,8 @@ export interface NewTransaction {
   source?: string
   sourceData?: Record<string, unknown> | null
   receiptPath?: string | null
+  status?: 'confirmed' | 'pending'
+  holderId?: string | null
 }
 
 export interface MonthSummary {

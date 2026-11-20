@@ -15,6 +15,8 @@ function toRow(t: Partial<NewTransaction>) {
   if (t.source !== undefined) r.source = t.source
   if (t.sourceData !== undefined) r.source_data = t.sourceData
   if (t.receiptPath !== undefined) r.receipt_path = t.receiptPath
+  if (t.status !== undefined) r.status = t.status
+  if (t.holderId !== undefined) r.holder_id = t.holderId
   return r
 }
 
@@ -64,10 +66,17 @@ export const transactionsApi = {
     unwrap(await supabase.from('transactions').insert(list.map(toRow)))
   },
 
-  // Fila de pendentes (automações do iPhone): gastos que ainda precisam de confirmação.
+  // Fila de pendentes: gastos das automações e compras sem cartão definido (minhas, e as de
+  // outras pessoas da família nos meus cartões, que esperam eu dizer qual cartão foi).
   getPending: async (userId: string) =>
-    unwrap(await supabase.from('transactions').select('*').eq('assigned_to', userId).eq('status', 'pending')
+    unwrap(await supabase.from('transactions').select('*').eq('status', 'pending')
+      .or(`assigned_to.eq.${userId},holder_id.eq.${userId}`)
       .order('created_at', { ascending: false })).map(toTransaction),
+
+  // Titular escolhe o cartão de uma compra pendente: entra na fatura no nome de quem comprou.
+  resolveCardPending: async (id: string, walletId: string) => {
+    unwrap(await supabase.rpc('resolve_card_pending', { p_transaction: id, p_wallet: walletId }))
+  },
 
   confirmPending: async (id: string, t: Partial<NewTransaction>) => {
     unwrap(await supabase.from('transactions').update({ ...toRow(t), status: 'confirmed' }).eq('id', id))

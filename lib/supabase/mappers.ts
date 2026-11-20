@@ -37,6 +37,7 @@ export function toWallet(r: Row): Wallet {
     active: r.active ?? true,
     sortOrder: num(r.sort_order),
     ownerName: r.owner_name ?? null,
+    ownerId: r.owner_id ?? null,
     last4: r.last4 ?? null,
   }
 }
@@ -78,6 +79,7 @@ export function toTransaction(r: Row): Transaction {
     receiptPath: r.receipt_path ?? null,
     sourceData: r.source_data ?? null,
     prepaidBy: r.prepaid_by ?? null,
+    holderId: r.holder_id ?? null,
   }
 }
 

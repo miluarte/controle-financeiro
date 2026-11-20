@@ -9,17 +9,23 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import { QuickAddSheet } from '@/components/transactions/quick-add-sheet'
 import { transactionsApi } from '@/lib/api/transactions'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
+import { useCardPeople } from '@/hooks/use-card-people'
+import { ChooseCardSheet } from './choose-card-sheet'
 
 const SOURCE_LABEL: Record<string, string> = { apple_pay: 'Apple Pay', back_tap: 'Toque duplo', notification: 'SMS do banco' }
 
-// Fila de pendentes: lista o que chegou pelas automações; tocar abre o registro de gasto já preenchido.
-// Com um só pendente, abre direto o registro.
+// Fila de pendentes: o que chegou pelas automações, compras sem cartão definido e, para o titular,
+// compras da família no cartão dele esperando ele dizer qual cartão foi.
+// Tocar abre o registro de gasto já preenchido (ou, para o titular, "Qual cartão foi?").
 export function PendingSheet({ open, pending, onOpenChange }: {
   open: boolean; pending: Transaction[]; onOpenChange: (o: boolean) => void
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const del = useConfirmDelete()
+  const { me, nameOf } = useCardPeople()
   const selected = pending.find(t => t.id === selectedId) ?? (pending.length === 1 ? pending[0] : null)
+  // compra de outra pessoa no meu cartão: eu só escolho o cartão
+  const isHolderView = (t: Transaction) => t.owner !== me
 
   function close(o: boolean) { if (!o) setSelectedId(null); onOpenChange(o) }
 
@@ -31,19 +37,29 @@ export function PendingSheet({ open, pending, onOpenChange }: {
     else setSelectedId(null)
   }
 
+  function subtitle(t: Transaction) {
+    const when = formatDate(t.date).slice(0, 5)
+    if (isHolderView(t)) return `De ${nameOf(t.owner)} · qual cartão? · ${when}`
+    if (t.holderId) return `${t.holderId === me ? 'Meu cartão' : `Cartão de ${nameOf(t.holderId)}`} · falta o cartão · ${when}`
+    return `${SOURCE_LABEL[t.source] ?? 'Automação'} · ${when}`
+  }
+
   return (
     <>
       {del.sheet}
-      {selected ? (
+      {selected && isHolderView(selected) ? (
+        <ChooseCardSheet key={selected.id} transaction={selected} buyer={nameOf(selected.owner)} open={open} onOpenChange={closeForm} />
+      ) : selected ? (
         <QuickAddSheet key={selected.id} open={open} onOpenChange={closeForm} pending={selected} />
       ) : (
         <ModalSheet open={open} onOpenChange={close} title="Para confirmar">
           <ListGroup>
             {pending.map(t => (
               <ListRow key={t.id} chevron onClick={() => setSelectedId(t.id)}
-                onDelete={() => del.ask({ title: 'Descartar este gasto?', label: 'Descartar', remove: () => transactionsApi.remove(t.id) })}
+                onDelete={isHolderView(t) ? undefined
+                  : () => del.ask({ title: 'Descartar este gasto?', label: 'Descartar', remove: () => transactionsApi.remove(t.id) })}
                 title={t.place || 'Sem local'}
-                subtitle={`${SOURCE_LABEL[t.source] ?? 'Automação'} · ${formatDate(t.date).slice(0, 5)}`}
+                subtitle={subtitle(t)}
                 trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(t.amount)}</span>} />
             ))}
           </ListGroup>
