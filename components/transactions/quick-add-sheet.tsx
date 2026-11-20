@@ -54,6 +54,8 @@ interface QuickAddSheetProps {
   initialMode?: Mode
   // gasto pendente das automações: abre preenchido e, ao registrar, substitui o pendente
   pending?: Transaction | null
+  // foto da nota já escolhida no botão +: abre lendo a nota
+  initialReceipt?: File | null
 }
 
 const pendingItems = (t: Transaction | null | undefined): ReceiptItem[] =>
@@ -63,7 +65,7 @@ const pendingItems = (t: Transaction | null | undefined): ReceiptItem[] =>
 const pendingNumber = (t: Transaction | null | undefined, key: string, fallback: number) =>
   typeof t?.sourceData?.[key] === 'number' ? (t.sourceData[key] as number) : fallback
 
-export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pending = null }: QuickAddSheetProps) {
+export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pending = null, initialReceipt = null }: QuickAddSheetProps) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
   const { profile } = useProfile()
@@ -331,7 +333,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
               />
             )}
 
-            {mode === 'expense' && <ReceiptScanButton onRead={onReceipt} />}
+            {mode === 'expense' && <ReceiptScanButton onRead={onReceipt} initialFile={initialReceipt} />}
 
             <CurrencyInput
               id="amount"

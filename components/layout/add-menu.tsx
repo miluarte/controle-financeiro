@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   AddBoldIcon,
   AddLinearIcon,
   BillListLinearIcon,
+  CameraLinearIcon,
   CartLargeMinimalisticLinearIcon,
   SafeSquareLinearIcon,
   WalletMoneyLinearIcon,
@@ -35,14 +36,15 @@ const FIXED: { type: BillType; label: string; icon: SolarIcon }[] = [
 // Botão + da barra de abas (FabMenu, opções empilhadas acima) ou "Adicionar" no menu lateral do desktop (menu suspenso).
 export function AddMenu({ variant = 'tab' }: { variant?: 'tab' | 'sidebar' }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [quick, setQuick] = useState<{ mode: QuickAddMode; n: number } | null>(null)
+  const [quick, setQuick] = useState<{ mode: QuickAddMode; n: number; receipt?: File } | null>(null)
+  const receiptInput = useRef<HTMLInputElement>(null)
   const [quickOpen, setQuickOpen] = useState(false)
   const [billType, setBillType] = useState<BillType>('expense')
   const [billOpen, setBillOpen] = useState(false)
 
-  function openQuick(mode: QuickAddMode) {
-    // a chave nova recria o formulário já no tipo escolhido
-    setQuick(q => ({ mode, n: (q?.n ?? 0) + 1 }))
+  function openQuick(mode: QuickAddMode, receipt?: File) {
+    // a chave nova recria o formulário já no tipo escolhido (e, com a foto, já lendo a nota)
+    setQuick(q => ({ mode, n: (q?.n ?? 0) + 1, receipt }))
     setQuickOpen(true)
   }
 
@@ -57,6 +59,8 @@ export function AddMenu({ variant = 'tab' }: { variant?: 'tab' | 'sidebar' }) {
   const fabItems = [
     ...FIXED.map(({ type, label, icon }) => ({ key: `bill-${type}`, label, icon, onSelect: () => openBill(type) })),
     ...[...QUICK].reverse().map(({ mode, label, icon }) => ({ key: mode, label, icon, onSelect: () => openQuick(mode) })),
+    { key: 'receipt', label: 'Ler nota fiscal', icon: CameraLinearIcon, accept: 'image/*',
+      onSelect: () => {}, onFile: (file: File) => openQuick('expense', file) },
   ]
 
   return (
@@ -69,6 +73,9 @@ export function AddMenu({ variant = 'tab' }: { variant?: 'tab' | 'sidebar' }) {
         <DropdownMenuContent side="bottom" align="start">
           <DropdownMenuGroup>
             <DropdownMenuLabel>Registrar</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => receiptInput.current?.click()}>
+              <CameraLinearIcon />Ler nota fiscal
+            </DropdownMenuItem>
             {QUICK.map(({ mode, label, icon: ItemIcon }) => (
               <DropdownMenuItem key={mode} onClick={() => openQuick(mode)}>
                 <ItemIcon />{label}
@@ -88,8 +95,10 @@ export function AddMenu({ variant = 'tab' }: { variant?: 'tab' | 'sidebar' }) {
       </DropdownMenu>
       )}
 
+      <input ref={receiptInput} type="file" accept="image/*" className="sr-only"
+        onChange={e => { const file = e.target.files?.[0]; e.target.value = ''; if (file) openQuick('expense', file) }} />
       {quick && (
-        <QuickAddSheet key={quick.n} open={quickOpen} onOpenChange={setQuickOpen} initialMode={quick.mode} />
+        <QuickAddSheet key={quick.n} open={quickOpen} onOpenChange={setQuickOpen} initialMode={quick.mode} initialReceipt={quick.receipt} />
       )}
       <BillFormSheet open={billOpen} onOpenChange={setBillOpen} type={billType} />
     </>

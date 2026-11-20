@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ProgressButton } from '@/components/shared/progress-button'
 import { CameraLinearIcon } from '@solar-icons/react'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,11 @@ import { LoadingDots } from '@/components/shared/loading-dots'
 import { readReceipt, type ReceiptResult } from '@/lib/receipt'
 
 // 5.4 passos 1 e 2: abre a câmera ou a galeria e lê a nota. O formulário só é preenchido; nada é salvo aqui.
-export function ReceiptScanButton({ onRead }: { onRead: (result: ReceiptResult, image: Blob) => void }) {
+// initialFile: foto já escolhida antes de abrir o formulário (atalho "Ler nota fiscal" do botão +).
+export function ReceiptScanButton({ onRead, initialFile = null }: {
+  onRead: (result: ReceiptResult, image: Blob) => void
+  initialFile?: File | null
+}) {
   const gallery = useRef<HTMLInputElement>(null)
   const [reading, setReading] = useState(false)
   const [status, setStatus] = useState('Lendo a nota…')
@@ -41,6 +45,14 @@ export function ReceiptScanButton({ onRead }: { onRead: (result: ReceiptResult, 
       if (gallery.current) gallery.current.value = ''
     }
   }
+
+  const started = useRef(false)
+  useEffect(() => {
+    if (!initialFile || started.current) return
+    started.current = true
+    handleFile(initialFile)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialFile])
 
   return (
     <div className="space-y-1.5">
