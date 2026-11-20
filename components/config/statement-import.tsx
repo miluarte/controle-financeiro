@@ -33,7 +33,7 @@ export function StatementImport({ file }: { file: File }) {
       {status.startsWith('Lendo') && <LoadingDots size="lg" />}{status}
     </p>
   )
-  if (!cards.length) return <p className="px-4 text-center text-subheadline text-muted-foreground">Cadastre o cartão em Config &gt; Carteiras antes.</p>
+  if (!cards.length) return <p className="px-4 text-center text-subheadline text-muted-foreground">Cadastre o cartão em Ajustes &gt; Carteiras antes.</p>
 
   // vencimento lido no PDF; se não achar, usa a próxima fatura do cartão escolhido
   const dueDate = card ? (due ?? invoiceDueDate(card, invoiceRefDueIn(card, new Date().toISOString().slice(0, 7)))) : null

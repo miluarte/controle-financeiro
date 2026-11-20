@@ -17,12 +17,12 @@ import {
 
 type SolarIcon = React.ComponentType<{ className?: string }>
 
-// NAV-1: Contas, Home, Análise e Config. Transações abre por "Ver todas" na Home.
+// NAV-1: Contas, Início, Análise e Ajustes. Transações abre por "Ver todas" no Início.
 export const NAV_ITEMS: { href: string; label: string; icon: SolarIcon; activeIcon: SolarIcon; also?: string[] }[] = [
   { href: '/bills',    label: 'Contas',  icon: BillListLinearIcon,    activeIcon: BillListBoldIcon },
-  { href: '/home',     label: 'Home',    icon: Home2LinearIcon,       activeIcon: Home2BoldIcon, also: ['/transactions'] },
+  { href: '/home',     label: 'Início',  icon: Home2LinearIcon,       activeIcon: Home2BoldIcon, also: ['/transactions'] },
   { href: '/analysis', label: 'Análise', icon: ChartSquareLinearIcon, activeIcon: ChartSquareBoldIcon },
-  { href: '/config',   label: 'Config',  icon: SettingsLinearIcon,    activeIcon: SettingsBoldIcon },
+  { href: '/config',   label: 'Ajustes', icon: SettingsLinearIcon,    activeIcon: SettingsBoldIcon },
 ]
 
 // Barra de abas Liquid Glass (iOS 26): cápsula de vidro flutuante, aba ativa marcada por uma

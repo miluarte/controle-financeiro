@@ -34,7 +34,7 @@ const HIGHLIGHTS = [
 const TIPS = [
   'Toque no + para registrar um gasto, uma receita ou uma conta fixa.',
   'Já tem compras parceladas? No gasto, informe a parcela atual.',
-  'Apple Pay e toque duplo: Config > Automações.',
+  'Apple Pay e toque duplo: Ajustes > Automações.',
 ]
 
 // Passo a passo para quem acabou de criar a conta. Tudo depois das boas-vindas pode ser pulado.

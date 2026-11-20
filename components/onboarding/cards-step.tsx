@@ -63,7 +63,7 @@ export function CardsStep() {
           ))}
         </ListGroup>
       )}
-      <ListGroup header="Novo cartão" footer={error ?? 'Dá para mudar depois em Config.'}>
+      <ListGroup header="Novo cartão" footer={error ?? 'Dá para mudar depois em Ajustes.'}>
         <FormRow label="Banco" htmlFor="ob-bank">
           <SelectField id="ob-bank" value={institutionId} onChange={setInstitutionId}
             options={institutions.map(i => ({ value: i.id, label: i.name }))} />

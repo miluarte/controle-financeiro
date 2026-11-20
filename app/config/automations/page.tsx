@@ -34,7 +34,7 @@ export default function AutomationsPage() {
     <>
       <LargeTitleHeader back title="Automações" />
       <div className="space-y-7 px-4 pt-2">
-        <p className="px-4 text-subheadline text-muted-foreground">Compras entram como pendentes. Você confirma na Home.</p>
+        <p className="px-4 text-subheadline text-muted-foreground">Compras entram como pendentes. Você confirma no Início.</p>
 
         <ListGroup header="Seu acesso" footer={error ?? (token ? 'Copie agora. Ele não aparece de novo.' : statusText)}>
           <CopyRow label="URL" value={AUTOMATION_URL} />
@@ -64,7 +64,7 @@ export default function AutomationsPage() {
             'Adicione "Pedir entrada" (Texto): Onde?',
             URL_STEP,
             'Adicione "Mostrar notificação" com o Conteúdo do URL.',
-            'Ajustes > Acessibilidade > Toque > Tocar Atrás > Toque Duplo > Troco.',
+            'Ajustes do iPhone > Acessibilidade > Toque > Tocar Atrás > Toque Duplo > Troco.',
           ]}
           fields={[['t', tokenText], ['s', 'back_tap'], ['v', 'Entrada (Valor)'], ['l', 'Entrada (Onde)']]}
         />

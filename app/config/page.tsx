@@ -10,7 +10,7 @@ import { LargeTitleHeader } from '@/components/ios/large-title-header'
 export default function ConfigPage() {
   return (
     <>
-      <LargeTitleHeader title="Config" />
+      <LargeTitleHeader title="Ajustes" />
       <div className="space-y-7 px-4 pt-2">
         <ProfileCard />
         <AppearanceGroup />

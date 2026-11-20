@@ -30,17 +30,17 @@ export function NotificationsStep() {
           <li className="space-y-2 px-4 py-3 text-body">
             <p>1. No Safari, toque em Compartilhar.</p>
             <p>2. Escolha Adicionar à Tela de Início.</p>
-            <p>3. Abra o Troco pelo ícone e ative os avisos em Config &gt; Notificações.</p>
+            <p>3. Abra o Troco pelo ícone e ative os avisos em Ajustes &gt; Notificações.</p>
           </li>
         </ListGroup>
       ) : state === 'on' ? (
         <p className="text-center text-body text-success">Avisos ativados neste aparelho.</p>
       ) : state === 'denied' ? (
-        <p className="text-center text-subheadline text-muted-foreground">Os avisos estão bloqueados. Libere em Ajustes &gt; Notificações &gt; Troco.</p>
+        <p className="text-center text-subheadline text-muted-foreground">Os avisos estão bloqueados. Libere nos Ajustes do iPhone &gt; Notificações &gt; Troco.</p>
       ) : state === 'off' ? (
         <Button size="lg" className="w-full" onClick={enable}>Ativar avisos</Button>
       ) : (
-        <p className="text-center text-subheadline text-muted-foreground">Este navegador não recebe avisos. Você pode ativar depois em Config.</p>
+        <p className="text-center text-subheadline text-muted-foreground">Este navegador não recebe avisos. Você pode ativar depois em Ajustes.</p>
       )}
       {message && <p className="px-4 text-center text-footnote text-destructive">{message}</p>}
     </OnboardingStep>

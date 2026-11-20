@@ -26,7 +26,7 @@ const TYPES: { type: string; label: string; hint: string; time?: boolean; days?:
 const STATE_TEXT: Record<PushState, string> = {
   unsupported: 'Este navegador não recebe notificações.',
   'needs-install': 'No iPhone, adicione o app à Tela de Início (Safari > Compartilhar) e abra por lá.',
-  denied: 'Bloqueadas. Libere em Ajustes > Notificações > Troco.',
+  denied: 'Bloqueadas. Libere nos Ajustes do iPhone > Notificações > Troco.',
   off: '',
   on: '',
 }
