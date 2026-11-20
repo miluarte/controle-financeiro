@@ -53,8 +53,8 @@ export function FabMenu({ items }: { items: FabMenuItem[] }) {
       {open && rect && createPortal(
         <div className="fixed inset-0 z-50" role="menu">
           <div className="absolute inset-0 bg-scrim backdrop-blur-sm animate-in fade-in" onClick={() => setOpen(false)} />
-          <div className="absolute flex flex-col items-end gap-3"
-            style={{ right: window.innerWidth - rect.right, bottom: window.innerHeight - rect.top + 12 }}>
+          <div className="absolute flex flex-col items-end gap-2"
+            style={{ right: window.innerWidth - rect.right, bottom: window.innerHeight - rect.top + 8 }}>
             {items.map((item, i) => (
               <button key={item.key} type="button" role="menuitem" onClick={() => select(item)}
                 style={{ animationDelay: `${(items.length - 1 - i) * 30}ms` }}
