@@ -38,10 +38,12 @@ export function useInvoices(month: string) {
   const from = `${addMonths(month, -1)}-01`
   const to = `${addMonths(month, 12)}-01`
   const { data, isLoading } = useSWR(['invoices', month], async () => {
-    const [totals, paid] = await Promise.all([invoicesApi.totals(from, to), invoicesApi.paid(from, to)])
-    return { totals, paid }
+    const [totals, paid, paidAmounts] = await Promise.all([
+      invoicesApi.totals(from, to), invoicesApi.paid(from, to), invoicesApi.paidAmounts(from, to),
+    ])
+    return { totals, paid, paidAmounts }
   })
-  return { totals: data?.totals ?? [], paid: data?.paid ?? [], loading: isLoading }
+  return { totals: data?.totals ?? [], paid: data?.paid ?? [], paidAmounts: data?.paidAmounts ?? [], loading: isLoading }
 }
 
 export function useCategorySpending(month: string) {
