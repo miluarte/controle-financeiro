@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { PickerRow } from '@/components/shared/picker-row'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
-import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { WalletPicker } from '@/components/shared/wallet-picker'
 import { useProfile } from '@/hooks/use-profile'
@@ -54,17 +54,11 @@ function Form({ card, debts, onDone }: { card: Wallet; debts: CardDebt[]; onDone
   return (
     <form id="settlement" onSubmit={save} className="space-y-6">
       <CurrencyInput id="settle-amount" aria-label="Valor pago" variant="display" value={amount} onChange={setAmount} />
-      <ListGroup header="Fatura" footer={amount > 0 && left > 0 ? `Fica faltando ${formatCurrency(left)} nesta fatura.` : undefined}>
-        <li className="flex flex-wrap gap-2 p-3">
-          {debts.map(d => (
-            <ChoiceChip key={d.invoiceRef} selected={ref === d.invoiceRef} onClick={() => pick(d)}>
-              {capitalize(monthName(d.invoiceRef.slice(0, 7), 'short'))} · {formatCurrency(d.open)}
-            </ChoiceChip>
-          ))}
-        </li>
-      </ListGroup>
-      <ListGroup header="Saiu de" footer={`${card.ownerName ?? 'O titular'} vai confirmar.`}>
-        <WalletPicker wallets={mine} value={walletId} onChange={setWalletId} />
+      <ListGroup footer={amount > 0 && left > 0 ? `Fica faltando ${formatCurrency(left)} nesta fatura. ${card.ownerName ?? 'O titular'} vai confirmar.` : `${card.ownerName ?? 'O titular'} vai confirmar.`}>
+        <PickerRow id="settle-invoice" label="Fatura" value={ref}
+          onChange={v => { const d = debts.find(x => x.invoiceRef === v); if (d) pick(d) }}
+          options={debts.map(d => ({ value: d.invoiceRef, label: `${capitalize(monthName(d.invoiceRef.slice(0, 7), 'short'))} · ${formatCurrency(d.open)}` }))} />
+        <WalletPicker id="settle-wallet" label="Saiu de" wallets={mine} value={walletId} onChange={setWalletId} />
       </ListGroup>
       <ListGroup>
         <FormRow label="Data" htmlFor="settle-date">

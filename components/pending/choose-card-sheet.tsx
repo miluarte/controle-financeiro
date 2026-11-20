@@ -1,11 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { WalletPicker } from '@/components/shared/wallet-picker'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
-import { ChoiceChip } from '@/components/shared/choice-chip'
-import { TokenIcon } from '@/components/shared/token-icon'
 import { useOwnWallets } from '@/hooks/use-data'
 import { useRefresh } from '@/hooks/use-refresh'
 import { transactionsApi } from '@/lib/api/transactions'
@@ -57,14 +56,8 @@ export function ChooseCardSheet({ transaction: t, buyer, open, onOpenChange }: {
           </FormRow>
           <FormRow label="Data"><span className="text-muted-foreground">{formatDate(t.date)}</span></FormRow>
         </ListGroup>
-        <ListGroup header="Cartão">
-          <li className="flex flex-wrap gap-2 p-3">
-            {cards.map(w => (
-              <ChoiceChip key={w.id} selected={picked === w.id} onClick={() => setWalletId(w.id)} className="pl-1">
-                <TokenIcon active={picked === w.id} icon="credit-card" color="gray" size="sm" />{w.name}
-              </ChoiceChip>
-            ))}
-          </li>
+        <ListGroup>
+          <WalletPicker id="choose-card" label="Cartão" wallets={cards} value={picked} onChange={setWalletId} />
         </ListGroup>
         {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
       </form>

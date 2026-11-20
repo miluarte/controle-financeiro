@@ -1,22 +1,16 @@
 'use client'
 
-import { ChoiceChip } from './choice-chip'
-import { TokenIcon } from './token-icon'
+import { PickerRow } from './picker-row'
 import { WALLET_TYPE_ICON } from '@/lib/constants'
 import type { Wallet } from '@/lib/types'
 
-// Escolha de carteira em chips, usada em pagamentos (contas, fatura).
+export const walletOption = (w: Wallet) => ({
+  value: w.id, label: w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name, icon: WALLET_TYPE_ICON[w.type] ?? 'wallet',
+})
+
+// Escolha de carteira numa linha (seletor nativo), usada em pagamentos, importação e acertos.
 export function WalletPicker({
-  wallets, value, onChange,
-}: { wallets: Wallet[]; value: string | null; onChange: (id: string) => void }) {
-  return (
-    <li className="flex flex-wrap gap-2 p-3">
-      {wallets.map(w => (
-        <ChoiceChip key={w.id} selected={value === w.id} onClick={() => onChange(w.id)} className="pl-1">
-          <TokenIcon active={value === w.id} icon={WALLET_TYPE_ICON[w.type] ?? 'wallet'} color="gray" size="sm" />
-          {w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name}
-        </ChoiceChip>
-      ))}
-    </li>
-  )
+  wallets, value, onChange, label = 'Carteira', id = 'wallet-picker',
+}: { wallets: Wallet[]; value: string | null; onChange: (id: string) => void; label?: string; id?: string }) {
+  return <PickerRow id={id} label={label} value={value} onChange={v => v && onChange(v)} options={wallets.map(walletOption)} />
 }
