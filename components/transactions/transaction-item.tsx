@@ -32,7 +32,8 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
   const installment = t.installmentN && t.installmentsTotal ? `${t.installmentN} de ${t.installmentsTotal}` : null
   const itemCount = Array.isArray(t.sourceData?.items) ? t.sourceData.items.length : 0
   const items = itemCount ? `${itemCount} ${itemCount === 1 ? 'item' : 'itens'}` : null
-  const subtitle = [category?.name ?? TYPE_LABEL[t.type], walletName, installment, items, t.prepaidBy && 'pago antes', note].filter(Boolean).join(' · ')
+  // a categoria fica só no ícone (o nome aparece ao abrir); sem categoria, mostra o tipo
+  const subtitle = [category ? null : TYPE_LABEL[t.type], walletName, installment, items, t.prepaidBy && 'pago antes', note].filter(Boolean).join(' · ')
   const inflow = INFLOW.has(t.type)
 
   return (
