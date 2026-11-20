@@ -51,7 +51,8 @@ export default function BillsPage() {
   const catById = new Map(categories.map(c => [c.id, c]))
 
   const items = useMemo<Item[]>(() => {
-    const list: Item[] = occurrences.filter(o => o.bill.type === 'expense')
+    // contas cobradas no cartão já entram na fatura: não são pagas à parte
+    const list: Item[] = occurrences.filter(o => o.bill.type === 'expense' && !o.bill.walletId)
       .map(o => ({ kind: 'bill', due: o.dueDate, amount: o.amount, paidAmount: o.paidAt ? o.amount : 0, paid: !!o.paidAt, o }))
     // CON-8: a fatura de cada cartão que vence neste mês entra junto com as contas
     for (const w of wallets.filter(w => w.type === 'credit' && w.active)) {
@@ -83,6 +84,11 @@ export default function BillsPage() {
 
   // receitas fixas ficam num grupo à parte e não entram no total de contas
   const incomes = occurrences.filter(o => o.bill.type === 'income')
+  const onCard = occurrences.filter(o => o.bill.type === 'expense' && o.bill.walletId)
+  const cardName = (id: string | null) => {
+    const w = usable.find(x => x.id === id)
+    return w ? (w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name) : 'cartão'
+  }
   const total = items.reduce((s, i) => s + i.amount, 0)
   const paid = items.reduce((s, i) => s + i.paidAmount, 0)
 
@@ -98,7 +104,7 @@ export default function BillsPage() {
 
         {loading ? (
           <LoadingBlock />
-        ) : items.length === 0 && incomes.length === 0 ? (
+        ) : items.length === 0 && incomes.length === 0 && onCard.length === 0 ? (
           <div className="py-10 text-center">
             <p className="text-headline">Nenhuma conta neste mês</p>
             <p className="text-subheadline text-muted-foreground">Toque no + na barra de baixo para adicionar</p>
@@ -146,6 +152,25 @@ export default function BillsPage() {
               )
             })}
           </ListGroup>
+          )}
+          {onCard.length > 0 && (
+            <ListGroup header={`No cartão · ${onCard.length}`} footer="Já entram na fatura do cartão.">
+              {onCard.map(o => {
+                const cat = o.bill.categoryId ? catById.get(o.bill.categoryId) : undefined
+                return (
+                  <ListRow
+                    key={o.id}
+                    onClick={() => setOpenBill(o)}
+                    onDelete={() => askEnd(o)}
+                    leading={<TokenIcon icon={cat?.icon ?? 'ellipsis'} color={cat?.color ?? 'gray'} />}
+                    title={o.bill.name}
+                    subtitle={`Dia ${formatDate(o.dueDate).slice(0, 5)} · ${cardName(o.bill.walletId)}`}
+                    trailing={<span className="text-body tabular-nums text-muted-foreground">{formatCurrency(o.amount)}</span>}
+                    chevron
+                  />
+                )
+              })}
+            </ListGroup>
           )}
           {incomes.length > 0 && (
             <ListGroup header={`A receber · ${formatCurrency(incomes.reduce((s, o) => s + o.amount, 0))}`}>

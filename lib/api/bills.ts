@@ -1,6 +1,7 @@
 import type { BillInput } from '../types'
 import { supabase, unwrap } from '../supabase/client'
 import { toBillOccurrence } from '../supabase/mappers'
+import { todayIso } from '../utils'
 
 function toRow(b: Partial<BillInput>) {
   const r: Record<string, unknown> = {}
@@ -15,7 +16,19 @@ function toRow(b: Partial<BillInput>) {
   if (b.installmentCurrent !== undefined) r.installment_current = b.installmentCurrent
   if (b.installmentsTotal !== undefined) r.installments_total = b.installmentsTotal
   if (b.endMonth !== undefined) r.end_month = b.endMonth
+  if (b.walletId !== undefined) r.wallet_id = b.walletId
   return r
+}
+
+// conta cobrada no cartão: os gastos já lançados para datas futuras saem (e as ocorrências voltam a
+// ficar em aberto), para serem refeitos com os dados novos ou não voltarem depois de encerrar.
+async function removeFutureCardCharges(billId: string) {
+  const today = todayIso()
+  const future = unwrap(await supabase.from('transactions').select('id').eq('bill_id', billId).eq('type', 'expense').gt('date', today))
+  if (!future.length) return
+  const ids = future.map(r => r.id as string)
+  unwrap(await supabase.from('bill_occurrences').update({ paid_at: null, transaction_id: null }).in('transaction_id', ids))
+  unwrap(await supabase.from('transactions').delete().in('id', ids))
 }
 
 export const billsApi = {
@@ -39,6 +52,7 @@ export const billsApi = {
   },
 
   updateSeries: async (billId: string, fromMonth: string, b: Partial<BillInput>) => {
+    await removeFutureCardCharges(billId)
     unwrap(await supabase.from('bills').update(toRow(b)).eq('id', billId))
     // ocorrências deste mês em diante ainda não pagas são recriadas com os novos dados
     unwrap(
@@ -49,6 +63,7 @@ export const billsApi = {
 
   // Encerra a conta a partir deste mês (mantém o histórico pago).
   endSeries: async (billId: string, fromMonth: string) => {
+    await removeFutureCardCharges(billId)
     unwrap(await supabase.from('bills').update({ active: false }).eq('id', billId))
     unwrap(
       await supabase.from('bill_occurrences').delete()

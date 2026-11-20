@@ -149,6 +149,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
 
   const visibleCategories = categories.filter(c => c.type === (mode === 'income' ? 'income' : 'expense'))
   const unknownCard = mode === 'expense' && cardUnknown
+  // gasto "Repetir todo mês": só à vista e com a carteira escolhida
+  const repeatExpense = mode === 'expense' && repeat.on && !cardUnknown && installments <= 1
   const walletId = unknownCard ? null : pickedWalletId ?? profile?.defaultWalletId ?? null
   const wallet = wallets.find(w => w.id === walletId)
   const isCredit = mode === 'expense' && wallet?.type === 'credit'
@@ -179,6 +181,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
       const placeValue = place.trim() || null
       if (mode === 'income' && repeat.on) {
         await createRecurringIncome(placeValue)
+      } else if (mode === 'expense' && repeatExpense) {
+        await createRecurringExpense(placeValue)
       } else if (unknownCard) {
         await createWithoutCard(placeValue)
       } else if (isCredit && installments > 1) {
@@ -253,6 +257,22 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     await transactionsApi.remove(t.id)
     const card = typeof t.sourceData?.card === 'string' ? t.sourceData.card : null
     if (card && walletId && needsWallet) await automationsApi.rememberCard(t.owner, card, walletId)
+  }
+
+  // gasto que repete todo mês vira conta fixa: no cartão de crédito, entra sozinho na fatura (bills.wallet_id);
+  // em Pix/débito/dinheiro, é conta a pagar. Se a data já chegou, este mês já entra lançado.
+  async function createRecurringExpense(name: string | null) {
+    const start = date.slice(0, 7)
+    const last = repeatLastMonth(repeat, start)
+    const billId = await billsApi.create({
+      type: 'expense', name: name ?? categories.find(c => c.id === categoryId)?.name ?? 'Conta',
+      amount, dueDay: Number(date.slice(8, 10)), dueNextMonth: false, categoryId, recurring: true,
+      startMonth: `${start}-01`, installmentCurrent: null, installmentsTotal: null,
+      endMonth: last ? `${last}-01` : null, walletId: isCredit ? walletId : null,
+    })
+    // o cartão é lançado sozinho ao gerar o mês; nas outras carteiras, paga a ocorrência se a data já chegou
+    const occurrence = (await billsApi.getMonth(start)).find(o => o.billId === billId)
+    if (!isCredit && occurrence && date <= todayIso() && walletId) await billsApi.pay(occurrence.id, walletId, date)
   }
 
   // cria a receita fixa com dia e mês da data; se a data já chegou, este mês já entra como recebido
@@ -373,6 +393,10 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
 
             {mode === 'income' && (
               <RepeatGroup value={repeat} onChange={setRepeat} start={date.slice(0, 7)} lastLabel="último recebimento" />
+            )}
+            {mode === 'expense' && !unknownCard && installments <= 1 && (
+              <RepeatGroup value={repeat} onChange={setRepeat} start={date.slice(0, 7)}
+                lastLabel={isCredit ? 'último lançamento no cartão' : 'último pagamento'} />
             )}
 
             {mode === 'expense' && receipt && (

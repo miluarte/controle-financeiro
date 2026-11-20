@@ -157,6 +157,8 @@ export interface Bill {
   installmentsTotal: number | null
   endMonth: string | null
   active: boolean
+  // cobrada todo mês neste cartão de crédito (assinatura): entra na fatura, não é paga à parte
+  walletId: string | null
 }
 
 export interface BillInput {
@@ -171,6 +173,7 @@ export interface BillInput {
   startMonth: string
   installmentCurrent: number | null
   installmentsTotal: number | null
+  walletId?: string | null
 }
 
 export interface BillOccurrence {

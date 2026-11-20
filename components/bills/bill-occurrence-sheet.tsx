@@ -72,7 +72,11 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
         <p className="text-subheadline text-muted-foreground">{income ? 'Receber em' : 'Vence'} {formatDate(o.dueDate)} · {installment}</p>
       </div>
 
-      {o.paidAt ? (
+      {o.bill.walletId ? (
+        <p className="px-4 text-center text-footnote text-muted-foreground">
+          {o.paidAt ? `Lançada no cartão em ${formatDate(o.paidAt)}.` : 'Entra sozinha na fatura do cartão.'}
+        </p>
+      ) : o.paidAt ? (
         <ListGroup footer={income
           ? `Recebida em ${formatDate(o.paidAt)}.`
           : `Paga em ${formatDate(o.paidAt)}.`}>

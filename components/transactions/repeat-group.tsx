@@ -23,7 +23,8 @@ export function repeatLastMonth(r: RepeatValue, start: string): string | null {
   return null
 }
 
-// "Repetir todo mês" no registro rápido: vira receita fixa (Contas, "A receber").
+// "Repetir todo mês" no registro rápido: receita vira receita fixa (Contas, "A receber"); gasto vira conta fixa
+// (no cartão de crédito, cobrada sozinha na fatura).
 export function RepeatGroup({ value, onChange, start, lastLabel }: {
   value: RepeatValue; onChange: (v: RepeatValue) => void; start: string; lastLabel: string
 }) {
