@@ -32,6 +32,10 @@ async function removeFutureCardCharges(billId: string) {
 }
 
 export const billsApi = {
+  // ids das contas fixas ativas (para saber quais gastos estão fixados)
+  activeIds: async (): Promise<string[]> =>
+    unwrap(await supabase.from('bills').select('id').eq('active', true)).map(r => r.id as string),
+
   // CON-2: contas do mês. Gera as ocorrências que faltam antes de ler.
   getMonth: async (month: string) => {
     unwrap(await supabase.rpc('ensure_bill_occurrences', { p_month: `${month}-01` }))

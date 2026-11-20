@@ -2,6 +2,8 @@
 
 import { useEffect, useId, useRef, useState } from 'react'
 import { TrashBinTrashLinearIcon } from '@solar-icons/react'
+
+export interface SwipeExtra { label: string; icon: React.ReactNode; onClick: () => void }
 import { cn } from '@/lib/utils'
 
 // largura do botão revelado (w-20)
@@ -13,11 +15,14 @@ const OPEN_EVENT = 'troco:swipe-open'
 interface SwipeActionsProps {
   onDelete: () => void
   label?: string
+  // ação extra ao lado da lixeira (ex.: fixar como conta fixa)
+  extra?: SwipeExtra
   children: React.ReactNode
 }
 
 // Deslizar a linha para a esquerda revela a lixeira (iOS, WhatsApp). Só uma linha aberta por vez.
-export function SwipeActions({ onDelete, label = 'Excluir', children }: SwipeActionsProps) {
+export function SwipeActions({ onDelete, label = 'Excluir', extra, children }: SwipeActionsProps) {
+  const reveal = ACTION_WIDTH * (extra ? 2 : 1)
   const id = useId()
   const box = useRef<HTMLDivElement>(null)
   const drag = useRef<{ x: number; y: number; base: number; axis: 'x' | 'y' | null } | null>(null)
@@ -64,8 +69,8 @@ export function SwipeActions({ onDelete, label = 'Excluir', children }: SwipeAct
     if (d?.axis !== 'x') return
     setDragging(false)
     const width = box.current?.offsetWidth ?? 0
-    if (width && -offset > width * FULL_SWIPE) { setOffset(-ACTION_WIDTH); onDelete(); return }
-    setOffset(-offset > ACTION_WIDTH / 2 ? -ACTION_WIDTH : 0)
+    if (width && -offset > width * FULL_SWIPE) { setOffset(-reveal); onDelete(); return }
+    setOffset(-offset > reveal / 2 ? -reveal : 0)
   }
 
   // toque depois de arrastar, ou com a linha aberta, só fecha (não abre o item)
@@ -79,12 +84,21 @@ export function SwipeActions({ onDelete, label = 'Excluir', children }: SwipeAct
 
   return (
     <div ref={box} className="relative overflow-hidden">
-      <button type="button" aria-label={label} tabIndex={offset ? 0 : -1}
-        onClick={() => onDelete()}
-        style={{ width: Math.max(-offset, 0) }}
-        className={cn('absolute inset-y-0 right-0 flex items-center justify-center overflow-hidden bg-destructive text-destructive-foreground', offset === 0 && 'invisible')}>
-        <TrashBinTrashLinearIcon className="size-6 shrink-0" />
-      </button>
+      <div style={{ width: Math.max(-offset, 0) }}
+        className={cn('absolute inset-y-0 right-0 flex overflow-hidden', offset === 0 && 'invisible')}>
+        {extra && (
+          <button type="button" aria-label={extra.label} tabIndex={offset ? 0 : -1}
+            onClick={() => { setOffset(0); extra.onClick() }}
+            className="flex flex-1 items-center justify-center overflow-hidden bg-tint text-primary-foreground [&_svg]:size-6 [&_svg]:shrink-0">
+            {extra.icon}
+          </button>
+        )}
+        <button type="button" aria-label={label} tabIndex={offset ? 0 : -1}
+          onClick={() => onDelete()}
+          className="flex flex-1 items-center justify-center overflow-hidden bg-destructive text-destructive-foreground">
+          <TrashBinTrashLinearIcon className="size-6 shrink-0" />
+        </button>
+      </div>
       <div
         onPointerDown={onPointerDown} onPointerMove={onPointerMove}
         onPointerUp={onPointerEnd} onPointerCancel={onPointerEnd}

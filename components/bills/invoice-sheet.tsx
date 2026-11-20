@@ -21,6 +21,7 @@ import { CurrencyInput } from '@/components/shared/currency-input'
 import { LateCostGroup } from './late-cost-group'
 import { ReconcileSheet } from './reconcile-sheet'
 import { useTransactionDelete } from '@/components/transactions/use-transaction-delete'
+import { usePinAction } from '@/components/transactions/use-pin-action'
 
 export interface InvoiceRef {
   wallet: OwnWallet
@@ -47,6 +48,7 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
   const { profile } = useProfile()
   const refresh = useRefresh()
   const delTx = useTransactionDelete()
+  const pin = usePinAction()
   const payable = wallets.filter(w => !w.ownerName && w.type !== 'credit')
   const [walletId, setWalletId] = useState<string | null>(
     payable.find(w => w.id === profile?.defaultWalletId)?.id ?? payable[0]?.id ?? null,
@@ -74,6 +76,7 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
   return (
     <div className="space-y-6">
       {delTx.sheet}
+      {pin.sheet}
       <div className="text-center">
         <p className="text-large-title font-bold tabular-nums">{formatCurrency(inv.paidAt ? inv.total : remaining)}</p>
         <p className="text-subheadline text-muted-foreground">
@@ -144,6 +147,8 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
             transaction={t}
             category={t.categoryId ? catById.get(t.categoryId) : undefined}
             onDelete={() => delTx.ask(t)}
+            swipeExtra={pin.extra(t)}
+            pinned={pin.pinned(t)}
           />
         ))}
       </ListGroup>
