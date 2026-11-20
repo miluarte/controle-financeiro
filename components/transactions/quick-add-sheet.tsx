@@ -295,14 +295,14 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const placeLabel = mode === 'income' ? 'Descrição' : mode === 'save' ? 'Onde?' : 'Onde foi?'
   const placePlaceholder = mode === 'income' ? (repeat.on ? 'Salário, aluguel…' : 'Opcional') : mode === 'save' ? 'CDB, Tesouro' : 'Opcional'
 
-  const modeTitle = pending ? 'Confirmar gasto'
+  const modeTitle = pending ? 'Gasto pendente'
     : mode === 'expense' ? (repeat.on ? 'Nova conta fixa' : 'Novo gasto')
     : mode === 'income' ? (repeat.on ? 'Nova receita fixa' : 'Nova receita') : 'Guardar'
-  const submitLabel = pending ? 'Confirmar' : 'Registrar'
+  const submitLabel = pending ? 'Confirmar' : 'Adicionar'
 
   function askDiscard(t: Transaction) {
     discard.ask({
-      title: 'Descartar este gasto?', label: 'Descartar',
+      title: 'Descartar gasto?', label: 'Descartar',
       remove: async () => { await transactionsApi.remove(t.id); reset(); onOpenChange(false) },
     })
   }
@@ -426,7 +426,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
             {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
 
             <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>
-              {submitting ? <LoadingDots tone="current" label="Registrando" /> : submitLabel}
+              {submitting ? <LoadingDots tone="current" label="Adicionando" /> : submitLabel}
             </Button>
           </div>
         </form>

@@ -43,8 +43,8 @@ export function DuplicatesSheet({ open, pairs, onOpenChange }: {
               </li>
             ))}
             <li className="grid grid-cols-2 gap-2 p-3">
-              <Button variant="secondary" disabled={busy === key} onClick={() => run(key, () => keepBoth(a, b))}>Não é repetida</Button>
-              <Button variant="destructive" disabled={busy === key} onClick={() => run(key, () => transactionsApi.remove(b.id))}>Apagar uma</Button>
+              <Button variant="secondary" disabled={busy === key} onClick={() => run(key, () => keepBoth(a, b))}>Manter ambas</Button>
+              <Button variant="destructive" disabled={busy === key} onClick={() => run(key, () => transactionsApi.remove(b.id))}>Excluir uma</Button>
             </li>
           </ListGroup>
         )

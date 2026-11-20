@@ -69,7 +69,7 @@ export function AddMenu({ variant = 'tab' }: { variant?: 'tab' | 'sidebar' }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent side="bottom" align="start">
           <DropdownMenuGroup>
-            <DropdownMenuLabel>Registrar</DropdownMenuLabel>
+            <DropdownMenuLabel>Adicionar</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => receiptInput.current?.click()}>
               <CameraLinearIcon />Ler nota fiscal
             </DropdownMenuItem>

@@ -48,7 +48,7 @@ export function ChooseCardSheet({ transaction: t, buyer, open, onOpenChange }: {
       actionLabel="Salvar" actionDisabled={!picked || busy}>
       <form id="choose-card" onSubmit={save} className="space-y-6">
         <ListGroup>
-          <FormRow label="De quem é a compra"><span className="text-muted-foreground">{buyer}</span></FormRow>
+          <FormRow label="De quem é a compra?"><span className="text-muted-foreground">{buyer}</span></FormRow>
           <FormRow label={t.place || 'Compra'}>
             <span className="tabular-nums text-muted-foreground">
               {formatCurrency(t.amount)}{installments > 1 ? ` · ${installments}x` : ''}

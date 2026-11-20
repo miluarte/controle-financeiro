@@ -26,7 +26,7 @@ import { CardPreview } from './card-preview'
 export function WalletFormSheet({
   open, wallet, onClose,
 }: { open: boolean; wallet: OwnWallet | null; onClose: () => void }) {
-  const del = useDeleteAction({ title: 'Excluir esta carteira?', remove: () => walletsApi.remove(wallet!.id), onDone: onClose })
+  const del = useDeleteAction({ title: 'Excluir carteira?', remove: () => walletsApi.remove(wallet!.id), onDone: onClose })
   const archive = useArchiveAction(onClose)
   return (
     <>

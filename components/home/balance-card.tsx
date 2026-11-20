@@ -50,7 +50,7 @@ export function BalanceCard({ month }: { month: string }) {
       {summary && (
         <dl className="mt-3 grid grid-cols-3 gap-2 border-t border-separator pt-3">
           <div>
-            <dt className="text-footnote text-muted-foreground">Entrou</dt>
+            <dt className="text-footnote text-muted-foreground">Receitas</dt>
             <dd className="text-subheadline font-semibold tabular-nums text-success">{show(summary.income)}</dd>
           </div>
           <div>

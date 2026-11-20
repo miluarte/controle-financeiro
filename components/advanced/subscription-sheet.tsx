@@ -16,7 +16,7 @@ import { UseCalendar } from './use-calendar'
 export function SubscriptionSheet({ open, subscription, month, usedDays, onOpenChange }: {
   open: boolean; subscription: Subscription | null; month: string; usedDays: string[]; onOpenChange: (o: boolean) => void
 }) {
-  const del = useDeleteAction({ title: 'Excluir esta assinatura?', remove: () => subscriptionsApi.remove(subscription!.id), onDone: () => onOpenChange(false) })
+  const del = useDeleteAction({ title: 'Excluir assinatura?', remove: () => subscriptionsApi.remove(subscription!.id), onDone: () => onOpenChange(false) })
   return (
     <>
     {del.sheet}

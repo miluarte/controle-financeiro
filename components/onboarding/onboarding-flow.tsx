@@ -25,7 +25,7 @@ import { OnboardingStep, StepIcon } from './onboarding-step'
 const STEPS = ['welcome', 'name', 'cards', 'income', 'budget', 'notifications', 'security', 'done'] as const
 
 const HIGHLIGHTS = [
-  { title: 'Registre em segundos', text: 'Pelo +, pela foto da nota ou sozinho pelo Apple Pay.' },
+  { title: 'Registro em segundos', text: 'Pelo +, pela foto da nota ou sozinho pelo Apple Pay.' },
   { title: 'Contas e faturas', text: 'Contas e receitas fixas, parcelas e a fatura conferida pelo PDF.' },
   { title: 'Análise do mês', text: 'Orçamento, ritmo, metas e objetivos.' },
   { title: 'Família', text: 'Compartilhe cartões. Cada pessoa vê só o que é seu.' },
@@ -118,7 +118,7 @@ export function OnboardingFlow() {
         )}
 
         {step === 'name' && (
-          <OnboardingStep icon={<StepIcon><WalletMoneyLinearIcon /></StepIcon>} title="Como podemos te chamar?"
+          <OnboardingStep icon={<StepIcon><WalletMoneyLinearIcon /></StepIcon>} title="Qual é o seu nome?"
             text="Seu nome aparece na saudação.">
             <ListGroup>
               <FormRow label="Nome" htmlFor="ob-name">

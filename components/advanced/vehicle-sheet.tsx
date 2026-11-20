@@ -28,7 +28,7 @@ interface VehicleSheetProps {
 
 // Veículo: consumo e preço do combustível, trajetos do mês e manutenção preventiva.
 export function VehicleSheet({ open, vehicle, trips, maintenance, onOpenChange }: VehicleSheetProps) {
-  const del = useDeleteAction({ title: 'Excluir este veículo e os trajetos?', remove: () => vehiclesApi.remove(vehicle!.id), onDone: () => onOpenChange(false) })
+  const del = useDeleteAction({ title: 'Excluir veículo e trajetos?', remove: () => vehiclesApi.remove(vehicle!.id), onDone: () => onOpenChange(false) })
   return (
     <>
     {del.sheet}

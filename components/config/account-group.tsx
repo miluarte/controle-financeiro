@@ -26,7 +26,7 @@ export function AccountGroup() {
   }
 
   async function deleteAccount() {
-    if (!confirm('Excluir sua conta? Todos os seus dados serão apagados e isso não pode ser desfeito.')) return
+    if (!confirm('Excluir conta? Todos os seus dados serão excluídos e isso não pode ser desfeito.')) return
     if (prompt('Para confirmar, digite EXCLUIR') !== 'EXCLUIR') return
     try {
       await profileApi.deleteAccount()
@@ -38,7 +38,7 @@ export function AccountGroup() {
 
   return (
     <ListGroup header="Conta">
-      <ListRow title="Ver o passo a passo inicial" chevron onClick={replayOnboarding} />
+      <ListRow title="Ver introdução" chevron onClick={replayOnboarding} />
       <ListRow tone="destructive" title="Sair da conta" onClick={signOut} />
       <ListRow tone="destructive" title="Excluir conta" onClick={deleteAccount} />
     </ListGroup>

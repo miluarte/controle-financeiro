@@ -20,7 +20,7 @@ export function SettlementSheet({
   open, onOpenChange, card, debts,
 }: { open: boolean; onOpenChange: (o: boolean) => void; card: Wallet; debts: CardDebt[] }) {
   return (
-    <ModalSheet open={open} onOpenChange={onOpenChange} title={`Paguei a ${card.ownerName ?? 'titular'}`} formId="settlement" actionLabel="Enviar">
+    <ModalSheet open={open} onOpenChange={onOpenChange} title="Informar acerto" formId="settlement" actionLabel="Informar">
       {open && <Form card={card} debts={debts} onDone={() => onOpenChange(false)} />}
     </ModalSheet>
   )
@@ -48,7 +48,7 @@ function Form({ card, debts, onDone }: { card: Wallet; debts: CardDebt[]; onDone
     try {
       await familyApi.reportSettlement(card.id, ref, amount, walletId, date)
       await refresh(); onDone()
-    } catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível enviar.') }
+    } catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível informar.') }
   }
 
   return (

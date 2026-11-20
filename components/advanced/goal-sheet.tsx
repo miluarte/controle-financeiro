@@ -17,7 +17,7 @@ import { DateField } from '@/components/shared/date-field'
 export function GoalSheet({ open, goal, nextPriority, onOpenChange }: {
   open: boolean; goal: Goal | null; nextPriority: number; onOpenChange: (o: boolean) => void
 }) {
-  const del = useDeleteAction({ title: 'Excluir este objetivo?', remove: () => goalsApi.remove(goal!.id), onDone: () => onOpenChange(false) })
+  const del = useDeleteAction({ title: 'Excluir objetivo?', remove: () => goalsApi.remove(goal!.id), onDone: () => onOpenChange(false) })
   return (
     <>
       <ModalSheet open={open} onOpenChange={onOpenChange} title={goal ? 'Objetivo' : 'Novo objetivo'} formId="goal-form" actionLabel="Salvar"
@@ -62,7 +62,7 @@ function GoalForm({ goal, nextPriority, onDone }: { goal: Goal | null; nextPrior
         <FormRow label="Já guardado" htmlFor="goal-saved">
           <CurrencyInput id="goal-saved" variant="bare" value={saved} onChange={setSaved} className="text-right" />
         </FormRow>
-        <FormRow label="Quero até" htmlFor="goal-date">
+        <FormRow label="Prazo" htmlFor="goal-date">
           <DateField id="goal-date" mode="month" value={date} onChange={v => setDate(v)} />
         </FormRow>
         <FormRow label="Prioridade" htmlFor="goal-priority">

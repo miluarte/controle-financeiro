@@ -19,7 +19,7 @@ export default function AutomationsPage() {
   const [error, setError] = useState<string | null>(null)
 
   async function generate() {
-    if (status && !confirm('O token atual para de funcionar. Gerar outro?')) return
+    if (status && !confirm('Gerar novo token? O atual para de funcionar.')) return
     setError(null)
     try { setToken(await automationsApi.createToken()); await mutate() }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível gerar.') }
@@ -41,7 +41,7 @@ export default function AutomationsPage() {
           {token && <CopyRow label="Token" value={token} />}
           <li className="p-3">
             <Button variant={status ? 'secondary' : 'default'} size="lg" className="w-full" onClick={generate}>
-              {status ? 'Gerar novo token' : 'Gerar token'}
+              Gerar token
             </Button>
           </li>
         </ListGroup>

@@ -25,8 +25,8 @@ export function BillOccurrenceSheet({ occurrence, onClose, onEdit }: {
   const { month } = useMonth()
   const income = occurrence?.bill.type === 'income'
   const del = useDeleteAction({
-    title: income ? 'Encerrar esta receita? Os meses recebidos continuam.' : 'Encerrar esta conta? Os meses pagos continuam.',
-    label: 'Encerrar a partir deste mês',
+    title: income ? 'Encerrar receita? Os meses recebidos continuam.' : 'Encerrar conta? Os meses pagos continuam.',
+    label: 'Encerrar',
     remove: () => billsApi.endSeries(occurrence!.billId, month), onDone: onClose,
   })
   return (
@@ -82,7 +82,7 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
           : `Paga em ${formatDate(o.paidAt)}.`}>
           <li className="p-3">
             <Button variant="outline" size="lg" className="w-full" disabled={busy} onClick={() => run(() => billsApi.unpay(o.id))}>
-              {income ? 'Desmarcar recebimento' : 'Desmarcar pagamento'}
+              {income ? 'Desfazer recebimento' : 'Desfazer pagamento'}
             </Button>
           </li>
         </ListGroup>
@@ -98,7 +98,7 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
           </ListGroup>
           <Button size="lg" className="w-full" disabled={busy || !walletId}
             onClick={() => run(() => billsApi.pay(o.id, walletId!, payDate))}>
-            {income ? 'Marcar como recebida' : 'Marcar como paga'}
+            {income ? 'Receber' : 'Pagar'}
           </Button>
         </>
       )}

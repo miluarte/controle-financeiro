@@ -23,9 +23,9 @@ export function FirstSteps() {
   if (!profile || profile.onboardingDismissed) return null
 
   const steps = [
-    { label: 'Registrar o primeiro gasto', done: history.some(h => h.spending > 0), href: null },
-    { label: 'Definir o orçamento do mês', done: summary?.budget != null, href: '/analysis' },
-    { label: 'Cadastrar um cartão ou carteira', done: wallets.length > 2, href: '/config/wallets' },
+    { label: 'Adicionar gasto', done: history.some(h => h.spending > 0), href: null },
+    { label: 'Definir orçamento', done: summary?.budget != null, href: '/analysis' },
+    { label: 'Adicionar cartão', done: wallets.length > 2, href: '/config/wallets' },
   ]
   const doneCount = steps.filter(s => s.done).length
 

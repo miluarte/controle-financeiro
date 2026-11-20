@@ -7,7 +7,7 @@ import { OnboardingStep, StepIcon } from './onboarding-step'
 // Bloqueio com Face ID neste aparelho.
 export function SecurityStep() {
   return (
-    <OnboardingStep icon={<StepIcon><LockKeyholeLinearIcon /></StepIcon>} title="Proteja o app"
+    <OnboardingStep icon={<StepIcon><LockKeyholeLinearIcon /></StepIcon>} title="Face ID"
       text="Peça o Face ID para abrir o Troco.">
       <SecurityGroup />
     </OnboardingStep>

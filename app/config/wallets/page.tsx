@@ -51,7 +51,7 @@ export default function WalletsPage() {
   return (
     <>
       <LargeTitleHeader back title="Carteiras" actions={
-        <GlassButton aria-label="Adicionar meio de pagamento" onClick={() => setCreating(true)}><AddLinearIcon /></GlassButton>
+        <GlassButton aria-label="Adicionar carteira" onClick={() => setCreating(true)}><AddLinearIcon /></GlassButton>
       } />
       <div className="space-y-7 px-4 pt-2">
         {cards.length > 0 && (
@@ -72,7 +72,7 @@ export default function WalletsPage() {
           </ListGroup>
         )}
 
-        <ListGroup header="Outros meios">
+        <ListGroup header="Outras carteiras">
           {others.map(w => {
             const spent = spentBy.get(w.id) ?? 0
             return (

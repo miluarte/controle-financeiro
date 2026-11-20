@@ -57,7 +57,7 @@ export function PendingSheet({ open, pending, onOpenChange }: {
             {pending.map(t => (
               <ListRow key={t.id} chevron onClick={() => setSelectedId(t.id)}
                 onDelete={isHolderView(t) ? undefined
-                  : () => del.ask({ title: 'Descartar este gasto?', label: 'Descartar', remove: () => transactionsApi.remove(t.id) })}
+                  : () => del.ask({ title: 'Descartar gasto?', label: 'Descartar', remove: () => transactionsApi.remove(t.id) })}
                 title={t.place || 'Sem local'}
                 subtitle={subtitle(t)}
                 trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(t.amount)}</span>} />

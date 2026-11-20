@@ -27,7 +27,7 @@ export function PurchaseOwnerField({ people, me, value, onChange }: {
   if (!people.length) return null
   return (
     <ListGroup>
-      <FormRow label="De quem é a compra" htmlFor="qa-owner">
+      <FormRow label="De quem é a compra?" htmlFor="qa-owner">
         <SelectField id="qa-owner" value={value || me} onChange={onChange}
           options={people.map(p => ({ value: p.userId, label: p.userId === me ? 'Você' : p.name }))} />
       </FormRow>

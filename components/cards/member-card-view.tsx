@@ -51,7 +51,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
           <p className="text-footnote text-muted-foreground">{formatCurrency(at(openRef)!.settled)} já acertado de {formatCurrency(at(openRef)!.total)}</p>
         )}
         {payable.length > 0 && (
-          <Button size="lg" className="mt-3 w-full" onClick={() => setPaying(true)}>Paguei a {owner}</Button>
+          <Button size="lg" className="mt-3 w-full" onClick={() => setPaying(true)}>Informar acerto</Button>
         )}
       </section>
 
@@ -62,7 +62,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
               subtitle={`Fatura de ${monthName(st.invoiceRef.slice(0, 7))}`}
               trailing={
                 <button type="button" className="text-body text-destructive"
-                  onClick={async () => { if (confirm('Cancelar este aviso de pagamento?')) { await familyApi.cancelSettlement(st.id); await refresh() } }}>
+                  onClick={async () => { if (confirm('Cancelar acerto?')) { await familyApi.cancelSettlement(st.id); await refresh() } }}>
                   Cancelar
                 </button>
               } />

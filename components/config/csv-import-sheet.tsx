@@ -130,7 +130,7 @@ function Importer({ onDone }: { onDone: () => void }) {
         ))}
       </ListGroup>
 
-      <ListGroup header="Lançar em">
+      <ListGroup header="Carteira">
         <WalletPicker wallets={wallets.filter(w => !w.ownerName)} value={targetWallet} onChange={setTargetWalletId} />
       </ListGroup>
 

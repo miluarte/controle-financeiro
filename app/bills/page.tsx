@@ -44,8 +44,8 @@ export default function BillsPage() {
   const [editing, setEditing] = useState<BillOccurrence | null>(null)
   const del = useConfirmDelete()
   const askEnd = (o: BillOccurrence) => del.ask({
-    title: o.bill.type === 'income' ? 'Encerrar esta receita? Os meses recebidos continuam.' : 'Encerrar esta conta? Os meses pagos continuam.',
-    label: 'Encerrar a partir deste mês', remove: () => billsApi.endSeries(o.billId, month),
+    title: o.bill.type === 'income' ? 'Encerrar receita? Os meses recebidos continuam.' : 'Encerrar conta? Os meses pagos continuam.',
+    label: 'Encerrar', remove: () => billsApi.endSeries(o.billId, month),
   })
   const [openInvoice, setOpenInvoice] = useState<InvoiceRef | null>(null)
   const catById = new Map(categories.map(c => [c.id, c]))
@@ -107,7 +107,7 @@ export default function BillsPage() {
         ) : items.length === 0 && incomes.length === 0 && onCard.length === 0 ? (
           <div className="py-10 text-center">
             <p className="text-headline">Nenhuma conta neste mês</p>
-            <p className="text-subheadline text-muted-foreground">Toque no + na barra de baixo para adicionar</p>
+            <p className="text-subheadline text-muted-foreground">Toque no + para adicionar</p>
           </div>
         ) : (
           <>

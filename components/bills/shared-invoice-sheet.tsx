@@ -15,7 +15,7 @@ import { formatCurrency, formatDate, monthLabel } from '@/lib/utils'
 export interface SharedInvoice { wallet: Wallet; debt: CardDebt }
 
 // Fatura de um cartão de outra pessoa da família: só as minhas compras, quanto já acertei e quanto falta.
-// "Paguei a …" aceita valor parcial; o resto fica como saldo devedor.
+// "Informar acerto" aceita valor parcial; o resto fica como saldo devedor.
 export function SharedInvoiceSheet({ invoice, onClose }: { invoice: SharedInvoice | null; onClose: () => void }) {
   const [paying, setPaying] = useState(false)
   const owner = invoice?.wallet.ownerName ?? 'titular'
@@ -54,7 +54,7 @@ function Body({ inv, owner, onPay }: { inv: SharedInvoice; owner: string; onPay:
         )}
       </div>
 
-      {!paid && <Button size="lg" className="w-full" onClick={onPay}>Paguei a {owner}</Button>}
+      {!paid && <Button size="lg" className="w-full" onClick={onPay}>Informar acerto</Button>}
 
       <ListGroup header={`${paid ? 'Compras pagas' : 'Suas compras'} · ${list.length}`}
         footer={`Fatura de ${monthLabel(ref)}.`}>

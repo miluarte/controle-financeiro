@@ -45,7 +45,7 @@ export default function NotificationsPage() {
           <ListGroup key={day} header={dayLabel(day)}>
             {list.map(n => (
               <ListRow key={n.id} onClick={() => open(n.id, n.url, !!n.readAt)} chevron={!!n.url}
-                onDelete={() => del.ask({ title: 'Apagar esta notificação?', label: 'Apagar', remove: () => notificationsApi.remove(n.id) })}
+                onDelete={() => del.ask({ title: 'Excluir notificação?', label: 'Excluir', remove: () => notificationsApi.remove(n.id) })}
                 title={<span className={n.readAt ? 'text-muted-foreground' : 'font-semibold'}>{n.title}</span>}
                 subtitle={n.body} />
             ))}

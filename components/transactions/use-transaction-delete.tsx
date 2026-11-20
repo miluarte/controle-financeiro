@@ -24,10 +24,10 @@ export function useTransactionDelete(onDone?: () => void) {
   const t = target
   const sheet = (
     <ActionSheet open={!!t} onOpenChange={o => { if (!o) setTarget(null) }}
-      title={t?.installmentGroupId ? 'O que você quer excluir?' : 'Excluir este lançamento?'}
+      title={t?.installmentGroupId ? 'O que excluir?' : 'Excluir transação?'}
       actions={!t ? [] : t.installmentGroupId
         ? [{ label: 'Só esta parcela', destructive: true, onSelect: () => remove(t, false) },
-           { label: 'A compra inteira', destructive: true, onSelect: () => remove(t, true) }]
+           { label: 'Compra inteira', destructive: true, onSelect: () => remove(t, true) }]
         : [{ label: 'Excluir', destructive: true, onSelect: () => remove(t, false) }]} />
   )
   return { ask: setTarget, sheet }

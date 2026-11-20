@@ -98,7 +98,7 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
                 <p className="text-body">{balanceMessage(p)}</p>
               </>
             ) : (
-              <p className="text-body text-muted-foreground">Ainda não há gastos registrados para mostrar como você gasta.</p>
+              <p className="text-body text-muted-foreground">Nenhum gasto ainda.</p>
             )}
           </section>
 
@@ -108,7 +108,7 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
                 <CurrencyInput id="income" variant="bare" value={incomeDraft} onChange={setIncomeDraft} className="text-right" />
               </FormRow>
             ) : (
-              <ListRow tone="tint" title="Quer saber quanto sobra? Me diz sua renda" onClick={() => setAskIncome(true)} />
+              <ListRow tone="tint" title="Informe sua renda para ver quanto sobra." onClick={() => setAskIncome(true)} />
             )}
             {(askIncome || (income != null && incomeDraft !== income)) && (
               <ListRow tone="tint" title="Salvar renda" onClick={saveIncome} />

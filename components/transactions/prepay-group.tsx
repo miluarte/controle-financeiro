@@ -25,7 +25,7 @@ export function PrepayGroup({ t, onDone }: { t: Transaction; onDone: () => void 
   const [date, setDate] = useState(todayIso())
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const what = t.installmentN ? 'esta parcela' : 'esta compra'
+  const what = t.installmentN ? 'parcela' : 'compra'
 
   async function run(fn: () => Promise<void>) {
     setBusy(true); setError(null)
@@ -36,7 +36,7 @@ export function PrepayGroup({ t, onDone }: { t: Transaction; onDone: () => void 
 
   if (t.prepaidBy) {
     return (
-      <ListGroup header="Pago antes da fatura" footer={error ?? undefined}>
+      <ListGroup header="Antecipada" footer={error ?? undefined}>
         <li className="p-3">
           <Button type="button" variant="secondary" className="w-full" disabled={busy} onClick={() => run(() => transactionsApi.undoPrepay(t.id))}>
             Desfazer pagamento
@@ -47,7 +47,7 @@ export function PrepayGroup({ t, onDone }: { t: Transaction; onDone: () => void 
   }
 
   return (
-    <ListGroup header={`Pagar ${what} antes da fatura`} footer={error ?? undefined}>
+    <ListGroup header={`Antecipar ${what}`} footer={error ?? undefined}>
       <WalletPicker wallets={payable} value={walletId} onChange={setWalletId} />
       <FormRow label="Data do pagamento" htmlFor="prepay-date">
         <DateField id="prepay-date" value={date} onChange={v => setDate(v || todayIso())} />
@@ -55,7 +55,7 @@ export function PrepayGroup({ t, onDone }: { t: Transaction; onDone: () => void 
       <li className="p-3">
         <Button type="button" variant="secondary" className="w-full" disabled={busy || !walletId}
           onClick={() => run(() => transactionsApi.prepay(t.id, walletId!, date))}>
-          Marcar como paga
+          Antecipar
         </Button>
       </li>
     </ListGroup>

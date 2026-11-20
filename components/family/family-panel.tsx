@@ -53,8 +53,8 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
           </Button>
           {isAdmin && (
             <Button variant="secondary" size="sm" className="rounded-full"
-              onClick={() => { if (confirm('Gerar um novo código? O atual deixa de valer.')) run(() => familyApi.regenerateCode()) }}>
-              <RefreshLinearIcon className="size-4" />Novo código
+              onClick={() => { if (confirm('Gerar novo código? O atual deixa de valer.')) run(() => familyApi.regenerateCode()) }}>
+              <RefreshLinearIcon className="size-4" />Gerar código
             </Button>
           )}
         </div>
@@ -88,7 +88,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
         {active.map(m => (
           <ListRow key={m.userId}
             onClick={isAdmin && m.userId !== me
-              ? () => { if (confirm(`Remover ${m.name} da família? As compras dela continuam no histórico.`)) run(() => familyApi.remove(m.userId)) }
+              ? () => { if (confirm(`Remover ${m.name} da família? As compras continuam no histórico.`)) run(() => familyApi.remove(m.userId)) }
               : undefined}
             leading={<MemberAvatar name={m.name} color={m.avatarColor} />}
             title={m.userId === me ? `${m.name} (você)` : m.name}

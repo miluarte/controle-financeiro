@@ -113,7 +113,7 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
                     ) : null}
                   </span>
                   <span className="text-subheadline font-semibold tabular-nums">{formatCurrency(v)}</span>
-                  <Button variant="plain" size="nav" aria-label={`Fatura de ${nameOf(id)} em PDF`} onClick={() => exportFor(id)}>PDF</Button>
+                  <Button variant="plain" size="nav" aria-label={`Fatura de ${nameOf(id)} em PDF`} onClick={() => exportFor(id)}>Exportar</Button>
                 </li>
               )
             })}
@@ -128,7 +128,7 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
       </section>
 
       {reported.length > 0 && (
-        <ListGroup header="Pagamentos para confirmar">
+        <ListGroup header="Acertos para confirmar">
           {reported.map(st => (
             <ListRow key={st.id} onClick={() => setConfirming(st)} chevron
               leading={<MemberAvatar name={nameOf(st.debtorId)} color={people.find(p => p.userId === st.debtorId)?.avatarColor ?? 'gray'} />}

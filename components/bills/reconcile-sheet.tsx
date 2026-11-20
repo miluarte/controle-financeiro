@@ -71,7 +71,7 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
       const list = st.carried
         ? [...st.items, { date: `${invoiceRef}-01`, description: 'Saldo da fatura anterior', amount: st.carried, installmentN: null, installmentsTotal: null }]
         : st.items
-      if (!list.length) { setStatus('Não achei lançamentos neste PDF.'); return }
+      if (!list.length) { setStatus('Nenhuma compra encontrada neste PDF.'); return }
       setItems(list); setBankTotal(st.total)
       if (st.revolvingRate && st.revolvingRate !== wallet.revolvingRate) {
         await walletsApi.update(wallet.id, { revolvingRate: st.revolvingRate })
@@ -80,7 +80,7 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
       await compare(list)
       setStatus(null)
     } catch {
-      setStatus('Não consegui ler este PDF.')
+      setStatus('Não foi possível ler este PDF.')
     } finally {
       if (input.current) input.current.value = ''
     }
@@ -133,7 +133,7 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
     <div className="space-y-6">
       {!initialFile && <Button variant="secondary" size="lg" className="w-full gap-2" disabled={!!status && status.startsWith('Lendo')}
         onClick={() => input.current?.click()}>
-        <DocumentAddLinearIcon className="size-5" />{result ? 'Escolher outro PDF' : 'Escolher PDF da fatura'}
+        <DocumentAddLinearIcon className="size-5" />{result ? 'Trocar PDF' : 'Escolher PDF'}
       </Button>}
       <input ref={input} type="file" accept="application/pdf,.pdf" className="sr-only" onChange={e => onFile(e.target.files?.[0])} />
       {status && (
@@ -195,7 +195,7 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
                     <span className="flex items-center gap-2">
                       <span className="tabular-nums">{formatCurrency(t.amount)}</span>
                       <Button variant="plain-destructive" size="nav" disabled={!!busy}
-                        onClick={() => { if (confirm('Excluir este lançamento do app?')) run(t.id, () => transactionsApi.remove(t.id)) }}>
+                        onClick={() => { if (confirm('Excluir compra?')) run(t.id, () => transactionsApi.remove(t.id)) }}>
                         Excluir
                       </Button>
                     </span>} />

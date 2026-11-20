@@ -48,7 +48,7 @@ export function ItemsEditor({ items, onChange, total, disabled }: {
             onChange={e => setDraft(d => ({ ...d, name: e.target.value }))} className="min-w-0 flex-1" />
           <CurrencyInput aria-label="Valor do item" variant="bare" value={draft.amount}
             onChange={v => setDraft(d => ({ ...d, amount: v }))} placeholder="Valor" className="w-24 text-right" />
-          <Button type="button" variant="plain" onClick={saveEdit}>OK</Button>
+          <Button type="button" variant="plain" onClick={saveEdit}>Salvar</Button>
         </li>
       ) : (
         // botão do item e botão de remover lado a lado (botão dentro de botão não vale no HTML)
@@ -59,7 +59,7 @@ export function ItemsEditor({ items, onChange, total, disabled }: {
             {i.amount > 0 && <span className="shrink-0 tabular-nums text-muted-foreground">{formatCurrency(i.amount)}</span>}
           </button>
           {!disabled && (
-            <Button type="button" variant="plain-destructive" size="icon" aria-label="Remover item"
+            <Button type="button" variant="plain-destructive" size="icon" aria-label="Excluir item"
               onClick={() => onChange(items.filter((_, j) => j !== k))}>
               <TrashBinMinimalisticLinearIcon />
             </Button>
@@ -72,7 +72,7 @@ export function ItemsEditor({ items, onChange, total, disabled }: {
           <Input aria-label="Item" variant="bare" value={name} onChange={e => setName(e.target.value)}
             placeholder="Novo item" className="min-w-0 flex-1" />
           <CurrencyInput aria-label="Valor do item" variant="bare" value={amount} onChange={setAmount} placeholder="Valor" className="w-24 text-right" />
-          <Button type="button" variant="plain" disabled={!name.trim()} onClick={add}>Incluir</Button>
+          <Button type="button" variant="plain" disabled={!name.trim()} onClick={add}>Adicionar</Button>
         </li>
       )}
     </ListGroup>

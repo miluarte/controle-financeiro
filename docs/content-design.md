@@ -77,6 +77,7 @@ Exceções aceitas em botão (respostas, não ações):
 | Adicionar | incluir algo numa lista ou lançar valor | Incluir, Inserir, Cadastrar |
 | Criar | algo que passa a existir com nome próprio (família, categoria, token) | Gerar, Novo |
 | Salvar | gravar alterações num formulário | Confirmar, Concluir, Gravar, Atualizar |
+| Confirmar | aprovar um pendente (automação, compra sem cartão) | Aceitar, Validar |
 | Editar | abrir para mudar | Alterar, Modificar |
 | Excluir | apagar de vez | Apagar, Deletar |
 | Remover | tirar pessoa ou vínculo, sem apagar a coisa (membro, anexo) | Excluir, nesses casos |

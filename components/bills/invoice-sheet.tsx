@@ -95,7 +95,7 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
           <li className="p-3">
             <Button variant="outline" size="lg" className="w-full" disabled={busy}
               onClick={() => run(() => invoicesApi.unpay(inv.wallet.id, `${inv.ref}-01`))}>
-              Desmarcar pagamento
+              Desfazer pagamento
             </Button>
           </li>
         </ListGroup>

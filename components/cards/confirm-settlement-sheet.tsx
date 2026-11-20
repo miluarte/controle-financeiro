@@ -17,7 +17,7 @@ export function ConfirmSettlementSheet({
   settlement, debtorName, onClose,
 }: { settlement: Settlement | null; debtorName: string; onClose: () => void }) {
   return (
-    <ModalSheet open={!!settlement} onOpenChange={o => { if (!o) onClose() }} title="Confirmar pagamento">
+    <ModalSheet open={!!settlement} onOpenChange={o => { if (!o) onClose() }} title="Acerto">
       {settlement && <Body key={settlement.id} s={settlement} name={debtorName} onDone={onClose} />}
     </ModalSheet>
   )
@@ -48,7 +48,7 @@ function Body({ s, name, onDone }: { s: Settlement; name: string; onDone: () => 
           {s.reportedAt ? ` em ${formatDate(s.reportedAt.slice(0, 10))}` : ''}
         </p>
       </div>
-      <ListGroup header="Recebi em" footer="Entra como receita (Reembolso).">
+      <ListGroup header="Receber em" footer="Entra como receita (Reembolso).">
         <WalletPicker wallets={mine} value={walletId} onChange={setWalletId} />
       </ListGroup>
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
@@ -58,7 +58,7 @@ function Body({ s, name, onDone }: { s: Settlement; name: string; onDone: () => 
           Confirmar recebimento
         </Button>
         <Button variant="ghost" size="lg" className="w-full text-destructive" disabled={busy}
-          onClick={() => { if (confirm('Recusar este pagamento? A pessoa recebe um aviso.')) run(() => familyApi.rejectSettlement(s.id)) }}>
+          onClick={() => { if (confirm('Recusar acerto? A pessoa recebe um aviso.')) run(() => familyApi.rejectSettlement(s.id)) }}>
           Não recebi
         </Button>
       </div>

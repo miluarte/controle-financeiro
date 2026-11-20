@@ -24,7 +24,7 @@ export function StatementImport({ file }: { file: File }) {
     file.arrayBuffer().then(buf => pdfLines(buf, askPdfPassword)).then(lines => {
       if (!alive) return
       setDue(findDueDate(lines)); setStatus('')
-    }).catch(() => alive && setStatus('Não consegui ler este PDF.'))
+    }).catch(() => alive && setStatus('Não foi possível ler este PDF.'))
     return () => { alive = false }
   }, [file])
 

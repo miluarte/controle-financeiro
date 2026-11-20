@@ -11,7 +11,7 @@ import { familyApi } from '@/lib/api/family'
 import type { FamilyMember, Transaction } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 
-// ATR-2: "De quem é essa compra?" (titular). ATR-4: vale para as parcelas em aberto.
+// ATR-2: "De quem é a compra?" (titular). ATR-4: vale para as parcelas em aberto.
 export function AssignSheet({
   transaction, people, me, onClose, onSplit,
 }: { transaction: Transaction | null; people: FamilyMember[]; me?: string; onClose: () => void; onSplit?: (t: Transaction) => void }) {
@@ -26,7 +26,7 @@ export function AssignSheet({
   }
 
   return (
-    <ModalSheet open={!!transaction} onOpenChange={o => { if (!o) onClose() }} title="De quem é essa compra?">
+    <ModalSheet open={!!transaction} onOpenChange={o => { if (!o) onClose() }} title="De quem é a compra?">
       {transaction && (
         <>
           <p className="text-center text-subheadline text-muted-foreground">

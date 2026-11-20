@@ -33,7 +33,7 @@ export function ReceiptScanButton({ onRead, initialFile = null }: {
       const { result, image } = await readReceipt(file, onStatus)
       clearInterval(tick); setProgress(100)
       await new Promise(r => setTimeout(r, 250))
-      if (!result.amount) setError('Não consegui achar o total nesta foto. Tente outra mais nítida ou digite o valor.')
+      if (!result.amount) setError('Não foi possível achar o total nesta foto. Tente outra mais nítida ou digite o valor.')
       onRead(result, image)
     } catch (err) {
       setError(err instanceof Error && err.message !== 'gemini-timeout'
