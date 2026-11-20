@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import { AltArrowRightLinearIcon } from '@solar-icons/react'
 import { cn } from '@/lib/utils'
-import { SwipeActions } from './swipe-actions'
+import { SwipeActions, type SwipeExtra } from './swipe-actions'
 
 // Linha de lista do iOS: ícone à esquerda, título e subtítulo, valor à direita, seta opcional.
 // O separador começa depois do ícone (recuo), como no iOS.
@@ -32,13 +32,15 @@ interface ListRowProps extends VariantProps<typeof rowVariants> {
   onClick?: () => void
   // deslizar para a esquerda revela a lixeira
   onDelete?: () => void
+  // ação extra no deslizar, ao lado da lixeira
+  swipeExtra?: SwipeExtra
   // sem o <li> próprio (quando outro componente já cria o item, ex.: SortableList)
   bare?: boolean
   className?: string
 }
 
 export function ListRow({
-  leading, title, subtitle, trailing, chevron, onClick, onDelete, bare, tone, className,
+  leading, title, subtitle, trailing, chevron, onClick, onDelete, swipeExtra, bare, tone, className,
 }: ListRowProps) {
   const centered = tone === 'tint' || tone === 'destructive'
   const content = (
@@ -69,6 +71,6 @@ export function ListRow({
     <div className={cn(rowVariants({ tone, interactive: false }), className)}>{content}</div>
   )
 
-  const body = onDelete ? <SwipeActions onDelete={onDelete}>{row}</SwipeActions> : row
+  const body = onDelete ? <SwipeActions onDelete={onDelete} extra={swipeExtra}>{row}</SwipeActions> : row
   return bare ? body : <li className="group/row">{body}</li>
 }

@@ -73,6 +73,11 @@ export const transactionsApi = {
       .or(`assigned_to.eq.${userId},holder_id.eq.${userId}`)
       .order('created_at', { ascending: false })).map(toTransaction),
 
+  // Fixar: o gasto vira conta fixa sem fim a partir do mês dele (no crédito, cobrada sozinha na fatura).
+  pin: async (id: string) => {
+    unwrap(await supabase.rpc('pin_transaction', { p_transaction: id }))
+  },
+
   // Titular escolhe o cartão de uma compra pendente: entra na fatura no nome de quem comprou.
   resolveCardPending: async (id: string, walletId: string) => {
     unwrap(await supabase.rpc('resolve_card_pending', { p_transaction: id, p_wallet: walletId }))

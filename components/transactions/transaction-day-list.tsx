@@ -7,6 +7,7 @@ import { useWallets } from '@/hooks/use-wallets'
 import type { Transaction } from '@/lib/types'
 import { dayLabel } from '@/lib/utils'
 import { useTransactionDelete } from './use-transaction-delete'
+import { usePinAction } from './use-pin-action'
 
 interface TransactionDayListProps {
   transactions: Transaction[]
@@ -25,6 +26,7 @@ export function TransactionDayList({
   const { categories } = useCategories()
   const { wallets } = useWallets()
   const del = useTransactionDelete()
+  const pin = usePinAction()
   const catById = new Map(categories.map(c => [c.id, c]))
   const walletById = new Map(wallets.map(w => [w.id, w]))
 
@@ -47,6 +49,7 @@ export function TransactionDayList({
   return (
     <div className="space-y-5">
       {del.sheet}
+      {pin.sheet}
       {groups.map(g => (
         <ListGroup key={g.day} header={dayLabel(g.day)}>
           {g.items.map(t => (
@@ -57,6 +60,8 @@ export function TransactionDayList({
               wallet={t.walletId ? walletById.get(t.walletId) : undefined}
               onClick={onSelect ? () => onSelect(t) : undefined}
               onDelete={() => del.ask(t)}
+              swipeExtra={pin.extra(t)}
+              pinned={pin.pinned(t)}
             />
           ))}
         </ListGroup>
