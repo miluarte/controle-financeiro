@@ -1,10 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { CloseLinearIcon } from '@solar-icons/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { FormRow } from '@/components/ios/form-row'
 import { GlassButton } from '@/components/ios/glass-button'
 import { ListGroup } from '@/components/ios/list-group'
@@ -25,6 +24,7 @@ import { todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { InstallmentProgress } from './installment-progress'
 import { ItemsEditor } from './items-editor'
+import { SheetCloseButton } from '@/components/ios/sheet-close-button'
 import { LoadingDots } from '@/components/shared/loading-dots'
 import { RepeatGroup, repeatDefault, repeatLastMonth } from './repeat-group'
 import { billsApi } from '@/lib/api/bills'
@@ -313,11 +313,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     <Sheet open={open} onOpenChange={o => { onOpenChange(o); if (!o) reset() }}>
       <SheetContent side="bottom" showCloseButton={false} className="gap-0">
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-          {/* barra do modal no iOS 26: fechar (vidro) | título | confirmar (cápsula preenchida) */}
+          {/* barra do modal no iOS 26: fechar (só o X) | título | confirmar (cápsula preenchida) */}
           <div className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center px-3 pt-1 pb-2">
-            <SheetClose render={<GlassButton type="button" aria-label="Cancelar" className="justify-self-start" />}>
-              <CloseLinearIcon />
-            </SheetClose>
+            <SheetCloseButton label="Cancelar" />
             <SheetTitle className="text-headline font-semibold">{modeTitle}</SheetTitle>
             {pending ? (
               <Button type="button" variant="plain-destructive" size="nav" className="justify-self-end" onClick={() => askDiscard(pending)}>

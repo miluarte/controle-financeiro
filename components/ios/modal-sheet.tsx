@@ -1,11 +1,11 @@
 'use client'
 
-import { CloseLinearIcon } from '@solar-icons/react'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { GlassButton } from './glass-button'
+import { SheetCloseButton } from './sheet-close-button'
 
-// Folha modal padrão do app (iOS 26): fechar de vidro | título | ação principal em cápsula.
+// Folha modal padrão do app (iOS 26): fechar (só o X) | título | ação principal em cápsula.
 // O conteúdo vai num <form id={formId}>; a ação do topo envia esse formulário.
 // Com onDelete (edição de algo que pode ser excluído): "Excluir" discreto no topo e o botão
 // de salvar vai para baixo, grande. Com secondaryAction (ex.: Arquivar), as duas ficam lado a lado,
@@ -31,9 +31,7 @@ export function ModalSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" showCloseButton={false} className="gap-0">
         <div className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center px-3 pt-1 pb-2">
-          <SheetClose render={<GlassButton type="button" aria-label="Fechar" className="justify-self-start" />}>
-            <CloseLinearIcon />
-          </SheetClose>
+          <SheetCloseButton />
           <SheetTitle className="text-headline font-semibold">{title}</SheetTitle>
           {onDelete ? (
             <Button type="button" variant="plain-destructive" size="nav" className="justify-self-end" onClick={onDelete}>
