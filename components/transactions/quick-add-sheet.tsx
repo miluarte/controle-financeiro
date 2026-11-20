@@ -37,6 +37,7 @@ import type { ReceiptItem } from '@/lib/receipt'
 import { useCategorySuggest } from '@/hooks/use-category-suggest'
 import { automationsApi } from '@/lib/api/automations'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
+import { cardHolders, HolderPicker } from './holder-picker'
 
 export type QuickAddMode = 'expense' | 'income' | 'save'
 type Mode = QuickAddMode
@@ -58,6 +59,10 @@ interface QuickAddSheetProps {
 const pendingItems = (t: Transaction | null | undefined): ReceiptItem[] =>
   Array.isArray(t?.sourceData?.items) ? (t.sourceData.items as ReceiptItem[]) : []
 
+// número guardado no pendente sem cartão (parcelas), com valor padrão
+const pendingNumber = (t: Transaction | null | undefined, key: string, fallback: number) =>
+  typeof t?.sourceData?.[key] === 'number' ? (t.sourceData[key] as number) : fallback
+
 export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pending = null }: QuickAddSheetProps) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
@@ -74,10 +79,13 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   // null = ainda não escolheu: usa a carteira padrão do perfil
   const [pickedWalletId, setWalletId] = useState<string | null>(pending?.walletId ?? null)
   const [place, setPlace] = useState(pending?.place ?? '')
-  const [installments, setInstallments] = useState(1)
+  const [installments, setInstallments] = useState(() => pendingNumber(pending, 'installments', 1))
   // compra parcelada que já estava andando antes do app: parcela atual e valor da parcela
-  const [currentInstallment, setCurrentInstallment] = useState(1)
-  const [amountIsInstallment, setAmountIsInstallment] = useState(false)
+  const [currentInstallment, setCurrentInstallment] = useState(() => pendingNumber(pending, 'current_installment', 1))
+  const [amountIsInstallment, setAmountIsInstallment] = useState(pending?.sourceData?.amount_is_installment === true)
+  // "Não lembro o cartão": fica pendente com o titular, até alguém escolher o cartão
+  const [cardUnknown, setCardUnknown] = useState(!!pending?.holderId)
+  const [holderId, setHolderId] = useState<string | null>(pending?.holderId ?? null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   // leitura da nota fiscal (5.4)
@@ -119,6 +127,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     setInstallments(1)
     setCurrentInstallment(1)
     setAmountIsInstallment(false)
+    setCardUnknown(false)
+    setHolderId(null)
     setError(null)
     setWalletId(null)
     setReceipt(null)
@@ -136,14 +146,27 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   }
 
   const visibleCategories = categories.filter(c => c.type === (mode === 'income' ? 'income' : 'expense'))
-  const walletId = pickedWalletId ?? profile?.defaultWalletId ?? null
+  const unknownCard = mode === 'expense' && cardUnknown
+  const walletId = unknownCard ? null : pickedWalletId ?? profile?.defaultWalletId ?? null
   const wallet = wallets.find(w => w.id === walletId)
   const isCredit = mode === 'expense' && wallet?.type === 'credit'
+  // parcelas valem no crédito e também quando o cartão ainda não foi escolhido
+  const creditLike = isCredit || unknownCard
   const needsCategory = mode !== 'save'
   const needsWallet = mode !== 'income'
   const access = useCardAccess(isCredit ? walletId : null)
   const assignTo = access.people.some(p => p.userId === owner) && owner !== access.me ? owner : null
-  const canSubmit = amount > 0 && (!needsCategory || !!categoryId) && (!needsWallet || !!walletId) && !submitting
+  // titulares possíveis: eu (se tenho cartão de crédito) e quem compartilha cartão comigo
+  const me = session?.user.id ?? ''
+  const holders = cardHolders(wallets, me)
+  const holder = holderId ?? (holders.length === 1 ? holders[0].id : null)
+  const hasWallet = unknownCard ? !!holder : !!walletId
+  const canSubmit = amount > 0 && (!needsCategory || !!categoryId) && (!needsWallet || hasWallet) && !submitting
+
+  function pickWallet(id: string) {
+    setCardUnknown(false)
+    setWalletId(id)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -154,6 +177,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
       const placeValue = place.trim() || null
       if (mode === 'income' && repeat.on) {
         await createRecurringIncome(placeValue)
+      } else if (unknownCard) {
+        await createWithoutCard(placeValue)
       } else if (isCredit && installments > 1) {
         const group = await transactionsApi.createInstallments({
           walletId: walletId!, categoryId, installments, firstDate: date, place: placeValue,
@@ -198,6 +223,27 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     } finally {
       setSubmitting(false)
     }
+  }
+
+  // compra sem cartão: pendente, com o titular e as parcelas guardadas para quando escolherem o cartão
+  async function createWithoutCard(placeValue: string | null) {
+    const fromPhoto = receipt
+    const receiptPath = fromPhoto && attachReceipt && session ? await uploadReceipt(session.user.id, receipt.image) : null
+    await transactionsApi.create({
+      type: 'expense', amount, date, categoryId, walletId: null, place: placeValue, description: null,
+      status: 'pending', holderId: holder,
+      source: fromPhoto ? 'photo' : pending?.source ?? 'manual',
+      receiptPath,
+      sourceData: {
+        ...(pending?.sourceData ?? {}),
+        ...(fromPhoto ? { reader: receipt.result.source, ...(receipt.result.chave ? { chave: receipt.result.chave } : {}) } : {}),
+        ...(items.length ? { items } : {}),
+        card_unknown: true,
+        installments,
+        current_installment: Math.min(currentInstallment, installments),
+        amount_is_installment: amountIsInstallment,
+      },
+    })
   }
 
   // o lançamento novo substitui o pendente; no Apple Pay, guarda o nome do cartão como apelido da carteira
@@ -296,7 +342,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
             />
 
             <ListGroup>
-              <FormRow label={isCredit && installments > 1 ? 'Data da compra' : 'Data'} htmlFor="date">
+              <FormRow label={creditLike && installments > 1 ? 'Data da compra' : 'Data'} htmlFor="date">
                 <DateField id="date" value={date} onChange={v => setDate(v || todayIso())} />
               </FormRow>
               <FormRow label={placeLabel} htmlFor="place">
@@ -310,13 +356,13 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                   className="text-right"
                 />
               </FormRow>
-              {isCredit && (
+              {creditLike && (
                 <FormRow label="Parcelas" htmlFor="installments">
                   <NumberField id="installments" min={1} max={48} value={installments}
                     onChange={setInstallments} className="w-16 text-right" />
                 </FormRow>
               )}
-              {isCredit && installments > 1 && (
+              {creditLike && installments > 1 && (
                 <InstallmentProgress installments={installments} current={currentInstallment} onCurrentChange={setCurrentInstallment}
                   amountIsInstallment={amountIsInstallment} onAmountIsInstallmentChange={setAmountIsInstallment}
                   purchaseDate={date} />
@@ -329,7 +375,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
 
             {mode === 'expense' && receipt && (
               <ReceiptResultGroup source={receipt.result.source} items={[]} duplicateOn={duplicateOn}
-                attach={attachReceipt} onAttachChange={setAttachReceipt} attachDisabled={isCredit && installments > 1} />
+                attach={attachReceipt} onAttachChange={setAttachReceipt} attachDisabled={creditLike && installments > 1} />
             )}
 
             {needsCategory && (
@@ -351,16 +397,26 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                   {wallets
                     .filter(w => mode !== 'save' || w.type !== 'credit')
                     .map(w => (
-                      <ChoiceChip key={w.id} selected={walletId === w.id} onClick={() => setWalletId(w.id)} className="pl-1">
+                      <ChoiceChip key={w.id} selected={walletId === w.id} onClick={() => pickWallet(w.id)} className="pl-1">
                         <TokenIcon active={walletId === w.id} icon={WALLET_TYPE_ICON[w.type] ?? 'wallet'} color="gray" size="sm" />
                         {walletLabel(w)}
                       </ChoiceChip>
                     ))}
+                  {mode === 'expense' && holders.length > 0 && (
+                    <ChoiceChip selected={unknownCard} onClick={() => setCardUnknown(true)} className="pl-1">
+                      <TokenIcon active={unknownCard} icon="credit-card" color="gray" size="sm" />
+                      Não lembro o cartão
+                    </ChoiceChip>
+                  )}
                 </li>
               </ListGroup>
             )}
 
-            {isCredit && <PurchaseOwnerField people={access.people} me={access.me} value={owner} onChange={setOwner} />}
+            {unknownCard && (
+              <HolderPicker holders={holders} value={holder} onChange={setHolderId} me={me} />
+            )}
+
+            {isCredit && !unknownCard && <PurchaseOwnerField people={access.people} me={access.me} value={owner} onChange={setOwner} />}
 
             {mode === 'expense' && <ItemsEditor items={items} onChange={setItems} total={amount} />}
 
