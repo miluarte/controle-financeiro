@@ -1,19 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import { CategoryField } from '@/components/shared/category-field'
+import { WalletPicker } from '@/components/shared/wallet-picker'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
-import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
-import { TokenIcon } from '@/components/shared/token-icon'
 import { useCategories } from '@/hooks/use-categories'
 import { useRefresh } from '@/hooks/use-refresh'
 import { useWallets } from '@/hooks/use-wallets'
 import { transactionsApi } from '@/lib/api/transactions'
-import { WALLET_TYPE_ICON } from '@/lib/constants'
 import type { Transaction } from '@/lib/types'
 import { TYPE_LABEL } from './transaction-item'
 import { receiptUrl, type ReceiptItem } from '@/lib/receipt'
@@ -95,30 +94,18 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
         </FormRow>
       </ListGroup>
 
-      {showCategory && editable && (
-        <ListGroup header="Categoria">
-          <li className="flex flex-wrap gap-2 p-3">
-            {categories.filter(c => c.type === catType).map(c => (
-              <ChoiceChip key={c.id} selected={categoryId === c.id} onClick={() => setCategoryId(c.id)} className="pl-1">
-                <TokenIcon active={categoryId === c.id} icon={c.icon} color={c.color} size="sm" />{c.name}
-              </ChoiceChip>
-            ))}
-          </li>
+      {((showCategory && editable) || (showWallet && editable && !t.installmentGroupId)) && (
+        <ListGroup>
+          {showCategory && editable && (
+            <CategoryField id="edit-category" categories={categories.filter(c => c.type === catType)} value={categoryId}
+              onChange={id => id && setCategoryId(id)} />
+          )}
+          {showWallet && editable && !t.installmentGroupId && (
+            <WalletPicker id="edit-wallet" wallets={wallets} value={walletId} onChange={setWalletId} />
+          )}
         </ListGroup>
       )}
 
-      {showWallet && editable && !t.installmentGroupId && (
-        <ListGroup header="Carteira">
-          <li className="flex flex-wrap gap-2 p-3">
-            {wallets.map(w => (
-              <ChoiceChip key={w.id} selected={walletId === w.id} onClick={() => setWalletId(w.id)} className="pl-1">
-                <TokenIcon active={walletId === w.id} icon={WALLET_TYPE_ICON[w.type] ?? 'wallet'} color="gray" size="sm" />
-                {w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name}
-              </ChoiceChip>
-            ))}
-          </li>
-        </ListGroup>
-      )}
 
       {t.type === 'expense' && <ItemsEditor items={items} onChange={setItems} total={amount} disabled={!editable} />}
 

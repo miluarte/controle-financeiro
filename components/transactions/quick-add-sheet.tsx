@@ -9,21 +9,18 @@ import { FormRow } from '@/components/ios/form-row'
 import { GlassButton } from '@/components/ios/glass-button'
 import { ListGroup } from '@/components/ios/list-group'
 import { SegmentedControl } from '@/components/ios/segmented-control'
-import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { NumberField } from '@/components/shared/number-field'
-import { TokenIcon } from '@/components/shared/token-icon'
 import { useCategories } from '@/hooks/use-categories'
 import { useProfile } from '@/hooks/use-profile'
 import { useRefresh } from '@/hooks/use-refresh'
 import { useWallets } from '@/hooks/use-wallets'
 import { transactionsApi } from '@/lib/api/transactions'
-import { WALLET_TYPE_ICON } from '@/lib/constants'
 import { uploadReceipt, walletForReceipt, type ReceiptResult } from '@/lib/receipt'
 import { ReceiptResultGroup } from '@/components/receipt/receipt-result-group'
 import { ReceiptScanButton } from '@/components/receipt/receipt-scan-button'
 import { useSession } from '@/hooks/use-session'
-import type { Transaction, Wallet } from '@/lib/types'
+import type { Transaction } from '@/lib/types'
 import { todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { InstallmentProgress } from './installment-progress'
@@ -37,15 +34,16 @@ import type { ReceiptItem } from '@/lib/receipt'
 import { useCategorySuggest } from '@/hooks/use-category-suggest'
 import { automationsApi } from '@/lib/api/automations'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
-import { cardHolders, HolderPicker } from './holder-picker'
+import { cardHolders, holderFooter, HolderPicker } from './holder-picker'
+import { CategoryField } from '@/components/shared/category-field'
+import { PickerRow } from '@/components/shared/picker-row'
+import { walletOption } from '@/components/shared/wallet-picker'
+
+const UNKNOWN_CARD = '__sem-cartao'
 
 export type QuickAddMode = 'expense' | 'income' | 'save'
 type Mode = QuickAddMode
 type SaveDirection = 'apply' | 'redeem'
-
-function walletLabel(w: Wallet) {
-  return w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name
-}
 
 // 5.3: registro rápido de Gasto, Receita e Guardar. Abre pelo + da barra de abas (AddMenu).
 interface QuickAddSheetProps {
@@ -291,8 +289,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     }
   }
 
-  const walletQuestion =
-    mode === 'save' ? (saveDirection === 'apply' ? 'De qual carteira saiu?' : 'Para qual carteira voltou?') : 'Como você pagou?'
+  const walletQuestion = mode === 'save' ? (saveDirection === 'apply' ? 'Saiu de' : 'Voltou para') : 'Pagamento'
   const placeLabel = mode === 'income' ? 'Descrição' : mode === 'save' ? 'Onde?' : 'Onde foi?'
   const placePlaceholder = mode === 'income' ? (repeat.on ? 'Salário, aluguel…' : 'Opcional') : mode === 'save' ? 'CDB, Tesouro' : 'Opcional'
 
@@ -404,42 +401,20 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                 attach={attachReceipt} onAttachChange={setAttachReceipt} attachDisabled={creditLike && installments > 1} />
             )}
 
-            {needsCategory && (
-              <ListGroup header="Categoria">
-                <li className="flex flex-wrap gap-2 p-3">
-                  {visibleCategories.map(c => (
-                    <ChoiceChip key={c.id} selected={categoryId === c.id} onClick={() => setCategoryId(c.id)} className="pl-1">
-                      <TokenIcon active={categoryId === c.id} icon={c.icon} color={c.color} size="sm" />
-                      {c.name}
-                    </ChoiceChip>
-                  ))}
-                </li>
+            {(needsCategory || needsWallet) && (
+              <ListGroup footer={unknownCard ? holderFooter(holders, holder, me) : undefined}>
+                {needsCategory && <CategoryField id="qa-category" categories={visibleCategories} value={categoryId} onChange={setCategoryId} />}
+                {needsWallet && (
+                  <PickerRow id="qa-wallet" label={walletQuestion}
+                    value={unknownCard ? UNKNOWN_CARD : walletId}
+                    onChange={v => { if (v === UNKNOWN_CARD) setCardUnknown(true); else if (v) pickWallet(v) }}
+                    options={[
+                      ...wallets.filter(w => mode !== 'save' || w.type !== 'credit').map(walletOption),
+                      ...(mode === 'expense' && holders.length > 0 ? [{ value: UNKNOWN_CARD, label: 'Não lembro o cartão', icon: 'credit-card' }] : []),
+                    ]} />
+                )}
+                {unknownCard && <HolderPicker holders={holders} value={holder} onChange={setHolderId} me={me} />}
               </ListGroup>
-            )}
-
-            {needsWallet && (
-              <ListGroup header={walletQuestion}>
-                <li className="flex flex-wrap gap-2 p-3">
-                  {wallets
-                    .filter(w => mode !== 'save' || w.type !== 'credit')
-                    .map(w => (
-                      <ChoiceChip key={w.id} selected={walletId === w.id} onClick={() => pickWallet(w.id)} className="pl-1">
-                        <TokenIcon active={walletId === w.id} icon={WALLET_TYPE_ICON[w.type] ?? 'wallet'} color="gray" size="sm" />
-                        {walletLabel(w)}
-                      </ChoiceChip>
-                    ))}
-                  {mode === 'expense' && holders.length > 0 && (
-                    <ChoiceChip selected={unknownCard} onClick={() => setCardUnknown(true)} className="pl-1">
-                      <TokenIcon active={unknownCard} icon="credit-card" color="gray" size="sm" />
-                      Não lembro o cartão
-                    </ChoiceChip>
-                  )}
-                </li>
-              </ListGroup>
-            )}
-
-            {unknownCard && (
-              <HolderPicker holders={holders} value={holder} onChange={setHolderId} me={me} />
             )}
 
             {isCredit && !unknownCard && <PurchaseOwnerField people={access.people} me={access.me} value={owner} onChange={setOwner} />}

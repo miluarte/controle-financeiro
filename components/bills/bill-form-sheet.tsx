@@ -1,15 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { CategoryField } from '@/components/shared/category-field'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
-import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { NumberField } from '@/components/shared/number-field'
-import { TokenIcon } from '@/components/shared/token-icon'
 import { useCategories } from '@/hooks/use-categories'
 import { useMonth } from '@/hooks/use-month'
 import { useRefresh } from '@/hooks/use-refresh'
@@ -162,14 +161,9 @@ function BillForm({ type, bill, onDone }: { type: BillType; bill: Bill | null; o
         )}
       </ListGroup>
 
-      <ListGroup header="Categoria">
-        <li className="flex flex-wrap gap-2 p-3">
-          {categories.filter(c => c.type === type).map(c => (
-            <ChoiceChip key={c.id} selected={categoryId === c.id} onClick={() => setCategoryId(categoryId === c.id ? null : c.id)} className="pl-1">
-              <TokenIcon active={categoryId === c.id} icon={c.icon} color={c.color} size="sm" />{c.name}
-            </ChoiceChip>
-          ))}
-        </li>
+      <ListGroup>
+        <CategoryField id="bill-category" categories={categories.filter(c => c.type === type)} value={categoryId}
+          onChange={setCategoryId} placeholder="Nenhuma" />
       </ListGroup>
 
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
