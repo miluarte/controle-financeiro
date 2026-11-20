@@ -38,6 +38,9 @@ function Form({ card, debts, onDone }: { card: Wallet; debts: CardDebt[]; onDone
   const [error, setError] = useState<string | null>(null)
 
   function pick(d: CardDebt) { setRef(d.invoiceRef); setAmount(d.open) }
+  // pagamento parcial: o resto continua em aberto na fatura, para os dois
+  const open = debts.find(d => d.invoiceRef === ref)?.open ?? 0
+  const left = Math.max(open - amount, 0)
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
@@ -51,7 +54,7 @@ function Form({ card, debts, onDone }: { card: Wallet; debts: CardDebt[]; onDone
   return (
     <form id="settlement" onSubmit={save} className="space-y-6">
       <CurrencyInput id="settle-amount" aria-label="Valor pago" variant="display" value={amount} onChange={setAmount} />
-      <ListGroup header="Fatura">
+      <ListGroup header="Fatura" footer={amount > 0 && left > 0 ? `Fica faltando ${formatCurrency(left)} nesta fatura.` : undefined}>
         <li className="flex flex-wrap gap-2 p-3">
           {debts.map(d => (
             <ChoiceChip key={d.invoiceRef} selected={ref === d.invoiceRef} onClick={() => pick(d)}>

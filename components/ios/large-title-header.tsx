@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { AltArrowLeftLinearIcon } from '@solar-icons/react'
-import { GlassButton } from './glass-button'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 // Título da página (title1, 28pt; mais discreto que o Large Title do iOS). Voltar, título e ações ficam na mesma linha,
@@ -22,9 +22,9 @@ export function LargeTitleHeader({ title, eyebrow, actions, back, className }: L
       {eyebrow && <p className="text-subheadline text-muted-foreground">{eyebrow}</p>}
       <div className="flex items-center gap-2">
         {back && (
-          <GlassButton aria-label="Voltar" onClick={() => router.back()} className="-ml-1">
+          <Button variant="ghost" size="icon" aria-label="Voltar" onClick={() => router.back()} className="-ml-2 rounded-full [&_svg]:size-6">
             <AltArrowLeftLinearIcon />
-          </GlassButton>
+          </Button>
         )}
         <h1 className="min-w-0 flex-1 truncate text-title1 font-bold">{title}</h1>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}

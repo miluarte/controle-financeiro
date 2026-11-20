@@ -105,7 +105,12 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
                   <MemberAvatar name={p?.name ?? 'M'} color={p?.avatarColor ?? 'gray'} size="sm" />
                   <span className="flex-1 text-subheadline">
                     {nameOf(id)}
-                    {settledBy.get(id) ? <span className="text-footnote text-success"> · {formatCurrency(settledBy.get(id)!)} acertado</span> : null}
+                    {settledBy.get(id) ? (
+                      <span className="text-footnote text-success">
+                        {' · '}{formatCurrency(settledBy.get(id)!)} acertado
+                        {v - settledBy.get(id)! > 0 ? <span className="text-muted-foreground"> · falta {formatCurrency(v - settledBy.get(id)!)}</span> : null}
+                      </span>
+                    ) : null}
                   </span>
                   <span className="text-subheadline font-semibold tabular-nums">{formatCurrency(v)}</span>
                   <Button variant="plain" size="nav" aria-label={`Fatura de ${nameOf(id)} em PDF`} onClick={() => exportFor(id)}>PDF</Button>

@@ -1,6 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { SearchField } from '@/components/ios/search-field'
 import { MonthSelector } from '@/components/shared/month-selector'
@@ -23,13 +24,21 @@ function normalize(s: string) {
   return s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
 }
 
+// ?pagamento=id1,id2&mes=AAAA-MM abre já filtrado (ex.: "Você deve a …" da Home, com o mês das compras).
 export default function TransactionsPage() {
-  const { month } = useMonth()
+  return <Suspense><TransactionsContent /></Suspense>
+}
+
+function TransactionsContent() {
+  const params = useSearchParams()
+  const { month, setMonth } = useMonth()
+  const linkMonth = params.get('mes')
+  useEffect(() => { if (linkMonth) setMonth(linkMonth) }, [linkMonth, setMonth])
   const { transactions, loading } = useMonthTransactions(month)
   const { categories } = useCategories()
   const { wallets } = useWallets()
   const [query, setQuery] = useState('')
-  const [extra, setExtra] = useState(NO_FILTER)
+  const [extra, setExtra] = useState(() => ({ ...NO_FILTER, walletIds: params.get('pagamento')?.split(',').filter(Boolean) ?? [] }))
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [showDuplicates, setShowDuplicates] = useState(false)
   const duplicates = useMemo(() => findDuplicates(transactions), [transactions])

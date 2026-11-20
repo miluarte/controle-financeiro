@@ -12,6 +12,9 @@ export interface FabMenuItem {
   label: string
   icon: React.ComponentType<{ className?: string }>
   onSelect: () => void
+  // item que escolhe um arquivo: o toque abre o seletor do sistema direto (câmera, fototeca, arquivo)
+  onFile?: (file: File) => void
+  accept?: string
 }
 
 // Botão + que abre as opções empilhadas acima dele (estilo "speed dial"): fundo escurecido,
@@ -55,13 +58,25 @@ export function FabMenu({ items }: { items: FabMenuItem[] }) {
           <div className="absolute inset-0 bg-scrim backdrop-blur-sm animate-in fade-in" onClick={() => setOpen(false)} />
           <div className="absolute flex flex-col items-end gap-2"
             style={{ right: window.innerWidth - rect.right, bottom: window.innerHeight - rect.top + 8 }}>
-            {items.map((item, i) => (
-              <button key={item.key} type="button" role="menuitem" onClick={() => select(item)}
-                style={{ animationDelay: `${(items.length - 1 - i) * 30}ms` }}
-                className={cn(buttonVariants({ size: 'lg' }), 'shadow-lg animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards [&_svg]:size-6')}>
-                <item.icon />{item.label}
-              </button>
-            ))}
+            {items.map((item, i) => {
+              const style = { animationDelay: `${(items.length - 1 - i) * 30}ms` }
+              const className = cn(buttonVariants({ size: 'lg' }), 'shadow-lg animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards [&_svg]:size-6')
+              return item.onFile ? (
+                <label key={item.key} role="menuitem" style={style} className={className}>
+                  <item.icon />{item.label}
+                  <input type="file" accept={item.accept} className="sr-only"
+                    onChange={e => {
+                      const file = e.target.files?.[0]
+                      setOpen(false)
+                      if (file) item.onFile?.(file)
+                    }} />
+                </label>
+              ) : (
+                <button key={item.key} type="button" role="menuitem" onClick={() => select(item)} style={style} className={className}>
+                  <item.icon />{item.label}
+                </button>
+              )
+            })}
           </div>
           <button type="button" aria-label="Fechar" onClick={() => setOpen(false)}
             className={cn(circle, 'absolute glass-strong text-foreground animate-in spin-in-90')}

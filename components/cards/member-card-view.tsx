@@ -47,6 +47,9 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
       <section className="space-y-1 rounded-3xl bg-grouped p-4 text-center">
         <p className="text-subheadline text-muted-foreground">Você deve a {owner} na fatura de {monthName(openRef)}</p>
         <p className="text-large-title font-bold tabular-nums">{formatCurrency(at(openRef)?.open ?? 0)}</p>
+        {(at(openRef)?.settled ?? 0) > 0 && (
+          <p className="text-footnote text-muted-foreground">{formatCurrency(at(openRef)!.settled)} já acertado de {formatCurrency(at(openRef)!.total)}</p>
+        )}
         {payable.length > 0 && (
           <Button size="lg" className="mt-3 w-full" onClick={() => setPaying(true)}>Paguei a {owner}</Button>
         )}
@@ -73,7 +76,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
           <ListRow key={d.invoiceRef} title={`${capitalize(monthName(d.invoiceRef.slice(0, 7)))} em aberto`}
             subtitle={`Venceu ${formatDate(d.dueDate)}`} trailing={formatCurrency(d.open)} />
         ))}
-        <ListRow title="Já comprometido nas próximas faturas" trailing={formatCurrency(committed)} />
+        <ListRow title="Já comprometido" trailing={formatCurrency(committed)} />
       </ListGroup>
 
       <InvoiceNavigator value={ref} onChange={setRef} caption={`Suas compras · ${formatCurrency(list.reduce((s, t) => s + t.amount, 0))}`} />
