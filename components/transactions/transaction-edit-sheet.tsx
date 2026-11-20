@@ -20,6 +20,8 @@ import { DateField } from '@/components/shared/date-field'
 import { ItemsEditor } from './items-editor'
 import { PrepayGroup } from './prepay-group'
 import { useTransactionDelete } from './use-transaction-delete'
+import { usePinAction } from './use-pin-action'
+import { Switch } from '@/components/ui/switch'
 
 // TRA-6: abrir, editar e excluir um lançamento.
 export function TransactionEditSheet({
@@ -49,6 +51,7 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
   const refresh = useRefresh()
+  const pin = usePinAction()
   const [amount, setAmount] = useState(t.amount)
   const [date, setDate] = useState(t.date)
   const [categoryId, setCategoryId] = useState(t.categoryId)
@@ -106,6 +109,16 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
         </ListGroup>
       )}
 
+
+      {pin.sheet}
+      {pin.can(t) && (
+        <ListGroup footer={pin.pinned(t) ? 'Repete todo mês até você desligar.' : undefined}>
+          <FormRow label="Conta fixa">
+            <Switch checked={pin.pinned(t)}
+              onCheckedChange={on => { if (on) pin.pin(t).then(onDone); else pin.askUnpin(t) }} />
+          </FormRow>
+        </ListGroup>
+      )}
 
       {t.type === 'expense' && <ItemsEditor items={items} onChange={setItems} total={amount} disabled={!editable} />}
 

@@ -54,6 +54,8 @@ interface QuickAddSheetProps {
   pending?: Transaction | null
   // foto da nota já escolhida no botão +: abre lendo a nota
   initialReceipt?: File | null
+  // "Conta fixa" do botão +: o mesmo formulário com "Repetir todo mês" já ligado
+  initialRepeat?: boolean
 }
 
 const pendingItems = (t: Transaction | null | undefined): ReceiptItem[] =>
@@ -63,7 +65,7 @@ const pendingItems = (t: Transaction | null | undefined): ReceiptItem[] =>
 const pendingNumber = (t: Transaction | null | undefined, key: string, fallback: number) =>
   typeof t?.sourceData?.[key] === 'number' ? (t.sourceData[key] as number) : fallback
 
-export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pending = null, initialReceipt = null }: QuickAddSheetProps) {
+export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pending = null, initialReceipt = null, initialRepeat = false }: QuickAddSheetProps) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
   const { profile } = useProfile()
@@ -99,7 +101,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   // cartão próprio compartilhado: de quem é a compra ('' = sua)
   const [owner, setOwner] = useState('')
   // receita que repete todo mês vira receita fixa (Contas, "A receber")
-  const [repeat, setRepeat] = useState(() => repeatDefault(todayIso().slice(0, 7)))
+  const [repeat, setRepeat] = useState(() => ({ ...repeatDefault(todayIso().slice(0, 7)), on: initialRepeat }))
 
   function onReceipt(result: ReceiptResult, image: Blob) {
     setReceipt({ result, image })
@@ -293,7 +295,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const placeLabel = mode === 'income' ? 'Descrição' : mode === 'save' ? 'Onde?' : 'Onde foi?'
   const placePlaceholder = mode === 'income' ? (repeat.on ? 'Salário, aluguel…' : 'Opcional') : mode === 'save' ? 'CDB, Tesouro' : 'Opcional'
 
-  const modeTitle = pending ? 'Confirmar gasto' : mode === 'expense' ? 'Novo gasto' : mode === 'income' ? 'Nova receita' : 'Guardar'
+  const modeTitle = pending ? 'Confirmar gasto'
+    : mode === 'expense' ? (repeat.on ? 'Nova conta fixa' : 'Novo gasto')
+    : mode === 'income' ? (repeat.on ? 'Nova receita fixa' : 'Nova receita') : 'Guardar'
   const submitLabel = pending ? 'Confirmar' : 'Registrar'
 
   function askDiscard(t: Transaction) {

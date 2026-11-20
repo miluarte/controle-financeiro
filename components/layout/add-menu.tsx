@@ -10,7 +10,6 @@ import {
   SafeSquareLinearIcon,
   WalletMoneyLinearIcon,
 } from '@solar-icons/react'
-import { BillFormSheet } from '@/components/bills/bill-form-sheet'
 import { buttonVariants } from '@/components/ui/button'
 import { QuickAddSheet, type QuickAddMode } from '@/components/transactions/quick-add-sheet'
 import {
@@ -36,21 +35,19 @@ const FIXED: { type: BillType; label: string; icon: SolarIcon }[] = [
 // Botão + da barra de abas (FabMenu, opções empilhadas acima) ou "Adicionar" no menu lateral do desktop (menu suspenso).
 export function AddMenu({ variant = 'tab' }: { variant?: 'tab' | 'sidebar' }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [quick, setQuick] = useState<{ mode: QuickAddMode; n: number; receipt?: File } | null>(null)
+  const [quick, setQuick] = useState<{ mode: QuickAddMode; n: number; receipt?: File; repeat?: boolean } | null>(null)
   const receiptInput = useRef<HTMLInputElement>(null)
   const [quickOpen, setQuickOpen] = useState(false)
-  const [billType, setBillType] = useState<BillType>('expense')
-  const [billOpen, setBillOpen] = useState(false)
 
-  function openQuick(mode: QuickAddMode, receipt?: File) {
+  function openQuick(mode: QuickAddMode, receipt?: File, repeat = false) {
     // a chave nova recria o formulário já no tipo escolhido (e, com a foto, já lendo a nota)
-    setQuick(q => ({ mode, n: (q?.n ?? 0) + 1, receipt }))
+    setQuick(q => ({ mode, n: (q?.n ?? 0) + 1, receipt, repeat }))
     setQuickOpen(true)
   }
 
+  // conta fixa é o mesmo formulário do gasto (ou receita) com "Repetir todo mês" já ligado
   function openBill(type: BillType) {
-    setBillType(type)
-    setBillOpen(true)
+    openQuick(type === 'income' ? 'income' : 'expense', undefined, true)
   }
 
   const Icon = menuOpen ? AddBoldIcon : AddLinearIcon
@@ -98,9 +95,8 @@ export function AddMenu({ variant = 'tab' }: { variant?: 'tab' | 'sidebar' }) {
       <input ref={receiptInput} type="file" accept="image/*" className="sr-only"
         onChange={e => { const file = e.target.files?.[0]; e.target.value = ''; if (file) openQuick('expense', file) }} />
       {quick && (
-        <QuickAddSheet key={quick.n} open={quickOpen} onOpenChange={setQuickOpen} initialMode={quick.mode} initialReceipt={quick.receipt} />
+        <QuickAddSheet key={quick.n} open={quickOpen} onOpenChange={setQuickOpen} initialMode={quick.mode} initialReceipt={quick.receipt} initialRepeat={quick.repeat} />
       )}
-      <BillFormSheet open={billOpen} onOpenChange={setBillOpen} type={billType} />
     </>
   )
 }
