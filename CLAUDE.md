@@ -31,6 +31,13 @@ O app segue a especificação funcional v1.0 (núcleo financeiro, família, noti
 
 Textos de apoio na interface (footers, dicas, legendas): curtos e diretos, uma frase. Sem explicar o óbvio.
 
+## Textos da interface (content design)
+
+Todo texto novo ou alterado segue `docs/content-design.md` (voz e tom, regra por elemento, glossário de verbos e termos). Resumo:
+- Botão: verbo no infinitivo, no máximo 2 palavras (termo composto como "nota fiscal" conta como uma; conector não conta). Sem imperativo nem primeira pessoa. Exceções: OK, Agora não, Pronto.
+- Títulos, rótulos, abas e chips: substantivo curto, sem verbo de instrução. Maiúscula só na primeira palavra, sem artigo no começo, sem ponto final.
+- Tratar por "você". Usar sempre a palavra do glossário (ex.: Excluir, nunca Apagar; Gasto, nunca Despesa).
+
 ## Design (iOS 26, Liquid Glass)
 
 Cor principal: preto (no modo escuro, branco). Logo: a imagem oficial em `public/favicon_io/apple-touch-icon.png` via `components/shared/app-logo.tsx`; não trocar.
