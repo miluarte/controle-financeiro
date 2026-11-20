@@ -129,6 +129,7 @@ export function toBill(r: Row): Bill {
     installmentsTotal: numOrNull(r.installments_total),
     endMonth: r.end_month ?? null,
     active: !!r.active,
+    walletId: r.wallet_id ?? null,
   }
 }
 

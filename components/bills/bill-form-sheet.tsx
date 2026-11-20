@@ -18,6 +18,8 @@ import { addMonths, capitalize, monthLabel } from '@/lib/utils'
 import { RecurrenceEnd, type EndMode } from './recurrence-end'
 import type { Bill, BillType } from '@/lib/types'
 import { DateField } from '@/components/shared/date-field'
+import { SelectField } from '@/components/shared/select-field'
+import { useWallets } from '@/hooks/use-wallets'
 
 // CON-3, CON-4, CON-5: nova conta (fixa, recorrente ou parcelada).
 // Com type="income" vira receita fixa (salário, aluguel recebido): mesma série mensal, mas a pagar vira a receber.
@@ -50,6 +52,10 @@ function BillForm({ type, bill, onDone }: { type: BillType; bill: Bill | null; o
   const [startMonth, setStartMonth] = useState(month)
   const [dueNextMonth, setDueNextMonth] = useState(bill?.dueNextMonth ?? false)
   const [categoryId, setCategoryId] = useState<string | null>(bill?.categoryId ?? null)
+  // cobrada no cartão de crédito (assinatura): entra sozinha na fatura todo mês
+  const { wallets } = useWallets()
+  const cards = wallets.filter(w => w.type === 'credit')
+  const [cardId, setCardId] = useState(bill?.walletId ?? '')
   const [recurring, setRecurring] = useState(true)
   const [installments, setInstallments] = useState(false)
   const [current, setCurrent] = useState(1)
@@ -82,17 +88,18 @@ function BillForm({ type, bill, onDone }: { type: BillType; bill: Bill | null; o
     if (installments && (current < 1 || total < current)) { setError('Confira as parcelas.'); return }
     try {
       if (bill) {
-        await billsApi.updateSeries(bill.id, month, { name: name.trim(), amount, dueDay, dueNextMonth: income ? false : dueNextMonth, categoryId, endMonth: resolvedEnd })
+        await billsApi.updateSeries(bill.id, month, { name: name.trim(), amount, dueDay, dueNextMonth: income || cardId ? false : dueNextMonth, categoryId, endMonth: resolvedEnd, walletId: income ? null : cardId || null })
         await refresh(); onDone()
         return
       }
       await billsApi.create({
-        type, name: name.trim(), amount, dueDay, dueNextMonth: income ? false : dueNextMonth, categoryId,
+        type, name: name.trim(), amount, dueDay, dueNextMonth: income || cardId ? false : dueNextMonth, categoryId,
         recurring: recurring || installments,
         startMonth: `${startMonth}-01`,
         installmentCurrent: installments ? current : null,
         installmentsTotal: installments ? total : null,
         endMonth: resolvedEnd,
+        walletId: income ? null : cardId || null,
       })
       await refresh(); onDone()
     } catch (err) {
@@ -115,14 +122,20 @@ function BillForm({ type, bill, onDone }: { type: BillType; bill: Bill | null; o
             <DateField id="bill-month" mode="month" value={startMonth} onChange={v => setStartMonth(v || month)} />
           </FormRow>
         )}
-        {!income && (
+        {!income && cards.length > 0 && (
+          <FormRow label="Cobrada no cartão" htmlFor="bill-card">
+            <SelectField id="bill-card" value={cardId} onChange={setCardId} placeholder="Não"
+              options={cards.map(w => ({ value: w.id, label: w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name }))} />
+          </FormRow>
+        )}
+        {!income && !cardId && (
           <FormRow label="Vence no mês seguinte">
             <Switch checked={dueNextMonth} onCheckedChange={setDueNextMonth} />
           </FormRow>
         )}
       </ListGroup>
 
-      <ListGroup footer={preview ? capitalize(preview) + '.' : bill ? 'Vale deste mês em diante.' : undefined}>
+      <ListGroup footer={cardId ? 'Entra sozinha na fatura todo mês.' : preview ? capitalize(preview) + '.' : bill ? 'Vale deste mês em diante.' : undefined}>
         {!bill && (
           <FormRow label="Repetir nos próximos meses">
             <Switch checked={recurring || installments} disabled={installments} onCheckedChange={setRecurring} />

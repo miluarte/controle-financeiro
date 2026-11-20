@@ -19,19 +19,19 @@ export const invoicesApi = {
     return rows.map(r => ({ walletId: r.wallet_id, refMonth: r.ref_month, paidAt: r.paid_at }))
   },
 
+  // quanto já foi pago de cada fatura dos meus cartões (pagamento parcial), sem os antecipados de compra
+  paidAmounts: async (fromRef: string, toRef: string): Promise<{ walletId: string; invoiceRef: string; paid: number }[]> =>
+    unwrap(await supabase.from('invoice_paid').select('*').gte('invoice_ref', fromRef).lte('invoice_ref', toRef))
+      .map(r => ({ walletId: r.wallet_id as string, invoiceRef: (r.invoice_ref as string).slice(0, 7), paid: Number(r.paid) })),
+
   pay: async (cardId: string, ref: string, fromWalletId: string, date: string, amount?: number) => {
     unwrap(await supabase.rpc('pay_invoice', {
       p_card: cardId, p_ref: ref, p_from_wallet: fromWalletId, p_date: date, p_amount: amount ?? null,
     }))
   },
 
+  // desfaz todos os pagamentos da fatura (inclusive os parciais)
   unpay: async (cardId: string, ref: string) => {
-    const inv = unwrap(
-      await supabase.from('invoices').select('payment_transaction_id').eq('wallet_id', cardId).eq('ref_month', ref).single(),
-    )
-    unwrap(await supabase.from('invoices').update({ paid_at: null, payment_transaction_id: null }).eq('wallet_id', cardId).eq('ref_month', ref))
-    if (inv.payment_transaction_id) {
-      unwrap(await supabase.from('transactions').delete().eq('id', inv.payment_transaction_id))
-    }
+    unwrap(await supabase.rpc('unpay_invoice', { p_card: cardId, p_ref: ref }))
   },
 }
