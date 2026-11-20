@@ -20,10 +20,10 @@ export function LargeTitleHeader({ title, eyebrow, actions, back, className }: L
   return (
     <header className={cn('px-4 pt-4 pb-2', className)}>
       {eyebrow && <p className="text-subheadline text-muted-foreground">{eyebrow}</p>}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         {back && (
-          <Button variant="ghost" size="icon" aria-label="Voltar" onClick={() => router.back()} className="-ml-2 rounded-full [&_svg]:size-6">
-            <AltArrowLeftLinearIcon />
+          <Button variant="plain" size="nav" aria-label="Voltar" onClick={() => router.back()} className="-ml-3 -mr-1 px-0">
+            <AltArrowLeftLinearIcon className="size-9" />
           </Button>
         )}
         <h1 className="min-w-0 flex-1 truncate text-title1 font-bold">{title}</h1>
