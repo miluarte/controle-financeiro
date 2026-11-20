@@ -18,6 +18,7 @@ import { useMonthTransactions } from '@/hooks/use-month-transactions'
 import { useWallets } from '@/hooks/use-wallets'
 import type { Transaction } from '@/lib/types'
 import { LoadingBlock } from '@/components/shared/loading-dots'
+import { NO_FILTER, TransactionFilters } from '@/components/transactions/transaction-filters'
 
 type Filter = 'all' | 'expense' | 'income' | 'saved'
 
@@ -39,6 +40,7 @@ export default function TransactionsPage() {
   const { wallets } = useWallets()
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<Filter>('all')
+  const [extra, setExtra] = useState(NO_FILTER)
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [showDuplicates, setShowDuplicates] = useState(false)
   const duplicates = useMemo(() => findDuplicates(transactions), [transactions])
@@ -50,13 +52,15 @@ export default function TransactionsPage() {
     const walletName = new Map(wallets.map(w => [w.id, w.name]))
     return transactions.filter(t => {
       if (types && !types.includes(t.type)) return false
+      if (extra.categoryIds.length && !(t.categoryId && extra.categoryIds.includes(t.categoryId))) return false
+      if (extra.walletIds.length && !(t.walletId && extra.walletIds.includes(t.walletId))) return false
       if (!q) return true
       const itemNames = Array.isArray(t.sourceData?.items) ? (t.sourceData.items as { name: string }[]).map(i => i.name) : []
       const hay = [t.place, t.description, t.categoryId && catName.get(t.categoryId), t.walletId && walletName.get(t.walletId), ...itemNames]
         .filter(Boolean).join(' ')
       return normalize(hay).includes(q)
     })
-  }, [transactions, filter, query, categories, wallets])
+  }, [transactions, filter, query, categories, wallets, extra])
 
   return (
     <>
@@ -74,6 +78,7 @@ export default function TransactionsPage() {
             { value: 'saved', label: 'Guardado' },
           ]}
         />
+        <TransactionFilters value={extra} onChange={setExtra} categories={categories} wallets={wallets} />
         {duplicates.length > 0 && (
           <ListGroup>
             <ListRow chevron onClick={() => setShowDuplicates(true)}

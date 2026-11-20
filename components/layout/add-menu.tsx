@@ -10,7 +10,6 @@ import {
   WalletMoneyLinearIcon,
 } from '@solar-icons/react'
 import { BillFormSheet } from '@/components/bills/bill-form-sheet'
-import { glassButtonVariants } from '@/components/ios/glass-button'
 import { buttonVariants } from '@/components/ui/button'
 import { QuickAddSheet, type QuickAddMode } from '@/components/transactions/quick-add-sheet'
 import {
@@ -19,6 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { BillType } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { FabMenu } from './fab-menu'
 
 type SolarIcon = React.ComponentType<{ className?: string }>
 
@@ -32,7 +32,7 @@ const FIXED: { type: BillType; label: string; icon: SolarIcon }[] = [
   { type: 'expense', label: 'Conta fixa',   icon: BillListLinearIcon },
 ]
 
-// Botão + da barra de abas (ou "Adicionar" no menu lateral do desktop): abre o menu do que adicionar.
+// Botão + da barra de abas (FabMenu, opções empilhadas acima) ou "Adicionar" no menu lateral do desktop (menu suspenso).
 export function AddMenu({ variant = 'tab' }: { variant?: 'tab' | 'sidebar' }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [quick, setQuick] = useState<{ mode: QuickAddMode; n: number } | null>(null)
@@ -53,22 +53,20 @@ export function AddMenu({ variant = 'tab' }: { variant?: 'tab' | 'sidebar' }) {
 
   const Icon = menuOpen ? AddBoldIcon : AddLinearIcon
 
+  // celular: opções empilhadas acima do + (de cima para baixo; Gasto fica mais perto do dedo)
+  const fabItems = [
+    ...FIXED.map(({ type, label, icon }) => ({ key: `bill-${type}`, label, icon, onSelect: () => openBill(type) })),
+    ...[...QUICK].reverse().map(({ mode, label, icon }) => ({ key: mode, label, icon, onSelect: () => openQuick(mode) })),
+  ]
+
   return (
     <>
+      {variant === 'tab' ? <FabMenu items={fabItems} /> : (
       <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-        {variant === 'sidebar' ? (
-          <DropdownMenuTrigger aria-label="Adicionar" className={cn(buttonVariants({ size: 'lg' }), 'w-full rounded-full')}>
-            <Icon />Adicionar
-          </DropdownMenuTrigger>
-        ) : (
-          <DropdownMenuTrigger
-            aria-label="Adicionar"
-            className={cn(glassButtonVariants(), 'size-tabbar text-tint [&_svg]:size-7')}
-          >
-            <Icon />
-          </DropdownMenuTrigger>
-        )}
-        <DropdownMenuContent {...(variant === 'sidebar' ? { side: 'bottom' as const, align: 'start' as const } : {})}>
+        <DropdownMenuTrigger aria-label="Adicionar" className={cn(buttonVariants({ size: 'lg' }), 'w-full rounded-full')}>
+          <Icon />Adicionar
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="bottom" align="start">
           <DropdownMenuGroup>
             <DropdownMenuLabel>Registrar</DropdownMenuLabel>
             {QUICK.map(({ mode, label, icon: ItemIcon }) => (
@@ -88,6 +86,7 @@ export function AddMenu({ variant = 'tab' }: { variant?: 'tab' | 'sidebar' }) {
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
+      )}
 
       {quick && (
         <QuickAddSheet key={quick.n} open={quickOpen} onOpenChange={setQuickOpen} initialMode={quick.mode} />

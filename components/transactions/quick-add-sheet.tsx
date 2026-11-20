@@ -23,7 +23,7 @@ import { uploadReceipt, walletForReceipt, type ReceiptResult } from '@/lib/recei
 import { ReceiptResultGroup } from '@/components/receipt/receipt-result-group'
 import { ReceiptScanButton } from '@/components/receipt/receipt-scan-button'
 import { useSession } from '@/hooks/use-session'
-import type { Wallet } from '@/lib/types'
+import type { Transaction, Wallet } from '@/lib/types'
 import { todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { InstallmentProgress } from './installment-progress'
@@ -35,6 +35,8 @@ import { PurchaseOwnerField, useCardAccess } from './purchase-owner-field'
 import { familyApi } from '@/lib/api/family'
 import type { ReceiptItem } from '@/lib/receipt'
 import { useCategorySuggest } from '@/hooks/use-category-suggest'
+import { automationsApi } from '@/lib/api/automations'
+import { useConfirmDelete } from '@/components/ios/use-delete-action'
 
 export type QuickAddMode = 'expense' | 'income' | 'save'
 type Mode = QuickAddMode
@@ -49,9 +51,14 @@ interface QuickAddSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   initialMode?: Mode
+  // gasto pendente das automações: abre preenchido e, ao registrar, substitui o pendente
+  pending?: Transaction | null
 }
 
-export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: QuickAddSheetProps) {
+const pendingItems = (t: Transaction | null | undefined): ReceiptItem[] =>
+  Array.isArray(t?.sourceData?.items) ? (t.sourceData.items as ReceiptItem[]) : []
+
+export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pending = null }: QuickAddSheetProps) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
   const { profile } = useProfile()
@@ -61,12 +68,12 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
 
   const [mode, setMode] = useState<Mode>(initialMode)
   const [saveDirection, setSaveDirection] = useState<SaveDirection>('apply')
-  const [amount, setAmount] = useState(0)
-  const [date, setDate] = useState(todayIso)
-  const [categoryId, setCategoryId] = useState<string | null>(null)
+  const [amount, setAmount] = useState(pending?.amount ?? 0)
+  const [date, setDate] = useState(() => pending?.date ?? todayIso())
+  const [categoryId, setCategoryId] = useState<string | null>(() => pending ? pending.categoryId ?? suggest(pending.place) : null)
   // null = ainda não escolheu: usa a carteira padrão do perfil
-  const [pickedWalletId, setWalletId] = useState<string | null>(null)
-  const [place, setPlace] = useState('')
+  const [pickedWalletId, setWalletId] = useState<string | null>(pending?.walletId ?? null)
+  const [place, setPlace] = useState(pending?.place ?? '')
   const [installments, setInstallments] = useState(1)
   // compra parcelada que já estava andando antes do app: parcela atual e valor da parcela
   const [currentInstallment, setCurrentInstallment] = useState(1)
@@ -79,7 +86,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
   // mesma NFC-e já registrada antes (pela chave do QR code)
   const [duplicateOn, setDuplicateOn] = useState<string | null>(null)
   // itens da compra: vêm da nota ou são digitados
-  const [items, setItems] = useState<ReceiptItem[]>([])
+  const [items, setItems] = useState<ReceiptItem[]>(() => pendingItems(pending))
+  const discard = useConfirmDelete()
   // cartão próprio compartilhado: de quem é a compra ('' = sua)
   const [owner, setOwner] = useState('')
   // receita que repete todo mês vira receita fixa (Contas, "A receber")
@@ -151,6 +159,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
           walletId: walletId!, categoryId, installments, firstDate: date, place: placeValue,
           total: amountIsInstallment ? amount * installments : amount,
           start: Math.min(currentInstallment, installments),
+          ...(pending ? { source: pending.source } : {}),
         })
         if (items.length) await transactionsApi.setGroupItems(group, items)
         if (assignTo) {
@@ -166,6 +175,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
             source: 'photo',
             sourceData: { reader: receipt.result.source, items, ...(receipt.result.chave ? { chave: receipt.result.chave } : {}) },
             receiptPath,
+          } : pending ? {
+            source: pending.source,
+            sourceData: { ...(pending.sourceData ?? {}), ...(mode === 'expense' && items.length ? { items } : {}) },
           } : mode === 'expense' && items.length ? { sourceData: { items } } : {}),
           type: mode === 'save' ? (saveDirection === 'apply' ? 'save_apply' : 'save_redeem') : mode,
           amount,
@@ -177,6 +189,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
         })
         if (assignTo && isCredit) await familyApi.assignPurchase(created.id, assignTo)
       }
+      if (pending) await finishPending(pending)
       await refreshMonth()
       reset()
       onOpenChange(false)
@@ -185,6 +198,13 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
     } finally {
       setSubmitting(false)
     }
+  }
+
+  // o lançamento novo substitui o pendente; no Apple Pay, guarda o nome do cartão como apelido da carteira
+  async function finishPending(t: Transaction) {
+    await transactionsApi.remove(t.id)
+    const card = typeof t.sourceData?.card === 'string' ? t.sourceData.card : null
+    if (card && walletId && needsWallet) await automationsApi.rememberCard(t.owner, card, walletId)
   }
 
   // cria a receita fixa com dia e mês da data; se a data já chegou, este mês já entra como recebido
@@ -208,9 +228,19 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
   const placeLabel = mode === 'income' ? 'Descrição' : mode === 'save' ? 'Onde?' : 'Onde foi?'
   const placePlaceholder = mode === 'income' ? (repeat.on ? 'Salário, aluguel…' : 'Opcional') : mode === 'save' ? 'CDB, Tesouro' : 'Opcional'
 
-  const modeTitle = mode === 'expense' ? 'Novo gasto' : mode === 'income' ? 'Nova receita' : 'Guardar'
+  const modeTitle = pending ? 'Confirmar gasto' : mode === 'expense' ? 'Novo gasto' : mode === 'income' ? 'Nova receita' : 'Guardar'
+  const submitLabel = pending ? 'Confirmar' : 'Registrar'
+
+  function askDiscard(t: Transaction) {
+    discard.ask({
+      title: 'Descartar este gasto?', label: 'Descartar',
+      remove: async () => { await transactionsApi.remove(t.id); reset(); onOpenChange(false) },
+    })
+  }
 
   return (
+    <>
+    {discard.sheet}
     <Sheet open={open} onOpenChange={o => { onOpenChange(o); if (!o) reset() }}>
       <SheetContent side="bottom" showCloseButton={false} className="gap-0">
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
@@ -220,9 +250,15 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
               <CloseLinearIcon />
             </SheetClose>
             <SheetTitle className="text-headline font-semibold">{modeTitle}</SheetTitle>
-            <GlassButton type="submit" size="capsule" tone="prominent" className="justify-self-end font-semibold" disabled={!canSubmit}>
-              {submitting ? <LoadingDots size="sm" tone="current" label="Salvando" /> : 'Registrar'}
-            </GlassButton>
+            {pending ? (
+              <Button type="button" variant="plain-destructive" size="nav" className="justify-self-end" onClick={() => askDiscard(pending)}>
+                Descartar
+              </Button>
+            ) : (
+              <GlassButton type="submit" size="capsule" tone="prominent" className="justify-self-end font-semibold" disabled={!canSubmit}>
+                {submitting ? <LoadingDots size="sm" tone="current" label="Salvando" /> : submitLabel}
+              </GlassButton>
+            )}
           </div>
 
           <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-2 pb-6">
@@ -331,11 +367,12 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense' }: Q
             {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
 
             <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>
-              {submitting ? <LoadingDots tone="current" label="Registrando" /> : 'Registrar'}
+              {submitting ? <LoadingDots tone="current" label="Registrando" /> : submitLabel}
             </Button>
           </div>
         </form>
       </SheetContent>
     </Sheet>
+    </>
   )
 }
