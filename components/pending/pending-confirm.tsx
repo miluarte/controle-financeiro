@@ -16,7 +16,8 @@ import { useWallets } from '@/hooks/use-wallets'
 import { automationsApi } from '@/lib/api/automations'
 import { transactionsApi } from '@/lib/api/transactions'
 import type { Transaction } from '@/lib/types'
-import { todayIso } from '@/lib/utils'
+import { addMonths, formatCurrency, monthName, todayIso } from '@/lib/utils'
+import { NumberField } from '@/components/shared/number-field'
 import { DateField } from '@/components/shared/date-field'
 import { useCategorySuggest } from '@/hooks/use-category-suggest'
 
@@ -32,9 +33,13 @@ export function PendingConfirm({ t, onDone }: { t: Transaction; onDone: () => vo
   const suggest = useCategorySuggest()
   const [categoryId, setCategoryId] = useState<string | null>(() => t.categoryId ?? suggest(t.place))
   const [walletId, setWalletId] = useState<string | null>(t.walletId ?? profile?.defaultWalletId ?? null)
+  const [installments, setInstallments] = useState(1)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const card = typeof t.sourceData?.card === 'string' ? t.sourceData.card : null
+  const isCredit = wallets.find(w => w.id === walletId)?.type === 'credit'
+  const split = isCredit && installments > 1
+  const lastMonth = addMonths(date.slice(0, 7), installments - 1)
 
   async function run(fn: () => Promise<void>) {
     setBusy(true); setError(null)
@@ -47,7 +52,15 @@ export function PendingConfirm({ t, onDone }: { t: Transaction; onDone: () => vo
     if (amount <= 0) { setError('Informe o valor.'); return }
     if (!walletId) { setError('Escolha a carteira.'); return }
     run(async () => {
-      await transactionsApi.confirmPending(t.id, { amount, place: place.trim() || null, date, categoryId, walletId })
+      if (split) {
+        // parcelada: lança as parcelas confirmadas e tira o pendente
+        await transactionsApi.createInstallments({
+          walletId, categoryId, total: amount, installments, firstDate: date, place: place.trim() || null, source: t.source,
+        })
+        await transactionsApi.remove(t.id)
+      } else {
+        await transactionsApi.confirmPending(t.id, { amount, place: place.trim() || null, date, categoryId, walletId })
+      }
       if (card) await automationsApi.rememberCard(t.owner, card, walletId)
     })
   }
@@ -75,6 +88,13 @@ export function PendingConfirm({ t, onDone }: { t: Transaction; onDone: () => vo
       <ListGroup header="Como pagou?" footer={card ? `Apple Pay: ${card}` : undefined}>
         <WalletPicker wallets={wallets} value={walletId} onChange={setWalletId} />
       </ListGroup>
+      {isCredit && (
+        <ListGroup footer={split ? `${installments}x de ${formatCurrency(Math.floor(amount / installments))} · última em ${monthName(lastMonth, 'short')} ${lastMonth.slice(0, 4)}` : undefined}>
+          <FormRow label="Parcelas" htmlFor="pending-installments">
+            <NumberField id="pending-installments" min={1} max={48} value={installments} onChange={setInstallments} className="w-16 text-right" />
+          </FormRow>
+        </ListGroup>
+      )}
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
       <div className="grid grid-cols-2 gap-2">
         <Button variant="secondary" size="lg" disabled={busy}

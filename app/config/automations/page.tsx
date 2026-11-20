@@ -49,8 +49,8 @@ export default function AutomationsPage() {
         <AutomationGuide
           title="Apple Pay"
           steps={[
-            'Atalhos > Automação > + > Transação.',
-            'Escolha os cartões e marque "Executar imediatamente".',
+            'Atalhos > Automação > + > Carteira.',
+            'Deixe todos os cartões e comerciantes e ligue "Automação".',
             URL_STEP,
           ]}
           fields={[['t', tokenText], ['s', 'apple_pay'], ['v', 'Quantia'], ['l', 'Comerciante'], ['c', 'Cartão ou Passe']]}

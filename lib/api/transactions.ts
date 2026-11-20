@@ -99,7 +99,7 @@ export const transactionsApi = {
 
   createInstallments: async (args: {
     walletId: string; categoryId: string | null; total: number; installments: number
-    firstDate: string; place: string | null; start?: number
+    firstDate: string; place: string | null; start?: number; source?: string
   }): Promise<string> => {
     return unwrap(await supabase.rpc('create_installment_purchase', {
       p_wallet: args.walletId,
@@ -109,6 +109,7 @@ export const transactionsApi = {
       p_first_date: args.firstDate,
       p_place: args.place,
       p_start: args.start ?? 1,
+      ...(args.source ? { p_source: args.source } : {}),
     })) as string
   },
 
