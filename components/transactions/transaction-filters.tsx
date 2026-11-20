@@ -8,27 +8,46 @@ import { ModalSheet } from '@/components/ios/modal-sheet'
 import { ChoiceChip } from '@/components/shared/choice-chip'
 import { TokenIcon } from '@/components/shared/token-icon'
 import { WALLET_TYPE_ICON } from '@/lib/constants'
-import type { Category, Wallet } from '@/lib/types'
+import type { Category, Transaction, Wallet } from '@/lib/types'
+
+// tipos do filtro: gasto, receita e guardado (aplicar e resgatar)
+export const TYPE_FILTERS = [
+  { id: 'expense', label: 'Gastos', icon: 'cart', types: ['expense'] },
+  { id: 'income', label: 'Receitas', icon: 'trending-up', types: ['income'] },
+  { id: 'saved', label: 'Guardado', icon: 'piggy-bank', types: ['save_apply', 'save_redeem'] },
+] as const satisfies readonly { id: string; label: string; icon: string; types: readonly Transaction['type'][] }[]
 
 export interface TransactionFilterValue {
+  types: string[]
   categoryIds: string[]
   walletIds: string[]
 }
 
-export const NO_FILTER: TransactionFilterValue = { categoryIds: [], walletIds: [] }
+export const NO_FILTER: TransactionFilterValue = { types: [], categoryIds: [], walletIds: [] }
+
+// o lançamento passa pelos filtros escolhidos (filtro vazio = tudo)
+export function matchesFilters(t: Transaction, f: TransactionFilterValue) {
+  if (f.types.length && !TYPE_FILTERS.some(o => f.types.includes(o.id) && (o.types as readonly string[]).includes(t.type))) return false
+  if (f.categoryIds.length && !(t.categoryId && f.categoryIds.includes(t.categoryId))) return false
+  if (f.walletIds.length && !(t.walletId && f.walletIds.includes(t.walletId))) return false
+  return true
+}
+
+type FilterKey = 'types' | 'categoryIds' | 'walletIds'
+const TITLES: Record<FilterKey, string> = { types: 'Tipo', categoryIds: 'Categorias', walletIds: 'Pagamento' }
 
 interface Option { id: string; label: string; icon: string; color: string }
 
 const toggle = (list: string[], id: string) => (list.includes(id) ? list.filter(x => x !== id) : [...list, id])
 
-// Filtros de Transações: categorias e forma de pagamento (carteira), com várias escolhas em cada um.
+// Filtros de Transações: tipo, categorias e forma de pagamento (carteira), com várias escolhas em cada um.
 export function TransactionFilters({ value, onChange, categories, wallets }: {
   value: TransactionFilterValue
   onChange: (v: TransactionFilterValue) => void
   categories: Category[]
   wallets: Wallet[]
 }) {
-  const [open, setOpen] = useState<'category' | 'wallet' | null>(null)
+  const [open, setOpen] = useState<FilterKey | null>(null)
 
   const expense = categories.filter(c => c.type === 'expense')
   const income = categories.filter(c => c.type === 'income')
@@ -37,22 +56,24 @@ export function TransactionFilters({ value, onChange, categories, wallets }: {
     id: w.id, label: w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name, icon: WALLET_TYPE_ICON[w.type] ?? 'wallet', color: 'gray',
   }))
 
-  const key = open === 'category' ? 'categoryIds' : 'walletIds'
+  const key = open ?? 'types'
   const selected = open ? value[key] : []
   const pick = (id: string) => onChange({ ...value, [key]: toggle(value[key], id) })
-  const groups: { header?: string; options: Option[] }[] = open === 'category'
-    ? [{ header: 'Gastos', options: expense.map(catOption) }, { header: 'Receitas', options: income.map(catOption) }]
-    : [{ options: walletOptions }]
+  const groups: { header?: string; options: Option[] }[] =
+    open === 'categoryIds' ? [{ header: 'Gastos', options: expense.map(catOption) }, { header: 'Receitas', options: income.map(catOption) }]
+    : open === 'walletIds' ? [{ options: walletOptions }]
+    : [{ options: TYPE_FILTERS.map(o => ({ id: o.id, label: o.label, icon: o.icon, color: 'gray' })) }]
 
   return (
     <>
-      <div className="flex gap-2">
-        <FilterChip label="Categorias" count={value.categoryIds.length} onClick={() => setOpen('category')} />
-        <FilterChip label="Pagamento" count={value.walletIds.length} onClick={() => setOpen('wallet')} />
+      <div className="flex flex-wrap gap-2">
+        {(Object.keys(TITLES) as FilterKey[]).map(k => (
+          <FilterChip key={k} label={TITLES[k]} count={value[k].length} onClick={() => setOpen(k)} />
+        ))}
       </div>
 
       <ModalSheet open={!!open} onOpenChange={o => { if (!o) setOpen(null) }}
-        title={open === 'category' ? 'Categorias' : 'Pagamento'}>
+        title={TITLES[key]}>
         {groups.filter(g => g.options.length).map(g => (
           <ListGroup key={g.header ?? 'all'} header={g.header}>
             <li className="flex flex-wrap gap-2 p-3">
