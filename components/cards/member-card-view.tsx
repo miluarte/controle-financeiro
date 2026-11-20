@@ -73,7 +73,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
           <ListRow key={d.invoiceRef} title={`${capitalize(monthName(d.invoiceRef.slice(0, 7)))} em aberto`}
             subtitle={`Venceu ${formatDate(d.dueDate)}`} trailing={formatCurrency(d.open)} />
         ))}
-        <ListRow title="Já comprometido nas próximas faturas" trailing={formatCurrency(committed)} />
+        <ListRow title="Já comprometido" trailing={formatCurrency(committed)} />
       </ListGroup>
 
       <InvoiceNavigator value={ref} onChange={setRef} caption={`Suas compras · ${formatCurrency(list.reduce((s, t) => s + t.amount, 0))}`} />
