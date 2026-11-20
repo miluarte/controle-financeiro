@@ -16,8 +16,11 @@ export function FamilyBalances({ month }: { month: string }) {
   const { wallets } = useWallets()
   const receivable = summary?.receivableFromMembers ?? 0
 
+  // só a fatura que vence no mês escolhido (e atrasadas), sem as parcelas futuras
   const owed = new Map<string, number>()
-  for (const d of debts) if (d.open > 0) owed.set(d.walletId, (owed.get(d.walletId) ?? 0) + d.open)
+  for (const d of debts) {
+    if (d.open > 0 && d.dueDate.slice(0, 7) <= month) owed.set(d.walletId, (owed.get(d.walletId) ?? 0) + d.open)
+  }
 
   if (receivable <= 0 && owed.size === 0) return null
 
