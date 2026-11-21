@@ -34,7 +34,7 @@ export function ItemsEditor({ items, onChange, total, disabled }: {
 
   function saveEdit() {
     if (editing == null) return
-    if (draft.name.trim()) onChange(items.map((it, j) => (j === editing ? { name: draft.name.trim(), amount: draft.amount } : it)))
+    if (draft.name.trim()) onChange(items.map((it, j) => (j === editing ? { ...it, name: draft.name.trim(), amount: draft.amount } : it)))
     setEditing(null)
   }
 

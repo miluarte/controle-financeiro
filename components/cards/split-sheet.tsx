@@ -12,15 +12,11 @@ import { NumberField } from '@/components/shared/number-field'
 import { useRefresh } from '@/hooks/use-refresh'
 import { familyApi } from '@/lib/api/family'
 import type { FamilyMember, Transaction } from '@/lib/types'
+import { equalParts } from '@/lib/split'
 import { formatCurrency } from '@/lib/utils'
 
 type Mode = 'equal' | 'value' | 'percent'
 
-// Divide em partes iguais em centavos; o resto vai para as primeiras pessoas.
-function equalParts(total: number, n: number) {
-  const base = Math.floor(total / n)
-  return Array.from({ length: n }, (_, i) => base + (i < total - base * n ? 1 : 0))
-}
 
 // ATR-5: dividir uma compra à vista entre duas ou mais pessoas, por valor ou percentual.
 export function SplitSheet({

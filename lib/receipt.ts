@@ -7,7 +7,8 @@ import { parseCents, todayIso } from './utils'
 // 2. Sem QR (ou Sefaz fora): Gemini lê a foto (Edge Function ler-nota). 3. Se não der (sem chave,
 // limite gratuito, erro), leitura local com Tesseract.js no próprio celular, mais simples e menos precisa.
 
-export interface ReceiptItem { name: string; amount: number }
+// owner: de quem é o item na compra dividida (id da pessoa ou 'split', dividido entre todos)
+export interface ReceiptItem { name: string; amount: number; owner?: string }
 
 export interface ReceiptResult {
   amount: number          // centavos

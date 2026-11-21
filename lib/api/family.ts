@@ -95,10 +95,13 @@ export const familyApi = {
   cancelSettlement: async (id: string) => { unwrap(await supabase.rpc('cancel_settlement', { p_settlement: id })) },
 
   // ATR-5: dividir compra à vista entre pessoas (partes somando o valor total).
-  splitPurchase: async (transactionId: string, parts: { userId: string; amount: number }[]) => {
+  // Vale para compra à vista ou parcelada (cada parcela em aberto na mesma proporção). Itens com owner
+  // ficam com a pessoa; owner 'split' vai para todos.
+  splitPurchase: async (transactionId: string, parts: { userId: string; amount: number }[], items?: { name: string; amount: number; owner?: string }[]) => {
     unwrap(await supabase.rpc('split_purchase', {
       p_transaction: transactionId,
       p_parts: parts.map(p => ({ user_id: p.userId, amount: p.amount })),
+      ...(items?.length ? { p_items: items } : {}),
     }))
   },
 }
