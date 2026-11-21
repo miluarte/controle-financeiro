@@ -32,7 +32,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
   const waiting = settlements.filter(st => st.status === 'reported')
   const confirmed = settlements.filter(st => st.status === 'confirmed')
   // faturas com saldo, das mais antigas para as mais novas (fechadas primeiro)
-  const payable = debts.filter(d => d.open > 0 && d.invoiceRef.slice(0, 7) <= nextRef)
+  const payable = debts.filter(d => d.open - d.reported > 0 && d.invoiceRef.slice(0, 7) <= nextRef)
   const { data: purchases } = useSWR(['invoice-tx', wallet.id, ref], () => transactionsApi.getByInvoice(wallet.id, `${ref}-01`))
   const catById = new Map(categories.map(c => [c.id, c]))
   const owner = wallet.ownerName ?? 'titular'

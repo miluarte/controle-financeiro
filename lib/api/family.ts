@@ -70,6 +70,7 @@ export const familyApi = {
       total: Number(r.total),
       settled: Number(r.settled),
       open: Number(r.open),
+      reported: Number(r.reported ?? 0),
     })),
 
   // 5.7.8: acertos de um cartão (o RLS mostra só os meus, como devedor ou titular).

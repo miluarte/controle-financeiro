@@ -19,36 +19,46 @@ import { DateField } from '@/components/shared/date-field'
 export function SettlementSheet({
   open, onOpenChange, card, debts,
 }: { open: boolean; onOpenChange: (o: boolean) => void; card: Wallet; debts: CardDebt[] }) {
+  const [saving, setSaving] = useState(false)
   return (
-    <ModalSheet open={open} onOpenChange={onOpenChange} title="Informar acerto" formId="settlement" actionLabel="Informar">
-      {open && <Form card={card} debts={debts} onDone={() => onOpenChange(false)} />}
+    <ModalSheet open={open} onOpenChange={onOpenChange} title="Informar acerto" formId="settlement" actionLabel="Informar" actionDisabled={saving}>
+      {open && <Form card={card} debts={debts} onSaving={setSaving} onDone={() => onOpenChange(false)} />}
     </ModalSheet>
   )
 }
 
-function Form({ card, debts, onDone }: { card: Wallet; debts: CardDebt[]; onDone: () => void }) {
+// o que ainda falta informar: o aberto menos o que já foi informado e aguarda o titular
+const toReport = (d: CardDebt) => Math.max(d.open - d.reported, 0)
+
+function Form({ card, debts, onSaving, onDone }: {
+  card: Wallet; debts: CardDebt[]; onSaving: (v: boolean) => void; onDone: () => void
+}) {
   const { wallets } = useWallets()
   const { profile } = useProfile()
   const refresh = useRefresh()
   const mine = wallets.filter(w => !w.ownerName && w.type !== 'credit')
   const [ref, setRef] = useState(debts[0]?.invoiceRef ?? '')
-  const [amount, setAmount] = useState(debts[0]?.open ?? 0)
+  const [amount, setAmount] = useState(debts[0] ? toReport(debts[0]) : 0)
   const [date, setDate] = useState(todayIso())
   const [walletId, setWalletId] = useState<string | null>(mine.find(w => w.id === profile?.defaultWalletId)?.id ?? mine[0]?.id ?? null)
   const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
 
-  function pick(d: CardDebt) { setRef(d.invoiceRef); setAmount(d.open) }
+  function pick(d: CardDebt) { setRef(d.invoiceRef); setAmount(toReport(d)) }
   // pagamento parcial: o resto continua em aberto na fatura, para os dois
-  const open = debts.find(d => d.invoiceRef === ref)?.open ?? 0
-  const left = Math.max(open - amount, 0)
+  const debt = debts.find(d => d.invoiceRef === ref)
+  const left = Math.max((debt ? toReport(debt) : 0) - amount, 0)
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
+    if (saving) return
     if (!ref || amount <= 0 || !walletId) { setError('Escolha a fatura, o valor e de onde saiu o dinheiro.'); return }
+    setSaving(true); onSaving(true)
     try {
       await familyApi.reportSettlement(card.id, ref, amount, walletId, date)
       await refresh(); onDone()
     } catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível informar.') }
+    finally { setSaving(false); onSaving(false) }
   }
 
   return (
@@ -57,7 +67,7 @@ function Form({ card, debts, onDone }: { card: Wallet; debts: CardDebt[]; onDone
       <ListGroup footer={amount > 0 && left > 0 ? `Fica faltando ${formatCurrency(left)} nesta fatura. ${card.ownerName ?? 'O titular'} vai confirmar.` : `${card.ownerName ?? 'O titular'} vai confirmar.`}>
         <PickerRow id="settle-invoice" label="Fatura" value={ref}
           onChange={v => { const d = debts.find(x => x.invoiceRef === v); if (d) pick(d) }}
-          options={debts.map(d => ({ value: d.invoiceRef, label: `${capitalize(monthName(d.invoiceRef.slice(0, 7), 'short'))} · ${formatCurrency(d.open)}` }))} />
+          options={debts.map(d => ({ value: d.invoiceRef, label: `${capitalize(monthName(d.invoiceRef.slice(0, 7), 'short'))} · ${formatCurrency(toReport(d))}` }))} />
         <WalletPicker id="settle-wallet" label="Saiu de" wallets={mine} value={walletId} onChange={setWalletId} />
       </ListGroup>
       <ListGroup>

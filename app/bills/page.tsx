@@ -123,6 +123,7 @@ export default function BillsPage() {
                     <span className="flex items-center gap-1.5">
                       Vence {formatDate(i.due).slice(0, 5)}
                       {!i.paid && i.paidAmount > 0 && ` · ${formatCurrency(i.paidAmount)} pago`}
+                      {!i.paid && i.kind === 'shared' && i.inv.debt.reported > 0 && ` · ${formatCurrency(i.inv.debt.reported)} aguardando`}
                       <DueBadge dueDate={nextBusinessDay(i.due)} paid={i.paid} />
                     </span>
                   }
