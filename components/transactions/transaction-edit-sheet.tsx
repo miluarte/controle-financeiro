@@ -26,7 +26,7 @@ import { feedback } from '@/lib/feedback'
 import { useCardPeople } from '@/hooks/use-card-people'
 import { SPLIT_ALL } from '@/lib/split'
 import { ListRow } from '@/components/ios/list-row'
-import { formatCurrency } from '@/lib/utils'
+import { capitalize, cn, formatCurrency, monthName } from '@/lib/utils'
 
 // TRA-6: abrir, editar e excluir um lançamento.
 export function TransactionEditSheet({
@@ -72,6 +72,10 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
   const split = Array.isArray(t.sourceData?.split_parts) ? (t.sourceData.split_parts as { user_id: string; amount: number }[]) : null
   const splitTotal = split ? split.reduce((sum, p) => sum + Number(p.amount), 0) : 0
   const n = t.installmentsTotal ?? 1
+  // divisão de cada parcela (split_schedule), mês a mês
+  const schedule = Array.isArray(t.sourceData?.split_schedule)
+    ? (t.sourceData.split_schedule as { n: number | null; date: string; parts: { user_id: string; amount: number }[] }[])
+    : null
   // parcela: a desta compra é exata (sua parte e o total da parcela antes de dividir); a de outra pessoa, aproximada
   const parcelOf = (userId: string | null, total: number) =>
     userId === t.owner ? t.amount
@@ -151,6 +155,17 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
                 trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(p.amount)}</span>} />
             ))}
           </ListGroup>
+          {/* mês a mês: quanto cada pessoa paga em cada parcela (a parcela desta tela em destaque) */}
+          {schedule && schedule.length > 1 && (
+            <ListGroup header="Por mês">
+              {schedule.map(m => (
+                <ListRow key={m.n ?? 0}
+                  title={<span className={cn(m.n === t.installmentN && 'font-semibold')}>{`${m.n} de ${n} · ${capitalize(monthName(m.date.slice(0, 7), 'short'))} ${m.date.slice(0, 4)}`}</span>}
+                  subtitle={m.parts.map(p => `${nameOf(p.user_id)} ${formatCurrency(Number(p.amount))}`).join(' · ')}
+                  trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(m.parts.reduce((sum, p) => sum + Number(p.amount), 0))}</span>} />
+              ))}
+            </ListGroup>
+          )}
         </>
       ) : <ItemsEditor items={items} onChange={setItems} total={amount} disabled={!editable} />)}
 
