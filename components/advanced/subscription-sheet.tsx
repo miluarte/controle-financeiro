@@ -11,6 +11,7 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { subscriptionsApi } from '@/lib/api/advanced'
 import type { Subscription } from '@/lib/types'
 import { UseCalendar } from './use-calendar'
+import { feedback } from '@/lib/feedback'
 
 // Criar ou editar uma assinatura e marcar os dias de uso do mês.
 export function SubscriptionSheet({ open, subscription, month, usedDays, onOpenChange }: {
@@ -40,9 +41,10 @@ function SubscriptionForm({ subscription, month, usedDays, onDone }: {
   const [unit, setUnit] = useState(subscription?.unitPrice ?? 0)
   const [error, setError] = useState<string | null>(null)
 
-  async function run(fn: () => Promise<void>, close = true) {
+  // done: aviso depois da ação (salvar fecha a folha e avisa "Salvo")
+  async function run(fn: () => Promise<void>, close = true, done = close ? 'Salvo' : undefined) {
     setError(null)
-    try { await fn(); await refresh(); if (close) onDone() }
+    try { await fn(); await refresh(); if (close) onDone(); if (done) feedback.done(done) }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível salvar.') }
   }
 

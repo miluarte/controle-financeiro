@@ -17,6 +17,7 @@ import type { Transaction, Wallet } from '@/lib/types'
 import { addMonths, capitalize, formatCurrency, formatDate, monthName, todayIso } from '@/lib/utils'
 import { InvoiceNavigator } from './invoice-navigator'
 import { SettlementSheet } from './settlement-sheet'
+import { feedback } from '@/lib/feedback'
 
 // VIS-1 e VIS-2: visão do membro. Só as próprias compras e quanto deve ao titular.
 export function MemberCardView({ wallet }: { wallet: Wallet }) {
@@ -62,7 +63,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
               subtitle={`Fatura de ${monthName(st.invoiceRef.slice(0, 7))}`}
               trailing={
                 <button type="button" className="text-body text-destructive"
-                  onClick={async () => { if (confirm('Cancelar acerto?')) { await familyApi.cancelSettlement(st.id); await refresh() } }}>
+                  onClick={async () => { if (confirm('Cancelar acerto?')) { await familyApi.cancelSettlement(st.id); await refresh(); feedback.done('Acerto cancelado') } }}>
                   Cancelar
                 </button>
               } />

@@ -12,6 +12,7 @@ import { ListGroup } from '@/components/ios/list-group'
 import { useSession } from '@/hooks/use-session'
 import { disablePush, enablePush, pushState, sendTest, type PushState } from '@/lib/push'
 import { supabase, unwrap } from '@/lib/supabase/client'
+import { feedback } from '@/lib/feedback'
 
 type Setting = { type: string; enabled: boolean; time: string | null; days_before: number | null }
 
@@ -47,7 +48,9 @@ export default function NotificationsPage() {
     try {
       if (state === 'on') await disablePush()
       else await enablePush(session!.user.id)
-      setState(await pushState())
+      const next = await pushState()
+      setState(next)
+      feedback.done(next === 'on' ? 'Avisos ligados' : 'Avisos desligados')
     } catch (err) { setMessage(err instanceof Error ? err.message : 'Não foi possível ativar.') }
     finally { setBusy(false) }
   }

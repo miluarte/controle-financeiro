@@ -9,6 +9,7 @@ import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { ListGroup } from '@/components/ios/list-group'
 import { AUTOMATION_URL, automationsApi } from '@/lib/api/automations'
 import { formatDate } from '@/lib/utils'
+import { feedback } from '@/lib/feedback'
 
 const URL_STEP = 'Adicione "Obter conteúdo de URL": URL acima, Método POST, Corpo JSON com:'
 
@@ -21,7 +22,7 @@ export default function AutomationsPage() {
   async function generate() {
     if (status && !confirm('Gerar novo token? O atual para de funcionar.')) return
     setError(null)
-    try { setToken(await automationsApi.createToken()); await mutate() }
+    try { setToken(await automationsApi.createToken()); await mutate(); feedback.done('Token gerado') }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível gerar.') }
   }
 

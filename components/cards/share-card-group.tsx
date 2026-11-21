@@ -9,6 +9,7 @@ import { MemberAvatar } from '@/components/family/member-avatar'
 import { useRefresh } from '@/hooks/use-refresh'
 import { familyApi } from '@/lib/api/family'
 import type { FamilyMember, OwnWallet } from '@/lib/types'
+import { feedback } from '@/lib/feedback'
 
 type Scope = 'none' | 'family' | 'selected'
 
@@ -21,7 +22,7 @@ export function ShareCardGroup({ wallet, scope, members }: { wallet: OwnWallet; 
 
   async function save(next: Scope, ids: string[]) {
     setError(null)
-    try { await familyApi.setCardSharing(wallet.id, next, ids); await mutate(); await refresh() }
+    try { await familyApi.setCardSharing(wallet.id, next, ids); await mutate(); await refresh(); feedback.done('Salvo') }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível salvar.') }
   }
 

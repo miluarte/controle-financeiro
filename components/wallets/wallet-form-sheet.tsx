@@ -21,6 +21,7 @@ import { walletsApi } from '@/lib/api/wallets'
 import { WALLET_FINISHES, WALLET_TYPES } from '@/lib/constants'
 import type { OwnWallet, WalletType } from '@/lib/types'
 import { CardPreview } from './card-preview'
+import { feedback } from '@/lib/feedback'
 
 // CAR-3, CAR-4, CAR-7: criar, editar, arquivar e excluir carteira.
 export function WalletFormSheet({
@@ -74,9 +75,9 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
   const typeLabel = WALLET_TYPES.find(t => t.value === type)?.label
   const isDefault = !!wallet && profile?.defaultWalletId === wallet.id
 
-  async function run(fn: () => Promise<unknown>) {
+  async function run(fn: () => Promise<unknown>, done = 'Salvo') {
     setBusy(true); setError(null)
-    try { await fn(); await refresh(); onDone() }
+    try { await fn(); await refresh(); onDone(); feedback.done(done) }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível concluir.') }
     finally { setBusy(false) }
   }
@@ -103,7 +104,7 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
       if (both && isCredit) {
         await walletsApi.create({ ...card, name: finalName, type: 'debit', finish, closingDay: null, dueDay: null, spendingLimit: null, revolvingRate: null })
       }
-    })
+    }, wallet ? 'Salvo' : 'Carteira adicionada')
   }
 
   return (
@@ -179,7 +180,7 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
 
       {wallet && !isDefault && wallet.active && !isCredit && (
         <Button type="button" variant="secondary" size="lg" className="w-full" disabled={busy}
-          onClick={() => run(() => profileApi.update(profile!.id, { default_wallet_id: wallet.id }))}>
+          onClick={() => run(() => profileApi.update(profile!.id, { default_wallet_id: wallet.id }), 'Carteira padrão')}>
           Usar como carteira padrão
         </Button>
       )}

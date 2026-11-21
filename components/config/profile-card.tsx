@@ -14,6 +14,7 @@ import { useSession } from '@/hooks/use-session'
 import { profileApi } from '@/lib/api/profile'
 import { COLOR_TOKENS, type ColorToken } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { feedback } from '@/lib/feedback'
 
 function Avatar({ initial, color, large }: { initial: string; color: string; large?: boolean }) {
   return (
@@ -60,7 +61,7 @@ function ProfileForm({ onDone }: { onDone: () => void }) {
     if (!name.trim()) { setError('Informe seu nome.'); return }
     try {
       await profileApi.update(profile!.id, { name: name.trim(), avatar_color: color })
-      await refresh(); onDone()
+      await refresh(); onDone(); feedback.done('Salvo')
     } catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível salvar.') }
   }
 

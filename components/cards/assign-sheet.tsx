@@ -10,6 +10,7 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { familyApi } from '@/lib/api/family'
 import type { FamilyMember, Transaction } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
+import { feedback } from '@/lib/feedback'
 
 // ATR-2: "De quem é a compra?" (titular). ATR-4: vale para as parcelas em aberto.
 export function AssignSheet({
@@ -21,7 +22,7 @@ export function AssignSheet({
   async function assign(userId: string) {
     if (!transaction) return
     setError(null)
-    try { await familyApi.assignPurchase(transaction.id, userId); await refresh(); onClose() }
+    try { await familyApi.assignPurchase(transaction.id, userId); await refresh(); onClose(); feedback.done('Salvo') }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível alterar.') }
   }
 

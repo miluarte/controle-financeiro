@@ -17,6 +17,7 @@ import { vehiclesApi } from '@/lib/api/advanced'
 import type { Vehicle, VehicleMaintenance, VehicleTrip } from '@/lib/types'
 import { formatCurrency, formatDate, todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
+import { feedback } from '@/lib/feedback'
 
 interface VehicleSheetProps {
   open: boolean
@@ -58,9 +59,10 @@ function VehicleForm({ vehicle, trips, maintenance, onDone }: {
   const [mEvery, setMEvery] = useState(6)
   const [error, setError] = useState<string | null>(null)
 
-  async function run(fn: () => Promise<void>, close = true) {
+  // done: aviso depois da ação (salvar fecha a folha e avisa "Salvo")
+  async function run(fn: () => Promise<void>, close = true, done = close ? 'Salvo' : undefined) {
     setError(null)
-    try { await fn(); await refresh(); if (close) onDone() }
+    try { await fn(); await refresh(); if (close) onDone(); if (done) feedback.done(done) }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível salvar.') }
   }
 
@@ -96,11 +98,11 @@ function VehicleForm({ vehicle, trips, maintenance, onDone }: {
               <DecimalField id="t-km" value={tripKm} onChange={setTripKm} className="w-20 text-right" />
             </FormRow>
             <ListRow tone="tint" title="Adicionar trajeto"
-              onClick={() => { if (tripKm > 0) run(async () => { await vehiclesApi.addTrip(vehicle.id, tripDate, tripKm); setTripKm(0) }, false) }} />
+              onClick={() => { if (tripKm > 0) run(async () => { await vehiclesApi.addTrip(vehicle.id, tripDate, tripKm); setTripKm(0) }, false, 'Trajeto adicionado') }} />
             {trips.map(t => (
               <ListRow key={t.id} title={`${t.km.toLocaleString('pt-BR')} km`} subtitle={formatDate(t.date)}
-                onDelete={() => run(() => vehiclesApi.removeTrip(t.id), false)}
-                trailing={<TripDelete onClick={() => run(() => vehiclesApi.removeTrip(t.id), false)} />} />
+                onDelete={() => run(() => vehiclesApi.removeTrip(t.id), false, 'Excluído')}
+                trailing={<TripDelete onClick={() => run(() => vehiclesApi.removeTrip(t.id), false, 'Excluído')} />} />
             ))}
           </ListGroup>
 
@@ -118,13 +120,13 @@ function VehicleForm({ vehicle, trips, maintenance, onDone }: {
               onClick={() => {
                 if (mName.trim() && mCost > 0) run(async () => {
                   await vehiclesApi.addMaintenance(vehicle.id, mName.trim(), mCost, mEvery); setMName(''); setMCost(0)
-                }, false)
+                }, false, 'Item adicionado')
               }} />
             {maintenance.map(m => (
               <ListRow key={m.id} title={m.name}
-                onDelete={() => run(() => vehiclesApi.removeMaintenance(m.id), false)}
+                onDelete={() => run(() => vehiclesApi.removeMaintenance(m.id), false, 'Excluído')}
                 subtitle={`${formatCurrency(m.cost)} a cada ${m.everyMonths} ${m.everyMonths === 1 ? 'mês' : 'meses'}`}
-                trailing={<TripDelete onClick={() => run(() => vehiclesApi.removeMaintenance(m.id), false)} />} />
+                trailing={<TripDelete onClick={() => run(() => vehiclesApi.removeMaintenance(m.id), false, 'Excluído')} />} />
             ))}
           </ListGroup>
         </>

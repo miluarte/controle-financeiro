@@ -14,6 +14,7 @@ import { familyApi } from '@/lib/api/family'
 import type { FamilyMember, Transaction } from '@/lib/types'
 import { equalParts } from '@/lib/split'
 import { formatCurrency } from '@/lib/utils'
+import { feedback } from '@/lib/feedback'
 
 type Mode = 'equal' | 'value' | 'percent'
 
@@ -61,7 +62,7 @@ function Form({ t, people, me, onDone }: { t: Transaction; people: FamilyMember[
     if (!valid) { setError(mode === 'percent' ? 'Os percentuais precisam somar 100%.' : `As partes precisam somar ${formatCurrency(t.amount)}.`); return }
     try {
       await familyApi.splitPurchase(t.id, chosen.map((p, i) => ({ userId: p.userId, amount: amounts[i] })))
-      await refresh(); onDone()
+      await refresh(); onDone(); feedback.done('Compra dividida')
     } catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível dividir.') }
   }
 

@@ -41,6 +41,7 @@ import { walletOption } from '@/components/shared/wallet-picker'
 import { useCardPeople } from '@/hooks/use-card-people'
 import { SPLIT_ALL, splitParts } from '@/lib/split'
 import { SplitGroup, splitDefault, splitMode, splitPeople } from './split-group'
+import { feedback } from '@/lib/feedback'
 
 const UNKNOWN_CARD = '__sem-cartao'
 
@@ -248,8 +249,15 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
       }
       if (pending) await finishPending(pending)
       await refreshMonth()
+      const done = pending ? 'Gasto confirmado'
+        : mode === 'save' ? (saveDirection === 'apply' ? 'Guardado' : 'Resgatado')
+        : mode === 'income' ? (repeat.on ? 'Receita fixa adicionada' : 'Receita adicionada')
+        : repeatExpense ? 'Conta fixa adicionada'
+        : unknownCard ? 'Enviado para confirmar'
+        : splitting ? 'Compra dividida' : 'Gasto adicionado'
       reset()
       onOpenChange(false)
+      feedback.done(done)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível registrar.')
     } finally {

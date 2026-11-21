@@ -14,6 +14,7 @@ import { familyApi } from '@/lib/api/family'
 import type { CardDebt, Wallet } from '@/lib/types'
 import { capitalize, formatCurrency, monthName, todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
+import { feedback } from '@/lib/feedback'
 
 // 5.7.8 passo 1: o membro informa que pagou ao titular (valor, data e de onde saiu).
 export function SettlementSheet({
@@ -56,7 +57,7 @@ function Form({ card, debts, onSaving, onDone }: {
     setSaving(true); onSaving(true)
     try {
       await familyApi.reportSettlement(card.id, ref, amount, walletId, date)
-      await refresh(); onDone()
+      await refresh(); onDone(); feedback.done('Acerto informado')
     } catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível informar.') }
     finally { setSaving(false); onSaving(false) }
   }

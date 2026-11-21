@@ -9,6 +9,7 @@ import { useSession } from '@/hooks/use-session'
 import { analysisApi } from '@/lib/api/analysis'
 import type { CategorySpending } from '@/lib/types'
 import { formatCurrency, monthName } from '@/lib/utils'
+import { feedback } from '@/lib/feedback'
 
 // Meta mensal de uma categoria, vigente a partir do mês escolhido.
 export function GoalSheet({
@@ -30,7 +31,7 @@ function Form({ row, month, onDone }: { row: CategorySpending; month: string; on
   async function save(amount: number | null) {
     try {
       await analysisApi.setGoal(session!.user.id, row.categoryId, month, amount)
-      await refresh(); onDone()
+      await refresh(); onDone(); feedback.done(amount ? 'Meta salva' : 'Meta removida')
     } catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível salvar.') }
   }
 

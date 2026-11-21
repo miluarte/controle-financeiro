@@ -22,6 +22,7 @@ import { LateCostGroup } from './late-cost-group'
 import { ReconcileSheet } from './reconcile-sheet'
 import { useTransactionDelete } from '@/components/transactions/use-transaction-delete'
 import { usePinAction } from '@/components/transactions/use-pin-action'
+import { feedback } from '@/lib/feedback'
 
 export interface InvoiceRef {
   wallet: OwnWallet
@@ -66,9 +67,9 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
   const catById = new Map(categories.map(c => [c.id, c]))
   const count = (purchases ?? []).length
 
-  async function run(fn: () => Promise<void>) {
+  async function run(fn: () => Promise<void>, done: string) {
     setBusy(true); setError(null)
-    try { await fn(); await refresh(); onDone() }
+    try { await fn(); await refresh(); onDone(); feedback.done(done) }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível concluir.') }
     finally { setBusy(false) }
   }
@@ -94,7 +95,7 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
         <ListGroup footer={`Paga em ${formatDate(inv.paidAt)}.`}>
           <li className="p-3">
             <Button variant="outline" size="lg" className="w-full" disabled={busy}
-              onClick={() => run(() => invoicesApi.unpay(inv.wallet.id, `${inv.ref}-01`))}>
+              onClick={() => run(() => invoicesApi.unpay(inv.wallet.id, `${inv.ref}-01`), 'Pagamento desfeito')}>
               Desfazer pagamento
             </Button>
           </li>
@@ -115,12 +116,12 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
             </FormRow>
           </ListGroup>
           <Button size="lg" className="w-full" disabled={busy || !walletId || amount <= 0}
-            onClick={() => run(() => invoicesApi.pay(inv.wallet.id, `${inv.ref}-01`, walletId!, payDate, Math.min(amount, remaining)))}>
+            onClick={() => run(() => invoicesApi.pay(inv.wallet.id, `${inv.ref}-01`, walletId!, payDate, Math.min(amount, remaining)), 'Fatura paga')}>
             {left > 0 ? 'Pagar parte' : 'Pagar fatura'}
           </Button>
           {paidSoFar > 0 && (
             <Button variant="plain-destructive" size="nav" className="w-full" disabled={busy}
-              onClick={() => run(() => invoicesApi.unpay(inv.wallet.id, `${inv.ref}-01`))}>
+              onClick={() => run(() => invoicesApi.unpay(inv.wallet.id, `${inv.ref}-01`), 'Pagamento desfeito')}>
               Desfazer pagamentos
             </Button>
           )}

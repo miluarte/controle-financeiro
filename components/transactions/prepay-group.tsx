@@ -12,6 +12,7 @@ import { useWallets } from '@/hooks/use-wallets'
 import { transactionsApi } from '@/lib/api/transactions'
 import type { Transaction } from '@/lib/types'
 import { todayIso } from '@/lib/utils'
+import { feedback } from '@/lib/feedback'
 
 // Pagar uma compra do cartão (ou só esta parcela) antes da fatura. O valor sai do caixa na data
 // escolhida e deixa de entrar no valor a pagar da fatura.
@@ -27,9 +28,9 @@ export function PrepayGroup({ t, onDone }: { t: Transaction; onDone: () => void 
   const [error, setError] = useState<string | null>(null)
   const what = t.installmentN ? 'parcela' : 'compra'
 
-  async function run(fn: () => Promise<void>) {
+  async function run(fn: () => Promise<void>, done: string) {
     setBusy(true); setError(null)
-    try { await fn(); await refresh(); onDone() }
+    try { await fn(); await refresh(); onDone(); feedback.done(done) }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível concluir.') }
     finally { setBusy(false) }
   }
@@ -38,7 +39,7 @@ export function PrepayGroup({ t, onDone }: { t: Transaction; onDone: () => void 
     return (
       <ListGroup header="Antecipada" footer={error ?? undefined}>
         <li className="p-3">
-          <Button type="button" variant="secondary" className="w-full" disabled={busy} onClick={() => run(() => transactionsApi.undoPrepay(t.id))}>
+          <Button type="button" variant="secondary" className="w-full" disabled={busy} onClick={() => run(() => transactionsApi.undoPrepay(t.id), 'Antecipação desfeita')}>
             Desfazer pagamento
           </Button>
         </li>
@@ -54,7 +55,7 @@ export function PrepayGroup({ t, onDone }: { t: Transaction; onDone: () => void 
       </FormRow>
       <li className="p-3">
         <Button type="button" variant="secondary" className="w-full" disabled={busy || !walletId}
-          onClick={() => run(() => transactionsApi.prepay(t.id, walletId!, date))}>
+          onClick={() => run(() => transactionsApi.prepay(t.id, walletId!, date), 'Antecipado')}>
           Antecipar
         </Button>
       </li>

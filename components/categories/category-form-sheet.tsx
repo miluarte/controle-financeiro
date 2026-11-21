@@ -14,6 +14,7 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { categoriesApi } from '@/lib/api/categories'
 import { COLOR_TOKENS, ICON_TOKENS } from '@/lib/constants'
 import type { Category } from '@/lib/types'
+import { feedback } from '@/lib/feedback'
 
 // CAT-5 e CAT-6: renomear, ícone, cor, classe, arquivar e excluir (a ordem muda arrastando na lista).
 export function CategoryFormSheet({
@@ -43,7 +44,7 @@ function Form({ c, onDone }: { c: Category; onDone: () => void }) {
 
   async function run(fn: () => Promise<unknown>) {
     setError(null)
-    try { await fn(); await refresh(); onDone() }
+    try { await fn(); await refresh(); onDone(); feedback.done('Salvo') }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível concluir.') }
   }
 
