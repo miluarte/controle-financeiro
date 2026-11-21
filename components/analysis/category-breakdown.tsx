@@ -36,7 +36,7 @@ export function CategoryBreakdown({ month }: { month: string }) {
           r.goal ? (
             <span className="block space-y-1 pt-1">
               <ProgressBar value={ratio} tone={toneFor(ratio)} className="h-1.5" />
-              <span className="block">{Math.round(ratio * 100)}% da meta de {formatCurrency(r.goal)}</span>
+              <span className="block truncate">{Math.round(ratio * 100)}% da meta de {formatCurrency(r.goal)}</span>
             </span>
           ) : r.total > 0 ? `${share}% dos gastos · sem meta` : 'Sem meta'
         }

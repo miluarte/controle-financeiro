@@ -40,9 +40,9 @@ export function DuplicatesSheet({ open, pairs, onOpenChange }: {
         return (
           <ListGroup key={key} header={`${formatCurrency(a.amount)} · ${a.place ?? b.place ?? 'Sem local'}`}>
             {[a, b].map(t => (
-              <li key={t.id} className="flex justify-between px-4 py-2 text-subheadline">
-                <span>{formatDate(t.date)}</span>
-                <span className="text-muted-foreground">{t.place ?? 'Sem local'}</span>
+              <li key={t.id} className="flex justify-between gap-3 px-4 py-2 text-subheadline">
+                <span className="shrink-0">{formatDate(t.date)}</span>
+                <span className="min-w-0 truncate text-muted-foreground">{t.place ?? 'Sem local'}</span>
               </li>
             ))}
             <li className="grid grid-cols-2 gap-2 p-3">

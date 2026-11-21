@@ -141,11 +141,11 @@ function Importer({ onDone }: { onDone: () => void }) {
           <li key={i} className="flex min-h-row items-center gap-3 border-b border-separator px-4 py-2 last:border-b-0">
             <span className="min-w-0 flex-1">
               <span className="block truncate text-body">{p.tx?.place ?? p.tx?.description ?? '—'}</span>
-              <span className="block text-footnote text-muted-foreground">
+              <span className="block truncate text-footnote text-muted-foreground">
                 {p.tx ? formatDate(p.tx.date) : 'Linha inválida'}{p.duplicate ? ' · duplicada' : ''}
               </span>
             </span>
-            <span className="text-body font-semibold tabular-nums">{p.tx ? formatCurrency(p.tx.amount) : ''}</span>
+            <span className="shrink-0 text-body font-semibold tabular-nums">{p.tx ? formatCurrency(p.tx.amount) : ''}</span>
           </li>
         ))}
       </ListGroup>

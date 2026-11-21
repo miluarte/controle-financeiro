@@ -103,7 +103,7 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
               return (
                 <li key={id} className="flex items-center gap-2">
                   <MemberAvatar name={p?.name ?? 'M'} color={p?.avatarColor ?? 'gray'} size="sm" />
-                  <span className="flex-1 text-subheadline">
+                  <span className="min-w-0 flex-1 truncate text-subheadline">
                     {nameOf(id)}
                     {settledBy.get(id) ? (
                       <span className="text-footnote text-success">
@@ -112,7 +112,7 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
                       </span>
                     ) : null}
                   </span>
-                  <span className="text-subheadline font-semibold tabular-nums">{formatCurrency(v)}</span>
+                  <span className="shrink-0 text-subheadline font-semibold tabular-nums">{formatCurrency(v)}</span>
                   <Button variant="plain" size="nav" aria-label={`Fatura de ${nameOf(id)} em PDF`} onClick={() => exportFor(id)}>Exportar</Button>
                 </li>
               )
