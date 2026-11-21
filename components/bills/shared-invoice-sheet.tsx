@@ -46,7 +46,7 @@ function Body({ inv, owner, onPay }: { inv: SharedInvoice; owner: string; onPay:
   const catById = new Map(categories.map(c => [c.id, c]))
   const list = purchases ?? []
   const paid = debt.open <= 0
-  // acertos já informados que o titular ainda não confirmou
+  // acertos já informados que o titular ainda não confirmou (um por fatura: para informar outro, cancela este)
   const waiting = useSettlements(wallet.id).filter(st => st.status === 'reported' && st.invoiceRef === debt.invoiceRef)
   const toReport = Math.max(debt.open - debt.reported, 0)
   const cancel = useConfirmDelete()
@@ -59,14 +59,14 @@ function Body({ inv, owner, onPay }: { inv: SharedInvoice; owner: string; onPay:
           {paid ? `Paga a ${owner}` : `Você deve a ${owner}`} · vence {formatDate(debt.dueDate)}
         </p>
         {!paid && debt.reported > 0 && (
-          <Badge variant="warning" className="mt-2">Não confirmado</Badge>
+          <Badge variant="warning" className="mt-2">Aguardando confirmação</Badge>
         )}
         {!paid && debt.settled > 0 && (
           <p className="text-footnote text-muted-foreground">{formatCurrency(debt.settled)} já acertado de {formatCurrency(debt.total)}</p>
         )}
       </div>
 
-      {!paid && toReport > 0 && <Button size="lg" className="w-full" onClick={onPay}>Informar acerto</Button>}
+      {!paid && debt.reported === 0 && toReport > 0 && <Button size="lg" className="w-full" onClick={onPay}>Informar acerto</Button>}
 
       {waiting.length > 0 && (
         <ListGroup header="Aguardando confirmação" footer={`${owner} recebeu um aviso para confirmar.`}>

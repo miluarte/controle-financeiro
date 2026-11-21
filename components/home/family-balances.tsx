@@ -45,7 +45,7 @@ export function FamilyBalances({ month }: { month: string }) {
         <ListRow key={ownerId} title={`Você deve a ${p.name}`} subtitle={
             <span className="flex items-center gap-1.5">
               {p.cards.join(' e ')}
-              {p.reported > 0 && <Badge variant="warning">Não confirmado</Badge>}
+              {p.reported > 0 && <Badge variant="warning">Aguardando confirmação</Badge>}
             </span>
           }
           trailing={<span className="font-semibold text-foreground">{formatCurrency(p.total)}</span>}

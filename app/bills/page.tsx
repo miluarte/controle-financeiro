@@ -125,7 +125,7 @@ export default function BillsPage() {
                       Vence {formatDate(i.due).slice(0, 5)}
                       {!i.paid && i.paidAmount > 0 && ` · ${formatCurrency(i.paidAmount)} pago`}
                       <DueBadge dueDate={nextBusinessDay(i.due)} paid={i.paid} />
-                      {!i.paid && i.kind === 'shared' && i.inv.debt.reported > 0 && <Badge variant="warning">Não confirmado</Badge>}
+                      {!i.paid && i.kind === 'shared' && i.inv.debt.reported > 0 && <Badge variant="warning">Aguardando confirmação</Badge>}
                     </span>
                   }
                   trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(i.paid ? i.amount : i.amount - i.paidAmount)}</span>}
