@@ -2,12 +2,10 @@
 
 import { Switch } from '@/components/ui/switch'
 import { FormRow } from '@/components/ios/form-row'
-import { ListGroup } from '@/components/ios/list-group'
 import { SegmentedControl } from '@/components/ios/segmented-control'
 import { MemberAvatar } from '@/components/family/member-avatar'
 import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
-import { PickerRow } from '@/components/shared/picker-row'
 import type { ReceiptItem } from '@/lib/receipt'
 import { SPLIT_ALL, splitParts, type SplitMode } from '@/lib/split'
 import type { FamilyMember } from '@/lib/types'
@@ -34,21 +32,35 @@ export function splitPeople(value: SplitValue, people: FamilyMember[], me: strin
   return [me, ...ids.filter(id => id !== me)]
 }
 
-// Dividir a compra no cartão (registro de gasto): por item (cada item com a sua pessoa, ou dividido entre
-// todos), igual, ou por valor (quem fica em branco divide o resto igual). Itens começam com você.
-export function SplitGroup({ value, onChange, people, me, items, onItemsChange, total }: {
+// Texto do rodapé: quanto fica para cada pessoa, ou o motivo de não fechar.
+export function splitSummary(value: SplitValue, people: FamilyMember[], me: string, items: ReceiptItem[], total: number) {
+  const ids = splitPeople(value, people, me)
+  const { parts, error } = splitParts({ mode: splitMode(value, items), total, people: ids, items, values: value.values })
+  const name = (id: string) => (id === me ? 'Você' : people.find(p => p.userId === id)?.name ?? 'Pessoa')
+  return error ?? parts.map(p => `${name(p.userId)} ${formatCurrency(p.amount)}`).join(' · ')
+}
+
+// Opções de dono de item na divisão por item: cada pessoa da divisão ou "Dividir" (entre todos).
+export function itemOwnerOptions(value: SplitValue, people: FamilyMember[], me: string) {
+  const name = (id: string) => (id === me ? 'Você' : people.find(p => p.userId === id)?.name ?? 'Pessoa')
+  return [...splitPeople(value, people, me).map(id => ({ value: id, label: name(id) })), { value: SPLIT_ALL, label: 'Dividir' }]
+}
+
+// Dividir a compra no cartão (registro de gasto), em linhas dentro do grupo do pagamento: o switch, as pessoas e
+// como dividir. Por item, o dono de cada item é escolhido na própria lista de itens (ItemsEditor owners);
+// por valor, quem fica em branco divide o resto igual.
+export function SplitRows({ value, onChange, people, me, items, total }: {
   value: SplitValue
   onChange: (v: SplitValue) => void
   people: FamilyMember[]
   me: string
   items: ReceiptItem[]
-  onItemsChange: (items: ReceiptItem[]) => void
   total: number
 }) {
   const set = (patch: Partial<SplitValue>) => onChange({ ...value, ...patch })
   const ids = splitPeople(value, people, me)
   const mode = splitMode(value, items)
-  const { parts, error } = splitParts({ mode, total, people: ids, items, values: value.values })
+  const { parts } = splitParts({ mode, total, people: ids, items, values: value.values })
   const name = (id: string) => (id === me ? 'Você' : people.find(p => p.userId === id)?.name ?? 'Pessoa')
 
   function toggleOn(on: boolean) {
@@ -61,11 +73,8 @@ export function SplitGroup({ value, onChange, people, me, items, onItemsChange, 
     set({ selected: value.selected.includes(id) ? value.selected.filter(x => x !== id) : [...value.selected, id] })
   }
 
-  const footer = !value.on ? undefined
-    : error ?? parts.map(p => `${name(p.userId)} ${formatCurrency(p.amount)}`).join(' · ')
-
   return (
-    <ListGroup header="Divisão" footer={footer}>
+    <>
       <FormRow label="Dividir compra">
         <Switch checked={value.on} onCheckedChange={toggleOn} />
       </FormRow>
@@ -78,7 +87,7 @@ export function SplitGroup({ value, onChange, people, me, items, onItemsChange, 
               </ChoiceChip>
             ))}
           </li>
-          <li className="border-b border-separator p-3">
+          <li className="border-b border-separator p-3 last:border-b-0">
             <SegmentedControl<SplitMode> aria-label="Como dividir" value={mode} onChange={m => set({ mode: m })}
               options={[
                 ...(items.length ? [{ value: 'item' as const, label: 'Por item' }] : []),
@@ -86,21 +95,6 @@ export function SplitGroup({ value, onChange, people, me, items, onItemsChange, 
                 { value: 'value', label: 'Por valor' },
               ]} />
           </li>
-          {mode === 'item' && items.map((it, k) => {
-            const owner = it.owner === SPLIT_ALL || (it.owner && ids.includes(it.owner)) ? it.owner : me
-            return (
-              <PickerRow key={k} id={`split-item-${k}`}
-                label={
-                  <span className="flex min-w-0 flex-col">
-                    <span className="truncate">{it.name}</span>
-                    {it.amount > 0 && <span className="text-footnote tabular-nums text-muted-foreground">{formatCurrency(it.amount)}</span>}
-                  </span>
-                }
-                value={owner}
-                onChange={v => onItemsChange(items.map((x, j) => (j === k ? { ...x, owner: v } : x)))}
-                options={[...ids.map(id => ({ value: id, label: name(id) })), { value: SPLIT_ALL, label: 'Dividir' }]} />
-            )
-          })}
           {mode === 'value' && ids.map(id => (
             <FormRow key={id} label={name(id)} htmlFor={`split-value-${id}`}>
               <CurrencyInput id={`split-value-${id}`} variant="bare" value={value.values[id] ?? 0}
@@ -110,6 +104,6 @@ export function SplitGroup({ value, onChange, people, me, items, onItemsChange, 
           ))}
         </>
       )}
-    </ListGroup>
+    </>
   )
 }

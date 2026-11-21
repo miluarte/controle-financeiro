@@ -247,6 +247,8 @@ export interface CardDebt {
   open: number
   // informado pelo membro e ainda não confirmado pelo titular
   reported: number
+  // dia em que o membro pagou (acerto aguardando)
+  reportedPaidOn: string | null
 }
 
 export interface Settlement {
@@ -259,6 +261,8 @@ export interface Settlement {
   status: 'open' | 'reported' | 'confirmed'
   reportedAt: string | null
   confirmedAt: string | null
+  // dia em que o membro pagou a titular
+  paidOn: string | null
 }
 
 export interface MonthlyClosing {

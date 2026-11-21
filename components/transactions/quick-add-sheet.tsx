@@ -40,7 +40,7 @@ import { PickerRow } from '@/components/shared/picker-row'
 import { walletOption } from '@/components/shared/wallet-picker'
 import { useCardPeople } from '@/hooks/use-card-people'
 import { SPLIT_ALL, splitParts } from '@/lib/split'
-import { SplitGroup, splitDefault, splitMode, splitPeople } from './split-group'
+import { itemOwnerOptions, SplitRows, splitDefault, splitMode, splitPeople, splitSummary } from './split-group'
 import { feedback } from '@/lib/feedback'
 
 const UNKNOWN_CARD = '__sem-cartao'
@@ -448,7 +448,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
             )}
 
             {(needsCategory || needsWallet) && (
-              <ListGroup footer={unknownCard ? holderFooter(holders, holder, me) : undefined}>
+              <ListGroup footer={unknownCard ? holderFooter(holders, holder, me) : splitting ? splitSummary(split, splitWith, me, items, amount) : undefined}>
                 {needsCategory && <CategoryField id="qa-category" categories={visibleCategories} value={categoryId} onChange={setCategoryId} />}
                 {needsWallet && (
                   <PickerRow id="qa-wallet" label={walletQuestion}
@@ -471,16 +471,18 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                     amountIsInstallment={amountIsInstallment} onAmountIsInstallmentChange={setAmountIsInstallment}
                     purchaseDate={date} amount={amount} />
                 )}
+                {mode === 'expense' && splitWith.length > 1 && (
+                  <SplitRows value={split} onChange={setSplit} people={splitWith} me={me} items={items} total={amount} />
+                )}
               </ListGroup>
             )}
 
             {isCredit && !unknownCard && !splitting && <PurchaseOwnerField people={access.people} me={access.me} value={owner} onChange={setOwner} />}
 
-            {mode === 'expense' && <ItemsEditor items={items} onChange={setItems} total={amount} />}
-
-            {mode === 'expense' && splitWith.length > 1 && (
-              <SplitGroup value={split} onChange={setSplit} people={splitWith} me={me}
-                items={items} onItemsChange={setItems} total={amount} />
+            {/* compra dividida por item: cada item mostra de quem é */}
+            {mode === 'expense' && (
+              <ItemsEditor items={items} onChange={setItems} total={amount}
+                owners={splitting && splitMode(split, items) === 'item' ? { options: itemOwnerOptions(split, splitWith, me), fallback: me } : undefined} />
             )}
 
             {error && <p className="px-4 text-footnote text-destructive">{error}</p>}

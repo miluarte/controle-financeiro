@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
 
 // Linha de formulário agrupado: rótulo à esquerda e campo sem borda à direita, como no app Ajustes.
-// Com stacked, o rótulo fica em cima (para listas de opções).
+// Com stacked, o rótulo fica em cima (para listas de opções). Rótulo longo corta com reticências numa linha.
 interface FormRowProps {
   label: React.ReactNode
   htmlFor?: string
@@ -22,7 +22,7 @@ export function FormRow({ label, htmlFor, children, stacked, className }: FormRo
       >
         <label
           htmlFor={htmlFor}
-          className={cn('shrink-0', stacked ? 'text-footnote uppercase text-muted-foreground' : 'text-body')}
+          className={cn('block min-w-0', stacked ? 'truncate text-footnote uppercase text-muted-foreground' : 'max-w-3/5 shrink truncate text-body')}
         >
           {label}
         </label>

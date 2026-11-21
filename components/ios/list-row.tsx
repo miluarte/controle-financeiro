@@ -54,8 +54,9 @@ export function ListRow({
         )}
       >
         <span className={cn('min-w-0', !centered && 'flex-1')}>
+          {/* no máximo duas linhas (título e subtítulo), cada uma corta com reticências numa linha só */}
           <span className="block truncate">{title}</span>
-          {subtitle && <span className="block truncate text-subheadline text-muted-foreground">{subtitle}</span>}
+          {subtitle && <span className="block truncate whitespace-nowrap text-subheadline text-muted-foreground [&>*]:whitespace-nowrap">{subtitle}</span>}
         </span>
         {trailing && <span className="shrink-0 text-muted-foreground">{trailing}</span>}
         {chevron && <AltArrowRightLinearIcon className="size-4 shrink-0 text-muted-foreground" />}

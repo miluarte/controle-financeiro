@@ -16,13 +16,13 @@ export function GoalRow({ plan, onClick }: { plan: GoalPlan; onClick: () => void
     <li>
       <button type="button" onClick={onClick} className="w-full space-y-2 px-4 py-3 text-left active:bg-fill">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="text-body font-medium">{goal.priority}. {goal.name}</span>
-          <span className="text-subheadline tabular-nums text-muted-foreground">
+          <span className="min-w-0 truncate text-body font-medium">{goal.priority}. {goal.name}</span>
+          <span className="shrink-0 whitespace-nowrap text-subheadline tabular-nums text-muted-foreground">
             {formatCurrency(goal.savedAmount)} de {formatCurrency(goal.targetAmount)}
           </span>
         </div>
         <ProgressBar value={progress} tone={remaining === 0 ? 'success' : shortfall ? 'warning' : 'default'} />
-        <p className="text-footnote text-muted-foreground">{status}</p>
+        <p className="truncate text-footnote text-muted-foreground">{status}</p>
       </button>
     </li>
   )
