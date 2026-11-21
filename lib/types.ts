@@ -77,6 +77,8 @@ export interface Transaction {
   prepaidBy: string | null
   // titular do cartão quando a compra ainda não tem cartão definido (pendente)
   holderId: string | null
+  // quando foi registrado (ordem de "Últimas transações")
+  createdAt?: string
 }
 
 export interface NewTransaction {

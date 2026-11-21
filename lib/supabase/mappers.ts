@@ -80,6 +80,7 @@ export function toTransaction(r: Row): Transaction {
     sourceData: r.source_data ?? null,
     prepaidBy: r.prepaid_by ?? null,
     holderId: r.holder_id ?? null,
+    createdAt: r.created_at ?? undefined,
   }
 }
 

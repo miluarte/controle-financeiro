@@ -9,8 +9,8 @@ export function Toaster(props: ToasterProps) {
   return (
     <Sonner
       position="top-center"
-      offset="calc(env(safe-area-inset-top) + 0.5rem)"
-      mobileOffset="calc(env(safe-area-inset-top) + 0.5rem)"
+      offset={{ top: 'calc(env(safe-area-inset-top) + 0.5rem)' }}
+      mobileOffset={{ top: 'calc(env(safe-area-inset-top) + 0.5rem)', left: '1rem', right: '1rem' }}
       duration={2200}
       icons={{
         success: <CheckCircleLinearIcon className="size-5 text-success" />,
