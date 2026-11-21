@@ -71,6 +71,12 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
   const { nameOf } = useCardPeople()
   const split = Array.isArray(t.sourceData?.split_parts) ? (t.sourceData.split_parts as { user_id: string; amount: number }[]) : null
   const splitTotal = split ? split.reduce((sum, p) => sum + Number(p.amount), 0) : 0
+  const n = t.installmentsTotal ?? 1
+  // parcela: a desta compra é exata (sua parte e o total da parcela antes de dividir); a de outra pessoa, aproximada
+  const parcelOf = (userId: string | null, total: number) =>
+    userId === t.owner ? t.amount
+      : userId === null && typeof t.sourceData?.split_total === 'number' ? (t.sourceData.split_total as number)
+      : Math.round(total / n)
   const catType = t.type === 'income' ? 'income' : 'expense'
   const showCategory = t.type === 'expense' || t.type === 'income'
   const showWallet = t.type !== 'income'
@@ -134,9 +140,14 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
         <>
           <ItemsEditor items={items} onChange={setItems} total={splitTotal} disabled
             ownerName={o => (o === SPLIT_ALL ? 'Dividido' : nameOf(o ?? t.owner))} />
-          <ListGroup header="Divisão" footer={`Total da compra ${formatCurrency(splitTotal)}${t.installmentsTotal ? ` em ${t.installmentsTotal}x` : ''}.`}>
+          {/* total da compra e de cada pessoa; na parcelada, também a parcela de cada um */}
+          <ListGroup header="Divisão">
+            <ListRow title="Total da compra"
+              subtitle={n > 1 ? `${n}x de ${formatCurrency(parcelOf(null, splitTotal))}` : undefined}
+              trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(splitTotal)}</span>} />
             {split.map(p => (
               <ListRow key={p.user_id} title={nameOf(p.user_id)}
+                subtitle={n > 1 ? `${n}x de ${formatCurrency(parcelOf(p.user_id, p.amount))}` : undefined}
                 trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(p.amount)}</span>} />
             ))}
           </ListGroup>
