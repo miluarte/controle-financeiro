@@ -72,7 +72,7 @@ function Body({ inv, owner, onPay }: { inv: SharedInvoice; owner: string; onPay:
         <ListGroup header="Aguardando confirmação" footer={`${owner} recebeu um aviso para confirmar.`}>
           {waiting.map(st => (
             <ListRow key={st.id} title={formatCurrency(st.amount)}
-              subtitle={st.reportedAt ? `Informado em ${formatDate(st.reportedAt.slice(0, 10))}` : undefined}
+              subtitle={st.paidOn ? `Pago em ${formatDate(st.paidOn)}` : undefined}
               trailing={
                 <Button type="button" variant="plain-destructive"
                   onClick={() => cancel.ask({ title: 'Cancelar este acerto?', label: 'Cancelar acerto', remove: () => familyApi.cancelSettlement(st.id) })}>

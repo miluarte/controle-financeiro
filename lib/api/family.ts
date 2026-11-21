@@ -71,6 +71,7 @@ export const familyApi = {
       settled: Number(r.settled),
       open: Number(r.open),
       reported: Number(r.reported ?? 0),
+      reportedPaidOn: (r.reported_paid_on as string | null) ?? null,
     })),
 
   // 5.7.8: acertos de um cartão (o RLS mostra só os meus, como devedor ou titular).
@@ -79,7 +80,7 @@ export const familyApi = {
     return rows.map(r => ({
       id: r.id, walletId: r.wallet_id, debtorId: r.debtor_id, holderId: r.holder_id,
       invoiceRef: r.invoice_ref, amount: Number(r.amount), status: r.status,
-      reportedAt: r.reported_at, confirmedAt: r.confirmed_at,
+      reportedAt: r.reported_at, confirmedAt: r.confirmed_at, paidOn: r.paid_on ?? null,
     }))
   },
 

@@ -54,6 +54,7 @@ function Form({ card, debts, onSaving, onDone }: {
     e.preventDefault()
     if (saving) return
     if (!ref || amount <= 0 || !walletId) { setError('Escolha a fatura, o valor e de onde saiu o dinheiro.'); return }
+    if (date > todayIso()) { setError('A data do pagamento não pode ser no futuro.'); return }
     setSaving(true); onSaving(true)
     try {
       await familyApi.reportSettlement(card.id, ref, amount, walletId, date)
@@ -71,8 +72,9 @@ function Form({ card, debts, onSaving, onDone }: {
           options={debts.map(d => ({ value: d.invoiceRef, label: `${capitalize(monthName(d.invoiceRef.slice(0, 7), 'short'))} · ${formatCurrency(toReport(d))}` }))} />
         <WalletPicker id="settle-wallet" label="Saiu de" wallets={mine} value={walletId} onChange={setWalletId} />
       </ListGroup>
-      <ListGroup>
-        <FormRow label="Data" htmlFor="settle-date">
+      {/* dia em que pagou de fato (pode ter pago no prazo e informado depois) */}
+      <ListGroup footer={debt && date <= debt.dueDate ? 'Pago dentro do vencimento.' : undefined}>
+        <FormRow label="Data do pagamento" htmlFor="settle-date">
           <DateField id="settle-date" value={date} onChange={v => setDate(v || todayIso())} />
         </FormRow>
       </ListGroup>

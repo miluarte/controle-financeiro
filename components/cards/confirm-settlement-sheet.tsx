@@ -45,11 +45,10 @@ function Body({ s, name, onDone }: { s: Settlement; name: string; onDone: () => 
       <div className="text-center">
         <p className="text-large-title font-bold tabular-nums">{formatCurrency(s.amount)}</p>
         <p className="text-subheadline text-muted-foreground">
-          {name} informou o pagamento da fatura de {monthName(s.invoiceRef.slice(0, 7))}
-          {s.reportedAt ? ` em ${formatDate(s.reportedAt.slice(0, 10))}` : ''}
+          {name} pagou {s.paidOn ? `em ${formatDate(s.paidOn)} ` : ''}a fatura de {monthName(s.invoiceRef.slice(0, 7))}
         </p>
       </div>
-      <ListGroup header="Receber em" footer="Entra como receita (Reembolso).">
+      <ListGroup header="Receber em" footer="Entra como receita (Reembolso) no dia do pagamento.">
         <WalletPicker wallets={mine} value={walletId} onChange={setWalletId} />
       </ListGroup>
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}

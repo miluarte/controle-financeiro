@@ -124,7 +124,10 @@ export default function BillsPage() {
                     <span className="flex items-center gap-1.5">
                       Vence {formatDate(i.due).slice(0, 5)}
                       {!i.paid && i.paidAmount > 0 && ` · ${formatCurrency(i.paidAmount)} pago`}
-                      <DueBadge dueDate={nextBusinessDay(i.due)} paid={i.paid} />
+                      {/* acerto já informado cobre o que falta: não fica como vencida */}
+                      {!(i.kind === 'shared' && i.inv.debt.reported >= i.inv.debt.open && i.inv.debt.reported > 0) && (
+                        <DueBadge dueDate={nextBusinessDay(i.due)} paid={i.paid} />
+                      )}
                       {!i.paid && i.kind === 'shared' && i.inv.debt.reported > 0 && <Badge variant="warning">Aguardando confirmação</Badge>}
                     </span>
                   }
