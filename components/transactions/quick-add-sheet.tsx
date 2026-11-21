@@ -15,7 +15,7 @@ import { useProfile } from '@/hooks/use-profile'
 import { useRefresh } from '@/hooks/use-refresh'
 import { useWallets } from '@/hooks/use-wallets'
 import { transactionsApi } from '@/lib/api/transactions'
-import { uploadReceipt, walletForReceipt, type ReceiptResult } from '@/lib/receipt'
+import { commitReceiptDraft, saveReceiptDraft, walletForReceipt, type ReceiptResult } from '@/lib/receipt'
 import { ReceiptResultGroup } from '@/components/receipt/receipt-result-group'
 import { ReceiptScanButton } from '@/components/receipt/receipt-scan-button'
 import { useSession } from '@/hooks/use-session'
@@ -95,7 +95,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const [error, setError] = useState<string | null>(null)
   // leitura da nota fiscal (5.4)
   const [receipt, setReceipt] = useState<{ result: ReceiptResult; image: Blob } | null>(null)
-  const [attachReceipt, setAttachReceipt] = useState(false)
+  // foto da nota guardada como rascunho (sempre anexada ao registrar)
+  const [receiptSaved, setReceiptSaved] = useState(false)
   // mesma NFC-e já registrada antes (pela chave do QR code)
   const [duplicateOn, setDuplicateOn] = useState<string | null>(null)
   // itens da compra: vêm da nota ou são digitados
@@ -139,7 +140,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     setError(null)
     setWalletId(null)
     setReceipt(null)
-    setAttachReceipt(false)
+    setReceiptSaved(false)
     setDuplicateOn(null)
     setItems([])
     setOwner('')
@@ -210,6 +211,10 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
           ...(pending ? { source: pending.source } : {}),
         })
         if (items.length) await transactionsApi.setGroupItems(group, plainItems)
+        if (receipt) {
+          const path = await takeReceipt()
+          if (path) await transactionsApi.setGroupReceipt(group, path)
+        }
         if (splitting) {
           const [first] = await transactionsApi.idsOfGroup(group)
           if (first) await applySplit(first)
@@ -220,7 +225,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         }
       } else {
         const fromPhoto = mode === 'expense' && receipt
-        const receiptPath = fromPhoto && attachReceipt && session ? await uploadReceipt(session.user.id, receipt.image) : null
+        const receiptPath = fromPhoto ? await takeReceipt() : null
         const created = await transactionsApi.create({
           ...(fromPhoto ? {
             source: 'photo',
@@ -252,6 +257,19 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     }
   }
 
+  // a foto lida vira definitiva ao registrar; se falhar, o gasto entra sem ela
+  async function takeReceipt(): Promise<string | null> {
+    if (!receiptSaved || !session) return null
+    try { return await commitReceiptDraft(session.user.id) } catch { return null }
+  }
+
+  async function saveReceipt(image: Blob) {
+    setReceiptSaved(false)
+    if (!session) throw new Error('Sem sessão')
+    await saveReceiptDraft(session.user.id, image)
+    setReceiptSaved(true)
+  }
+
   // divide a compra já criada; por item, cada item vai com o seu dono (sem dono = você);
   // igual ou por valor, os itens ficam para todos
   async function applySplit(id: string) {
@@ -264,7 +282,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   // compra sem cartão: pendente, com o titular e as parcelas guardadas para quando escolherem o cartão
   async function createWithoutCard(placeValue: string | null) {
     const fromPhoto = receipt
-    const receiptPath = fromPhoto && attachReceipt && session ? await uploadReceipt(session.user.id, receipt.image) : null
+    const receiptPath = fromPhoto ? await takeReceipt() : null
     await transactionsApi.create({
       type: 'expense', amount, date, categoryId, walletId: null, place: placeValue, description: null,
       status: 'pending', holderId: holder,
@@ -382,7 +400,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
               />
             )}
 
-            {mode === 'expense' && <ReceiptScanButton onRead={onReceipt} initialFile={initialReceipt} />}
+            {mode === 'expense' && <ReceiptScanButton onRead={onReceipt} onSave={saveReceipt} initialFile={initialReceipt} />}
 
             <CurrencyInput
               id="amount"
@@ -418,8 +436,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
             )}
 
             {mode === 'expense' && receipt && (
-              <ReceiptResultGroup source={receipt.result.source} items={[]} duplicateOn={duplicateOn}
-                attach={attachReceipt} onAttachChange={setAttachReceipt} attachDisabled={creditLike && installments > 1} />
+              <ReceiptResultGroup source={receipt.result.source} items={[]} duplicateOn={duplicateOn} />
             )}
 
             {(needsCategory || needsWallet) && (

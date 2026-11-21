@@ -2,27 +2,30 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { ProgressButton } from '@/components/shared/progress-button'
-import { CameraLinearIcon } from '@solar-icons/react'
+import { CameraLinearIcon, CheckCircleLinearIcon } from '@solar-icons/react'
 import { Button } from '@/components/ui/button'
 import { LoadingDots } from '@/components/shared/loading-dots'
 import { readReceipt, type ReceiptResult } from '@/lib/receipt'
 
-// 5.4 passos 1 e 2: abre a câmera ou a galeria e lê a nota. O formulário só é preenchido; nada é salvo aqui.
+// 5.4 passos 1 e 2: abre a câmera ou a galeria, lê a nota e guarda a foto (onSave), no fim do progresso
+// "Nota salva". O gasto só é registrado ao confirmar o formulário. Tocar de novo lê outra nota no lugar.
 // initialFile: foto já escolhida antes de abrir o formulário (atalho "Ler nota fiscal" do botão +).
-export function ReceiptScanButton({ onRead, initialFile = null }: {
+export function ReceiptScanButton({ onRead, onSave, initialFile = null }: {
   onRead: (result: ReceiptResult, image: Blob) => void
+  onSave?: (image: Blob) => Promise<void>
   initialFile?: File | null
 }) {
   const gallery = useRef<HTMLInputElement>(null)
   const [reading, setReading] = useState(false)
   const [status, setStatus] = useState('Lendo a nota…')
   const [error, setError] = useState<string | null>(null)
+  const [saved, setSaved] = useState(false)
   // preenchimento do botão: o leitor do celular informa a %; a leitura online avança sozinha até 90%
   const [progress, setProgress] = useState(0)
 
   async function handleFile(file: File | undefined) {
     if (!file) return
-    setReading(true); setError(null); setStatus('Lendo a nota…'); setProgress(5)
+    setReading(true); setError(null); setSaved(false); setStatus('Lendo a nota…'); setProgress(5)
     const tick = setInterval(() => setProgress(p => p + (90 - p) * 0.06), 200)
     const onStatus = (text: string) => {
       setStatus(text.replace(/\s*\d+%$/, ''))
@@ -31,10 +34,16 @@ export function ReceiptScanButton({ onRead, initialFile = null }: {
     }
     try {
       const { result, image } = await readReceipt(file, onStatus)
-      clearInterval(tick); setProgress(100)
-      await new Promise(r => setTimeout(r, 250))
-      if (!result.amount) setError('Não foi possível achar o total nesta foto. Tente outra mais nítida ou digite o valor.')
       onRead(result, image)
+      let ok = !onSave
+      if (onSave) {
+        setStatus('Salvando a nota…')
+        try { await onSave(image); ok = true } catch { setError('Não foi possível salvar a foto da nota.') }
+      }
+      clearInterval(tick); setProgress(100)
+      if (ok && onSave) { setStatus('Nota salva'); setSaved(true) }
+      await new Promise(r => setTimeout(r, ok && onSave ? 600 : 250))
+      if (!result.amount) setError('Não foi possível achar o total nesta foto. Tente outra mais nítida ou digite o valor.')
     } catch (err) {
       setError(err instanceof Error && err.message !== 'gemini-timeout'
         ? `Não foi possível ler a nota: ${err.message}`
@@ -58,8 +67,13 @@ export function ReceiptScanButton({ onRead, initialFile = null }: {
     <div className="space-y-1.5">
       {reading ? (
         <ProgressButton progress={progress}>
-          <LoadingDots size="sm" tone="current" label={status} />{status}
+          {saved ? <CheckCircleLinearIcon className="size-5" /> : <LoadingDots size="sm" tone="current" label={status} />}{status}
         </ProgressButton>
+      ) : saved ? (
+        // nota já lida e guardada: tocar lê outra, que substitui esta
+        <Button type="button" variant="secondary" className="w-full rounded-full" onClick={() => gallery.current?.click()}>
+          <CheckCircleLinearIcon className="size-5" />Nota salva
+        </Button>
       ) : (
         // um botão só: sem "capture", o iPhone abre o próprio menu (Tirar Foto, Fototeca, Arquivo)
         <Button type="button" variant="secondary" className="w-full rounded-full" onClick={() => gallery.current?.click()}>

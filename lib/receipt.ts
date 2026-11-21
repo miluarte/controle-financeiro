@@ -184,9 +184,18 @@ export async function readReceipt(file: File, onStatus?: ReceiptStatus): Promise
 }
 
 // Anexa a foto como comprovante (bucket privado, pasta da pessoa).
-export async function uploadReceipt(userId: string, image: Blob): Promise<string> {
+// Foto da nota lida e ainda não registrada: um arquivo só por pessoa, substituído a cada leitura.
+const draftPath = (userId: string) => `${userId}/rascunho.jpg`
+
+export async function saveReceiptDraft(userId: string, image: Blob): Promise<void> {
+  const { error } = await supabase.storage.from('receipts').upload(draftPath(userId), image, { contentType: 'image/jpeg', upsert: true })
+  if (error) throw new Error(error.message)
+}
+
+// Ao registrar o gasto, o rascunho ganha um nome definitivo (a próxima leitura não o substitui).
+export async function commitReceiptDraft(userId: string): Promise<string> {
   const path = `${userId}/${crypto.randomUUID()}.jpg`
-  const { error } = await supabase.storage.from('receipts').upload(path, image, { contentType: 'image/jpeg' })
+  const { error } = await supabase.storage.from('receipts').move(draftPath(userId), path)
   if (error) throw new Error(error.message)
   return path
 }
