@@ -7,6 +7,7 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { useSession } from '@/hooks/use-session'
 import { analysisApi } from '@/lib/api/analysis'
 import { monthName } from '@/lib/utils'
+import { feedback } from '@/lib/feedback'
 
 // Define o orçamento total do mês (teto independente das metas por categoria).
 export function BudgetSheet({
@@ -29,7 +30,7 @@ function Form({ month, current, onDone }: { month: string; current: number | nul
     e.preventDefault()
     try {
       await analysisApi.setBudget(session!.user.id, month, value)
-      await refresh(); onDone()
+      await refresh(); onDone(); feedback.done('Orçamento salvo')
     } catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível salvar.') }
   }
 

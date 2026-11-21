@@ -12,15 +12,12 @@ import { NumberField } from '@/components/shared/number-field'
 import { useRefresh } from '@/hooks/use-refresh'
 import { familyApi } from '@/lib/api/family'
 import type { FamilyMember, Transaction } from '@/lib/types'
+import { equalParts } from '@/lib/split'
 import { formatCurrency } from '@/lib/utils'
+import { feedback } from '@/lib/feedback'
 
 type Mode = 'equal' | 'value' | 'percent'
 
-// Divide em partes iguais em centavos; o resto vai para as primeiras pessoas.
-function equalParts(total: number, n: number) {
-  const base = Math.floor(total / n)
-  return Array.from({ length: n }, (_, i) => base + (i < total - base * n ? 1 : 0))
-}
 
 // ATR-5: dividir uma compra à vista entre duas ou mais pessoas, por valor ou percentual.
 export function SplitSheet({
@@ -65,7 +62,7 @@ function Form({ t, people, me, onDone }: { t: Transaction; people: FamilyMember[
     if (!valid) { setError(mode === 'percent' ? 'Os percentuais precisam somar 100%.' : `As partes precisam somar ${formatCurrency(t.amount)}.`); return }
     try {
       await familyApi.splitPurchase(t.id, chosen.map((p, i) => ({ userId: p.userId, amount: amounts[i] })))
-      await refresh(); onDone()
+      await refresh(); onDone(); feedback.done('Compra dividida')
     } catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível dividir.') }
   }
 

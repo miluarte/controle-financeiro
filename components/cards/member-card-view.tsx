@@ -17,6 +17,7 @@ import type { Transaction, Wallet } from '@/lib/types'
 import { addMonths, capitalize, formatCurrency, formatDate, monthName, todayIso } from '@/lib/utils'
 import { InvoiceNavigator } from './invoice-navigator'
 import { SettlementSheet } from './settlement-sheet'
+import { feedback } from '@/lib/feedback'
 
 // VIS-1 e VIS-2: visão do membro. Só as próprias compras e quanto deve ao titular.
 export function MemberCardView({ wallet }: { wallet: Wallet }) {
@@ -32,7 +33,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
   const waiting = settlements.filter(st => st.status === 'reported')
   const confirmed = settlements.filter(st => st.status === 'confirmed')
   // faturas com saldo, das mais antigas para as mais novas (fechadas primeiro)
-  const payable = debts.filter(d => d.open > 0 && d.invoiceRef.slice(0, 7) <= nextRef)
+  const payable = debts.filter(d => d.open > 0 && d.reported === 0 && d.invoiceRef.slice(0, 7) <= nextRef)
   const { data: purchases } = useSWR(['invoice-tx', wallet.id, ref], () => transactionsApi.getByInvoice(wallet.id, `${ref}-01`))
   const catById = new Map(categories.map(c => [c.id, c]))
   const owner = wallet.ownerName ?? 'titular'
@@ -62,7 +63,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
               subtitle={`Fatura de ${monthName(st.invoiceRef.slice(0, 7))}`}
               trailing={
                 <button type="button" className="text-body text-destructive"
-                  onClick={async () => { if (confirm('Cancelar acerto?')) { await familyApi.cancelSettlement(st.id); await refresh() } }}>
+                  onClick={async () => { if (confirm('Cancelar acerto?')) { await familyApi.cancelSettlement(st.id); await refresh(); feedback.done('Acerto cancelado') } }}>
                   Cancelar
                 </button>
               } />

@@ -8,6 +8,7 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { transactionsApi } from '@/lib/api/transactions'
 import type { Transaction } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { feedback } from '@/lib/feedback'
 
 // Pares de compras possivelmente repetidas: apagar a repetida ou marcar que não é.
 export function DuplicatesSheet({ open, pairs, onOpenChange }: {
@@ -16,9 +17,11 @@ export function DuplicatesSheet({ open, pairs, onOpenChange }: {
   const refresh = useRefresh()
   const [busy, setBusy] = useState<string | null>(null)
 
-  async function run(key: string, fn: () => Promise<unknown>) {
+  async function run(key: string, fn: () => Promise<unknown>, done: string) {
     setBusy(key)
-    try { await fn(); await refresh() } finally { setBusy(null) }
+    try { await fn(); await refresh(); feedback.done(done) }
+    catch (err) { feedback.error(err instanceof Error ? err.message : 'Não foi possível concluir.') }
+    finally { setBusy(null) }
   }
 
   function keepBoth(a: Transaction, b: Transaction) {
@@ -43,8 +46,8 @@ export function DuplicatesSheet({ open, pairs, onOpenChange }: {
               </li>
             ))}
             <li className="grid grid-cols-2 gap-2 p-3">
-              <Button variant="secondary" disabled={busy === key} onClick={() => run(key, () => keepBoth(a, b))}>Manter ambas</Button>
-              <Button variant="destructive" disabled={busy === key} onClick={() => run(key, () => transactionsApi.remove(b.id))}>Excluir uma</Button>
+              <Button variant="secondary" disabled={busy === key} onClick={() => run(key, () => keepBoth(a, b), 'Mantidas')}>Manter ambas</Button>
+              <Button variant="destructive" disabled={busy === key} onClick={() => run(key, () => transactionsApi.remove(b.id), 'Excluído')}>Excluir uma</Button>
             </li>
           </ListGroup>
         )

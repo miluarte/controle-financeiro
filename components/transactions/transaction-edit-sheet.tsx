@@ -22,6 +22,7 @@ import { PrepayGroup } from './prepay-group'
 import { useTransactionDelete } from './use-transaction-delete'
 import { usePinAction } from './use-pin-action'
 import { Switch } from '@/components/ui/switch'
+import { feedback } from '@/lib/feedback'
 
 // TRA-6: abrir, editar e excluir um lançamento.
 export function TransactionEditSheet({
@@ -77,7 +78,7 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
         ...(t.type === 'income' ? { description: text.trim() || null } : { place: text.trim() || null }),
       })
       if (t.type === 'expense' && t.installmentGroupId) await transactionsApi.setGroupItems(t.installmentGroupId, items)
-      await refresh(); onDone()
+      await refresh(); onDone(); feedback.done('Salvo')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível salvar.')
     } finally { setBusy(false) }

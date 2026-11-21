@@ -7,7 +7,8 @@ import { parseCents, todayIso } from './utils'
 // 2. Sem QR (ou Sefaz fora): Gemini lê a foto (Edge Function ler-nota). 3. Se não der (sem chave,
 // limite gratuito, erro), leitura local com Tesseract.js no próprio celular, mais simples e menos precisa.
 
-export interface ReceiptItem { name: string; amount: number }
+// owner: de quem é o item na compra dividida (id da pessoa ou 'split', dividido entre todos)
+export interface ReceiptItem { name: string; amount: number; owner?: string }
 
 export interface ReceiptResult {
   amount: number          // centavos
@@ -183,9 +184,18 @@ export async function readReceipt(file: File, onStatus?: ReceiptStatus): Promise
 }
 
 // Anexa a foto como comprovante (bucket privado, pasta da pessoa).
-export async function uploadReceipt(userId: string, image: Blob): Promise<string> {
+// Foto da nota lida e ainda não registrada: um arquivo só por pessoa, substituído a cada leitura.
+const draftPath = (userId: string) => `${userId}/rascunho.jpg`
+
+export async function saveReceiptDraft(userId: string, image: Blob): Promise<void> {
+  const { error } = await supabase.storage.from('receipts').upload(draftPath(userId), image, { contentType: 'image/jpeg', upsert: true })
+  if (error) throw new Error(error.message)
+}
+
+// Ao registrar o gasto, o rascunho ganha um nome definitivo (a próxima leitura não o substitui).
+export async function commitReceiptDraft(userId: string): Promise<string> {
   const path = `${userId}/${crypto.randomUUID()}.jpg`
-  const { error } = await supabase.storage.from('receipts').upload(path, image, { contentType: 'image/jpeg' })
+  const { error } = await supabase.storage.from('receipts').move(draftPath(userId), path)
   if (error) throw new Error(error.message)
   return path
 }

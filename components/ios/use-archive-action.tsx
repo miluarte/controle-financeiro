@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRefresh } from '@/hooks/use-refresh'
+import { feedback } from '@/lib/feedback'
 
 // Arquivar/Reativar como ação secundária da folha (ModalSheet secondaryAction), ao lado do Salvar.
 export function useArchiveAction(onDone: () => void) {
@@ -13,8 +14,8 @@ export function useArchiveAction(onDone: () => void) {
       disabled: busy,
       onClick: async () => {
         setBusy(true)
-        try { await toggle(); await refresh(); onDone() }
-        catch (err) { alert(err instanceof Error ? err.message : 'Não foi possível concluir.') }
+        try { await toggle(); await refresh(); onDone(); feedback.done(active ? 'Arquivado' : 'Reativado') }
+        catch (err) { feedback.error(err instanceof Error ? err.message : 'Não foi possível concluir.') }
         finally { setBusy(false) }
       },
     }

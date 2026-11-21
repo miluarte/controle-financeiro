@@ -15,6 +15,7 @@ import { familyApi } from '@/lib/api/family'
 import type { Family } from '@/lib/types'
 import { MemberAvatar } from './member-avatar'
 import { GuestForm } from './guest-form'
+import { feedback } from '@/lib/feedback'
 
 // FAM-3, FAM-5 e FAM-7: código, membros, aprovação, remoção e saída.
 export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: boolean }) {
@@ -27,9 +28,9 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
   const pending = members.filter(m => m.status === 'pending')
   const active = members.filter(m => m.status === 'active')
 
-  async function run(fn: () => Promise<unknown>) {
+  async function run(fn: () => Promise<unknown>, done: string) {
     setError(null)
-    try { await fn(); await refresh() }
+    try { await fn(); await refresh(); feedback.done(done) }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível concluir.') }
   }
 
@@ -53,7 +54,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
           </Button>
           {isAdmin && (
             <Button variant="secondary" size="sm" className="rounded-full"
-              onClick={() => { if (confirm('Gerar novo código? O atual deixa de valer.')) run(() => familyApi.regenerateCode()) }}>
+              onClick={() => { if (confirm('Gerar novo código? O atual deixa de valer.')) run(() => familyApi.regenerateCode(), 'Novo código gerado') }}>
               <RefreshLinearIcon className="size-4" />Gerar código
             </Button>
           )}
@@ -63,7 +64,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
       {isAdmin && (
         <ListGroup footer="Ninguém novo consegue entrar.">
           <FormRow label="Pausar novas entradas">
-            <Switch checked={family.entriesPaused} onCheckedChange={v => run(() => familyApi.setPaused(v))} />
+            <Switch checked={family.entriesPaused} onCheckedChange={v => run(() => familyApi.setPaused(v), v ? 'Entradas pausadas' : 'Entradas liberadas')} />
           </FormRow>
         </ListGroup>
       )}
@@ -76,8 +77,8 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
               title={m.name}
               trailing={
                 <span className="flex gap-2">
-                  <Button size="sm" className="rounded-full" onClick={() => run(() => familyApi.approve(m.userId))}>Aprovar</Button>
-                  <Button size="sm" variant="secondary" className="rounded-full" onClick={() => run(() => familyApi.remove(m.userId))}>Recusar</Button>
+                  <Button size="sm" className="rounded-full" onClick={() => run(() => familyApi.approve(m.userId), 'Aprovado')}>Aprovar</Button>
+                  <Button size="sm" variant="secondary" className="rounded-full" onClick={() => run(() => familyApi.remove(m.userId), 'Recusado')}>Recusar</Button>
                 </span>
               } />
           ))}
@@ -88,7 +89,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
         {active.map(m => (
           <ListRow key={m.userId}
             onClick={isAdmin && m.userId !== me
-              ? () => { if (confirm(`Remover ${m.name} da família? As compras continuam no histórico.`)) run(() => familyApi.remove(m.userId)) }
+              ? () => { if (confirm(`Remover ${m.name} da família? As compras continuam no histórico.`)) run(() => familyApi.remove(m.userId), 'Removido') }
               : undefined}
             leading={<MemberAvatar name={m.name} color={m.avatarColor} />}
             title={m.userId === me ? `${m.name} (você)` : m.name}
@@ -97,13 +98,13 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
         ))}
       </ListGroup>
 
-      <GuestForm onAdd={name => run(() => familyApi.addGuest(name))} />
+      <GuestForm onAdd={name => run(() => familyApi.addGuest(name), 'Pessoa adicionada')} />
 
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
 
       <ListGroup footer={isAdmin && active.length > 1 ? 'O membro mais antigo vira admin.' : undefined}>
         <ListRow tone="destructive" title="Sair da família"
-          onClick={() => { if (confirm('Sair da família? Você perde o acesso aos cartões compartilhados.')) run(() => familyApi.leave()) }} />
+          onClick={() => { if (confirm('Sair da família? Você perde o acesso aos cartões compartilhados.')) run(() => familyApi.leave(), 'Você saiu da família') }} />
       </ListGroup>
     </div>
   )

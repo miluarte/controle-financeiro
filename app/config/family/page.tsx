@@ -8,6 +8,7 @@ import { useFamily } from '@/hooks/use-family'
 import { useRefresh } from '@/hooks/use-refresh'
 import { familyApi } from '@/lib/api/family'
 import { LoadingBlock } from '@/components/shared/loading-dots'
+import { feedback } from '@/lib/feedback'
 
 export default function FamilyPage() {
   const { family, status, role, loading } = useFamily()
@@ -25,7 +26,7 @@ export default function FamilyPage() {
           <div className="space-y-4 py-10 text-center">
             <p className="text-headline">Aguardando aprovação</p>
             <p className="text-subheadline text-muted-foreground">Seu pedido para entrar em “{family.name}” foi enviado ao admin.</p>
-            <Button variant="secondary" size="lg" className="w-full" onClick={async () => { await familyApi.leave(); await refresh() }}>
+            <Button variant="secondary" size="lg" className="w-full" onClick={async () => { await familyApi.leave(); await refresh(); feedback.done('Pedido cancelado') }}>
               Cancelar pedido
             </Button>
           </div>

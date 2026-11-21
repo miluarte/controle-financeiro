@@ -6,6 +6,7 @@ import { useProfile } from '@/hooks/use-profile'
 import { useRefresh } from '@/hooks/use-refresh'
 import { profileApi } from '@/lib/api/profile'
 import { supabase } from '@/lib/supabase/client'
+import { feedback } from '@/lib/feedback'
 
 // ACE-4 e ACE-5: sair e excluir conta.
 export function AccountGroup() {
@@ -32,7 +33,7 @@ export function AccountGroup() {
       await profileApi.deleteAccount()
       window.location.replace('/home')
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Não foi possível excluir a conta.')
+      feedback.error(err instanceof Error ? err.message : 'Não foi possível excluir a conta.')
     }
   }
 

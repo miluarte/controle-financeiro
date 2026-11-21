@@ -102,6 +102,11 @@ export const transactionsApi = {
       supabase.from('transactions').update({ source_data: { ...(r.source_data ?? {}), items } }).eq('id', r.id)))
   },
 
+  // foto da nota em todas as parcelas da compra
+  setGroupReceipt: async (groupId: string, path: string) => {
+    unwrap(await supabase.from('transactions').update({ receipt_path: path }).eq('installment_group_id', groupId))
+  },
+
   update: async (id: string, t: Partial<NewTransaction>) =>
     toTransaction(unwrap(await supabase.from('transactions').update(toRow(t)).eq('id', id).select('*').single())),
 

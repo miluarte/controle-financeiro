@@ -16,6 +16,7 @@ import { StatementImport } from './statement-import'
 import type { NewTransaction } from '@/lib/types'
 import { formatCurrency, formatDate, parseCents } from '@/lib/utils'
 import { useCategorySuggest } from '@/hooks/use-category-suggest'
+import { feedback } from '@/lib/feedback'
 
 // DAD-2: importar CSV ou OFX (extrato) com prévia, mapeamento e duplicadas, ou a fatura do cartão em PDF
 // (StatementImport: compras que faltam, com parcela atual e quem fez a compra).
@@ -94,7 +95,7 @@ function Importer({ onDone }: { onDone: () => void }) {
     setBusy(true); setMessage(null)
     try {
       await transactionsApi.createMany(valid.map(p => p.tx!))
-      await refresh(); onDone()
+      await refresh(); onDone(); feedback.done(`${valid.length} ${valid.length === 1 ? 'lançamento importado' : 'lançamentos importados'}`)
     } catch (err) { setMessage(err instanceof Error ? err.message : 'Não foi possível importar.') }
     finally { setBusy(false) }
   }

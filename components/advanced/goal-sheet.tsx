@@ -12,6 +12,7 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { goalsApi } from '@/lib/api/advanced'
 import type { Goal } from '@/lib/types'
 import { DateField } from '@/components/shared/date-field'
+import { feedback } from '@/lib/feedback'
 
 // Criar ou editar um objetivo (ex.: comprar uma moto).
 export function GoalSheet({ open, goal, nextPriority, onOpenChange }: {
@@ -40,7 +41,7 @@ function GoalForm({ goal, nextPriority, onDone }: { goal: Goal | null; nextPrior
 
   async function run(fn: () => Promise<void>) {
     setError(null)
-    try { await fn(); await refresh(); onDone() }
+    try { await fn(); await refresh(); onDone(); feedback.done('Salvo') }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível salvar.') }
   }
 

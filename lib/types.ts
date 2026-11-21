@@ -245,6 +245,8 @@ export interface CardDebt {
   total: number
   settled: number
   open: number
+  // informado pelo membro e ainda não confirmado pelo titular
+  reported: number
 }
 
 export interface Settlement {

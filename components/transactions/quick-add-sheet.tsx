@@ -15,7 +15,7 @@ import { useProfile } from '@/hooks/use-profile'
 import { useRefresh } from '@/hooks/use-refresh'
 import { useWallets } from '@/hooks/use-wallets'
 import { transactionsApi } from '@/lib/api/transactions'
-import { uploadReceipt, walletForReceipt, type ReceiptResult } from '@/lib/receipt'
+import { commitReceiptDraft, saveReceiptDraft, walletForReceipt, type ReceiptResult } from '@/lib/receipt'
 import { ReceiptResultGroup } from '@/components/receipt/receipt-result-group'
 import { ReceiptScanButton } from '@/components/receipt/receipt-scan-button'
 import { useSession } from '@/hooks/use-session'
@@ -38,6 +38,10 @@ import { cardHolders, holderFooter, HolderPicker } from './holder-picker'
 import { CategoryField } from '@/components/shared/category-field'
 import { PickerRow } from '@/components/shared/picker-row'
 import { walletOption } from '@/components/shared/wallet-picker'
+import { useCardPeople } from '@/hooks/use-card-people'
+import { SPLIT_ALL, splitParts } from '@/lib/split'
+import { SplitGroup, splitDefault, splitMode, splitPeople } from './split-group'
+import { feedback } from '@/lib/feedback'
 
 const UNKNOWN_CARD = '__sem-cartao'
 
@@ -92,7 +96,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const [error, setError] = useState<string | null>(null)
   // leitura da nota fiscal (5.4)
   const [receipt, setReceipt] = useState<{ result: ReceiptResult; image: Blob } | null>(null)
-  const [attachReceipt, setAttachReceipt] = useState(false)
+  // foto da nota guardada como rascunho (sempre anexada ao registrar)
+  const [receiptSaved, setReceiptSaved] = useState(false)
   // mesma NFC-e já registrada antes (pela chave do QR code)
   const [duplicateOn, setDuplicateOn] = useState<string | null>(null)
   // itens da compra: vêm da nota ou são digitados
@@ -102,6 +107,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const [owner, setOwner] = useState('')
   // receita que repete todo mês vira receita fixa (Contas, "A receber")
   const [repeat, setRepeat] = useState(() => ({ ...repeatDefault(todayIso().slice(0, 7)), on: initialRepeat }))
+  // dividir a compra no cartão entre pessoas (por item, igual ou por valor)
+  const [split, setSplit] = useState(splitDefault)
 
   function onReceipt(result: ReceiptResult, image: Blob) {
     setReceipt({ result, image })
@@ -134,11 +141,12 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     setError(null)
     setWalletId(null)
     setReceipt(null)
-    setAttachReceipt(false)
+    setReceiptSaved(false)
     setDuplicateOn(null)
     setItems([])
     setOwner('')
     setRepeat(repeatDefault(todayIso().slice(0, 7)))
+    setSplit(splitDefault())
   }
 
   function changeMode(next: Mode) {
@@ -165,7 +173,18 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const holders = cardHolders(wallets, me)
   const holder = holderId ?? (holders.length === 1 ? holders[0].id : null)
   const hasWallet = unknownCard ? !!holder : !!walletId
-  const canSubmit = amount > 0 && (!needsCategory || !!categoryId) && (!needsWallet || hasWallet) && !submitting
+  // divisão: no cartão próprio compartilhado, quem tem acesso; no cartão de outra pessoa, você e a titular
+  const cardPeople = useCardPeople()
+  const splitWith = !isCredit || repeatExpense ? []
+    : wallet?.ownerId && wallet.ownerId !== me ? cardPeople.people.filter(p => p.userId === me || p.userId === wallet.ownerId)
+    : access.people
+  const splitting = split.on && splitWith.length > 1
+  const splitResult = splitting
+    ? splitParts({ mode: splitMode(split, items), total: amount, people: splitPeople(split, splitWith, me), items, values: split.values })
+    : null
+  // itens guardam o dono só na compra dividida
+  const plainItems = items.map(it => ({ name: it.name, amount: it.amount }))
+  const canSubmit = amount > 0 && (!needsCategory || !!categoryId) && (!needsWallet || hasWallet) && !splitResult?.error && !submitting
 
   function pickWallet(id: string) {
     setCardUnknown(false)
@@ -192,24 +211,31 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
           start: Math.min(currentInstallment, installments),
           ...(pending ? { source: pending.source } : {}),
         })
-        if (items.length) await transactionsApi.setGroupItems(group, items)
-        if (assignTo) {
+        if (items.length) await transactionsApi.setGroupItems(group, plainItems)
+        if (receipt) {
+          const path = await takeReceipt()
+          if (path) await transactionsApi.setGroupReceipt(group, path)
+        }
+        if (splitting) {
+          const [first] = await transactionsApi.idsOfGroup(group)
+          if (first) await applySplit(first)
+        } else if (assignTo) {
           // assign_purchase vale para todas as parcelas em aberto da compra
           const [first] = await transactionsApi.idsOfGroup(group)
           if (first) await familyApi.assignPurchase(first, assignTo)
         }
       } else {
         const fromPhoto = mode === 'expense' && receipt
-        const receiptPath = fromPhoto && attachReceipt && session ? await uploadReceipt(session.user.id, receipt.image) : null
+        const receiptPath = fromPhoto ? await takeReceipt() : null
         const created = await transactionsApi.create({
           ...(fromPhoto ? {
             source: 'photo',
-            sourceData: { reader: receipt.result.source, items, ...(receipt.result.chave ? { chave: receipt.result.chave } : {}) },
+            sourceData: { reader: receipt.result.source, items: plainItems, ...(receipt.result.chave ? { chave: receipt.result.chave } : {}) },
             receiptPath,
           } : pending ? {
             source: pending.source,
-            sourceData: { ...(pending.sourceData ?? {}), ...(mode === 'expense' && items.length ? { items } : {}) },
-          } : mode === 'expense' && items.length ? { sourceData: { items } } : {}),
+            sourceData: { ...(pending.sourceData ?? {}), ...(mode === 'expense' && items.length ? { items: plainItems } : {}) },
+          } : mode === 'expense' && items.length ? { sourceData: { items: plainItems } } : {}),
           type: mode === 'save' ? (saveDirection === 'apply' ? 'save_apply' : 'save_redeem') : mode,
           amount,
           date,
@@ -218,12 +244,20 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
           place: mode === 'income' ? null : placeValue,
           description: mode === 'income' ? placeValue : null,
         })
-        if (assignTo && isCredit) await familyApi.assignPurchase(created.id, assignTo)
+        if (splitting) await applySplit(created.id)
+        else if (assignTo && isCredit) await familyApi.assignPurchase(created.id, assignTo)
       }
       if (pending) await finishPending(pending)
       await refreshMonth()
+      const done = pending ? 'Gasto confirmado'
+        : mode === 'save' ? (saveDirection === 'apply' ? 'Guardado' : 'Resgatado')
+        : mode === 'income' ? (repeat.on ? 'Receita fixa adicionada' : 'Receita adicionada')
+        : repeatExpense ? 'Conta fixa adicionada'
+        : unknownCard ? 'Enviado para confirmar'
+        : splitting ? 'Compra dividida' : 'Gasto adicionado'
       reset()
       onOpenChange(false)
+      feedback.done(done)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível registrar.')
     } finally {
@@ -231,10 +265,32 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     }
   }
 
+  // a foto lida vira definitiva ao registrar; se falhar, o gasto entra sem ela
+  async function takeReceipt(): Promise<string | null> {
+    if (!receiptSaved || !session) return null
+    try { return await commitReceiptDraft(session.user.id) } catch { return null }
+  }
+
+  async function saveReceipt(image: Blob) {
+    setReceiptSaved(false)
+    if (!session) throw new Error('Sem sessão')
+    await saveReceiptDraft(session.user.id, image)
+    setReceiptSaved(true)
+  }
+
+  // divide a compra já criada; por item, cada item vai com o seu dono (sem dono = você);
+  // igual ou por valor, os itens ficam para todos
+  async function applySplit(id: string) {
+    if (!splitResult) return
+    const byItem = splitMode(split, items) === 'item'
+    await familyApi.splitPurchase(id, splitResult.parts,
+      items.map(it => ({ ...it, owner: byItem ? it.owner ?? me : SPLIT_ALL })))
+  }
+
   // compra sem cartão: pendente, com o titular e as parcelas guardadas para quando escolherem o cartão
   async function createWithoutCard(placeValue: string | null) {
     const fromPhoto = receipt
-    const receiptPath = fromPhoto && attachReceipt && session ? await uploadReceipt(session.user.id, receipt.image) : null
+    const receiptPath = fromPhoto ? await takeReceipt() : null
     await transactionsApi.create({
       type: 'expense', amount, date, categoryId, walletId: null, place: placeValue, description: null,
       status: 'pending', holderId: holder,
@@ -352,7 +408,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
               />
             )}
 
-            {mode === 'expense' && <ReceiptScanButton onRead={onReceipt} initialFile={initialReceipt} />}
+            {mode === 'expense' && <ReceiptScanButton onRead={onReceipt} onSave={saveReceipt} initialFile={initialReceipt} />}
 
             <CurrencyInput
               id="amount"
@@ -377,17 +433,6 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                   className="text-right"
                 />
               </FormRow>
-              {creditLike && (
-                <FormRow label="Parcelas" htmlFor="installments">
-                  <NumberField id="installments" min={1} max={48} value={installments}
-                    onChange={setInstallments} className="w-16 text-right" />
-                </FormRow>
-              )}
-              {creditLike && installments > 1 && (
-                <InstallmentProgress installments={installments} current={currentInstallment} onCurrentChange={setCurrentInstallment}
-                  amountIsInstallment={amountIsInstallment} onAmountIsInstallmentChange={setAmountIsInstallment}
-                  purchaseDate={date} />
-              )}
             </ListGroup>
 
             {mode === 'income' && (
@@ -399,8 +444,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
             )}
 
             {mode === 'expense' && receipt && (
-              <ReceiptResultGroup source={receipt.result.source} items={[]} duplicateOn={duplicateOn}
-                attach={attachReceipt} onAttachChange={setAttachReceipt} attachDisabled={creditLike && installments > 1} />
+              <ReceiptResultGroup source={receipt.result.source} items={[]} duplicateOn={duplicateOn} />
             )}
 
             {(needsCategory || needsWallet) && (
@@ -416,12 +460,28 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                     ]} />
                 )}
                 {unknownCard && <HolderPicker holders={holders} value={holder} onChange={setHolderId} me={me} />}
+                {creditLike && (
+                  <FormRow label="Parcelas" htmlFor="installments">
+                    <NumberField id="installments" min={1} max={48} value={installments}
+                      onChange={setInstallments} className="w-16 text-right" />
+                  </FormRow>
+                )}
+                {creditLike && installments > 1 && (
+                  <InstallmentProgress installments={installments} current={currentInstallment} onCurrentChange={setCurrentInstallment}
+                    amountIsInstallment={amountIsInstallment} onAmountIsInstallmentChange={setAmountIsInstallment}
+                    purchaseDate={date} amount={amount} />
+                )}
               </ListGroup>
             )}
 
-            {isCredit && !unknownCard && <PurchaseOwnerField people={access.people} me={access.me} value={owner} onChange={setOwner} />}
+            {isCredit && !unknownCard && !splitting && <PurchaseOwnerField people={access.people} me={access.me} value={owner} onChange={setOwner} />}
 
             {mode === 'expense' && <ItemsEditor items={items} onChange={setItems} total={amount} />}
+
+            {mode === 'expense' && splitWith.length > 1 && (
+              <SplitGroup value={split} onChange={setSplit} people={splitWith} me={me}
+                items={items} onItemsChange={setItems} total={amount} />
+            )}
 
             {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
 

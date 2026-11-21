@@ -19,6 +19,7 @@ import type { OwnWallet } from '@/lib/types'
 import { daysInMonth, formatCurrency, formatDate } from '@/lib/utils'
 import { LoadingDots } from '@/components/shared/loading-dots'
 import { useCategorySuggest } from '@/hooks/use-category-suggest'
+import { feedback } from '@/lib/feedback'
 
 // Conferir a fatura com o PDF do banco: o que falta no app, o que sobra e o que bate.
 export function ReconcileSheet({ open, onOpenChange, wallet, invoiceRef, dueDate }: {
@@ -120,10 +121,10 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
   // muda o dono de uma compra que já está no app (parcelada: vale para as parcelas em aberto)
   const reassign = (txId: string, who: string) => familyApi.assignPurchase(txId, who)
 
-  async function run(key: string, fn: () => Promise<unknown>) {
+  async function run(key: string, fn: () => Promise<unknown>, done: string) {
     setBusy(key)
-    try { await fn(); await refresh(); await compare(items) }
-    catch (err) { alert(err instanceof Error ? err.message : 'Não foi possível concluir.') }
+    try { await fn(); await refresh(); await compare(items); feedback.done(done) }
+    catch (err) { feedback.error(err instanceof Error ? err.message : 'Não foi possível concluir.') }
     finally { setBusy(null) }
   }
 
@@ -172,13 +173,13 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
                   trailing={
                     <span className="flex items-center gap-2">
                       <span className="tabular-nums">{formatCurrency(i.amount)}</span>
-                      <Button variant="plain" size="nav" disabled={!!busy} onClick={() => run(`m${k}`, () => add(i))}>Adicionar</Button>
+                      <Button variant="plain" size="nav" disabled={!!busy} onClick={() => run(`m${k}`, () => add(i), 'Compra adicionada')}>Adicionar</Button>
                     </span>} />
               ))}
               {result.missing.length > 1 && (
                 <li className="p-3">
                   <Button className="w-full" disabled={!!busy}
-                    onClick={() => run('all', async () => { for (const i of result.missing) await add(i) })}>
+                    onClick={() => run('all', async () => { for (const i of result.missing) await add(i) }, 'Compras adicionadas')}>
                     Adicionar todas
                   </Button>
                 </li>
@@ -195,7 +196,7 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
                     <span className="flex items-center gap-2">
                       <span className="tabular-nums">{formatCurrency(t.amount)}</span>
                       <Button variant="plain-destructive" size="nav" disabled={!!busy}
-                        onClick={() => { if (confirm('Excluir compra?')) run(t.id, () => transactionsApi.remove(t.id)) }}>
+                        onClick={() => { if (confirm('Excluir compra?')) run(t.id, () => transactionsApi.remove(t.id), 'Excluído') }}>
                         Excluir
                       </Button>
                     </span>} />
@@ -210,7 +211,7 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
                 subtitle={
                   <span className="flex items-center gap-1">{formatDate(tx.date).slice(0, 5)} · De
                     <SelectField value={tx.owner} options={peopleOptions} className="h-auto text-subheadline"
-                      onChange={v => { if (v && v !== tx.owner) run(tx.id, () => reassign(tx.id, v)) }} />
+                      onChange={v => { if (v && v !== tx.owner) run(tx.id, () => reassign(tx.id, v), 'Salvo') }} />
                   </span>}
                 trailing={<span className="tabular-nums">{formatCurrency(tx.amount)}</span>} />
             )) : (

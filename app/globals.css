@@ -76,6 +76,7 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
+  --color-warning: var(--warning);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -120,6 +121,7 @@
   --destructive: var(--status-danger);
   --destructive-foreground: var(--text-on-danger);
   --success: var(--status-success);
+  --warning: var(--status-warning);
   --tint: var(--action-primary);
   --separator: var(--line-subtle);
   --fill: var(--surface-sunken);

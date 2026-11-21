@@ -11,6 +11,7 @@ import { billsApi } from '@/lib/api/bills'
 import { transactionsApi } from '@/lib/api/transactions'
 import type { Transaction } from '@/lib/types'
 import { addMonths, currentMonth } from '@/lib/utils'
+import { feedback } from '@/lib/feedback'
 
 // Fixar um gasto no deslizar da linha: vira conta fixa que repete todo mês até ser desafixada.
 // Desafixar encerra a conta a partir do mês seguinte (o que já foi lançado continua).
@@ -22,8 +23,8 @@ export function usePinAction() {
   const pinned = (t: Transaction) => !!t.billId && !!active?.includes(t.billId)
 
   async function pin(t: Transaction) {
-    try { await transactionsApi.pin(t.id); await refresh() }
-    catch (err) { alert(err instanceof Error ? err.message : 'Não foi possível fixar.') }
+    try { await transactionsApi.pin(t.id); await refresh(); feedback.done('Gasto fixado') }
+    catch (err) { feedback.error(err instanceof Error ? err.message : 'Não foi possível fixar.') }
   }
 
   // ação do deslizar (só gasto à vista confirmado; parcelada não vira conta fixa)
@@ -40,8 +41,8 @@ export function usePinAction() {
       actions={unpinning ? [{
         label: 'Desafixar', destructive: true,
         onSelect: async () => {
-          try { await billsApi.endSeries(unpinning.billId!, addMonths(currentMonth(), 1)); await refresh() }
-          catch (err) { alert(err instanceof Error ? err.message : 'Não foi possível desafixar.') }
+          try { await billsApi.endSeries(unpinning.billId!, addMonths(currentMonth(), 1)); await refresh(); feedback.done('Gasto desafixado') }
+          catch (err) { feedback.error(err instanceof Error ? err.message : 'Não foi possível desafixar.') }
         },
       }] : []} />
   )

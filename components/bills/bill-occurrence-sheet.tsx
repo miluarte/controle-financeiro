@@ -16,6 +16,7 @@ import { billsApi } from '@/lib/api/bills'
 import type { BillOccurrence } from '@/lib/types'
 import { formatCurrency, formatDate, todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
+import { feedback } from '@/lib/feedback'
 
 // CON-6 e CON-9: pagar, desfazer pagamento, editar só este mês ou a série, encerrar.
 // Receita fixa usa o mesmo fluxo: marcar como recebida gera a receita na carteira escolhida.
@@ -55,9 +56,9 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function run(fn: () => Promise<void>) {
+  async function run(fn: () => Promise<void>, done: string) {
     setBusy(true); setError(null)
-    try { await fn(); await refresh(); onDone() }
+    try { await fn(); await refresh(); onDone(); feedback.done(done) }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível concluir.') }
     finally { setBusy(false) }
   }
@@ -81,7 +82,7 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
           ? `Recebida em ${formatDate(o.paidAt)}.`
           : `Paga em ${formatDate(o.paidAt)}.`}>
           <li className="p-3">
-            <Button variant="outline" size="lg" className="w-full" disabled={busy} onClick={() => run(() => billsApi.unpay(o.id))}>
+            <Button variant="outline" size="lg" className="w-full" disabled={busy} onClick={() => run(() => billsApi.unpay(o.id), 'Pagamento desfeito')}>
               {income ? 'Desfazer recebimento' : 'Desfazer pagamento'}
             </Button>
           </li>
@@ -97,7 +98,7 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
             </FormRow>
           </ListGroup>
           <Button size="lg" className="w-full" disabled={busy || !walletId}
-            onClick={() => run(() => billsApi.pay(o.id, walletId!, payDate))}>
+            onClick={() => run(() => billsApi.pay(o.id, walletId!, payDate), income ? 'Recebido' : 'Pago')}>
             {income ? 'Receber' : 'Pagar'}
           </Button>
         </>
@@ -116,11 +117,11 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
           {changed && (
             <div className="grid grid-cols-2 gap-2">
               <Button variant="secondary" size="lg" disabled={busy || amount <= 0}
-                onClick={() => run(() => billsApi.updateOccurrence(o.id, amount, dueDate))}>
+                onClick={() => run(() => billsApi.updateOccurrence(o.id, amount, dueDate), 'Salvo')}>
                 Só este mês
               </Button>
               <Button variant="secondary" size="lg" disabled={busy || amount <= 0}
-                onClick={() => run(() => billsApi.updateSeries(o.billId, month, { amount, dueDay: Number(dueDate.slice(8, 10)) }))}>
+                onClick={() => run(() => billsApi.updateSeries(o.billId, month, { amount, dueDay: Number(dueDate.slice(8, 10)) }), 'Salvo')}>
                 Este e os próximos
               </Button>
             </div>

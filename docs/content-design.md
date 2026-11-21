@@ -53,6 +53,7 @@ Regras de escrita de toda a interface: voz e tom, como escrever cada elemento e 
 | Aviso push: título | o fato | 4 palavras | Conta vence amanhã | Atenção! |
 | Aviso push: texto | detalhe com nome e valor | 1 frase | Luz, R$ 182,40, vence dia 21. | |
 | Selo, status | adjetivo ou particípio | 2 palavras | Paga, Vencida, Pendente | Esta fatura está paga |
+| Aviso de ação (toast) | particípio, com o objeto se ajudar | 3 palavras | Gasto adicionado, Salvo, Excluído | Operação realizada com sucesso! |
 | Carregando | sem texto, só `LoadingDots` | | | Carregando… |
 
 Botão sempre no infinitivo, padrão do iOS e do Android em português. Imperativo ("Salve", "Confira") e primeira pessoa ("Paguei", "Quero") não entram em botão.

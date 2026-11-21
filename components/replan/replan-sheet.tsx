@@ -16,6 +16,7 @@ import { balanceMessage, proposedGoal, type Rhythm } from '@/lib/replan'
 import { formatCurrency, monthName } from '@/lib/utils'
 import { StepDots } from '@/components/ios/step-dots'
 import { LoadingBlock } from '@/components/shared/loading-dots'
+import { feedback } from '@/lib/feedback'
 
 const STEPS = ['Como você gasta hoje', 'Afine cada categoria', 'Tudo pronto']
 const ACTIONS = ['Continuar', 'Revisar', 'Salvar']
@@ -60,7 +61,7 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
     if (step < 2) { setStep(step + 1); return }
     try {
       await Promise.all(changes.map(g => analysisApi.setGoal(userId!, g.row.category.id, month, g.value && g.value > 0 ? g.value : null)))
-      await refresh(); onDone()
+      await refresh(); onDone(); feedback.done('Metas salvas')
     } catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível salvar.') }
   }
 
@@ -69,6 +70,7 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
     await profileApi.update(profileId, { monthly_income: incomeDraft > 0 ? incomeDraft : null })
     setAskIncome(false)
     await refresh()
+    feedback.done('Salvo')
   }
 
   if (loading) return <LoadingBlock />

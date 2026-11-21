@@ -10,6 +10,7 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { transactionsApi } from '@/lib/api/transactions'
 import type { Transaction } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { feedback } from '@/lib/feedback'
 
 // Titular: alguém da família registrou uma compra no seu cartão sem dizer qual. Você escolhe o cartão
 // e a compra entra na fatura, no nome de quem comprou.
@@ -36,6 +37,7 @@ export function ChooseCardSheet({ transaction: t, buyer, open, onOpenChange }: {
       await transactionsApi.resolveCardPending(t.id, picked)
       await refresh()
       onOpenChange(false)
+      feedback.done('Cartão definido')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível salvar.')
     } finally {

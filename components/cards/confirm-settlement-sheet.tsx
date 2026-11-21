@@ -11,6 +11,7 @@ import { useWallets } from '@/hooks/use-wallets'
 import { familyApi } from '@/lib/api/family'
 import type { Settlement } from '@/lib/types'
 import { formatCurrency, formatDate, monthName } from '@/lib/utils'
+import { feedback } from '@/lib/feedback'
 
 // 5.7.8 passos 2 e 3: o titular confirma (o valor entra como reembolso) ou recusa.
 export function ConfirmSettlementSheet({
@@ -32,9 +33,9 @@ function Body({ s, name, onDone }: { s: Settlement; name: string; onDone: () => 
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function run(fn: () => Promise<void>) {
+  async function run(fn: () => Promise<void>, done: string) {
     setBusy(true); setError(null)
-    try { await fn(); await refresh(); onDone() }
+    try { await fn(); await refresh(); onDone(); feedback.done(done) }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível concluir.') }
     finally { setBusy(false) }
   }
@@ -54,11 +55,11 @@ function Body({ s, name, onDone }: { s: Settlement; name: string; onDone: () => 
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
       <div className="space-y-2">
         <Button size="lg" className="w-full" disabled={busy || !walletId}
-          onClick={() => run(() => familyApi.confirmSettlement(s.id, walletId!))}>
+          onClick={() => run(() => familyApi.confirmSettlement(s.id, walletId!), 'Acerto confirmado')}>
           Confirmar recebimento
         </Button>
         <Button variant="ghost" size="lg" className="w-full text-destructive" disabled={busy}
-          onClick={() => { if (confirm('Recusar acerto? A pessoa recebe um aviso.')) run(() => familyApi.rejectSettlement(s.id)) }}>
+          onClick={() => { if (confirm('Recusar acerto? A pessoa recebe um aviso.')) run(() => familyApi.rejectSettlement(s.id), 'Acerto recusado') }}>
           Não recebi
         </Button>
       </div>

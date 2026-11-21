@@ -15,6 +15,7 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { categoriesApi } from '@/lib/api/categories'
 import type { Category, CategoryType } from '@/lib/types'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
+import { feedback } from '@/lib/feedback'
 
 const CLASS_LABEL = { essential: 'Essencial', desire: 'Desejo' } as const
 
@@ -50,6 +51,7 @@ function Categories() {
       )
       setNewName('')
       await refresh()
+      feedback.done('Categoria adicionada')
     } catch (err) {
       const msg = err instanceof Error ? err.message : ''
       setError(msg.includes('duplicate') ? 'Já existe uma categoria com esse nome.' : msg || 'Não foi possível adicionar.')

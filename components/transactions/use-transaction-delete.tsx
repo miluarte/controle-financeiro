@@ -5,6 +5,7 @@ import { ActionSheet } from '@/components/ios/action-sheet'
 import { useRefresh } from '@/hooks/use-refresh'
 import { transactionsApi } from '@/lib/api/transactions'
 import type { Transaction } from '@/lib/types'
+import { feedback } from '@/lib/feedback'
 
 // Excluir lançamento com confirmação; parcelado pergunta se é só esta parcela ou a compra inteira.
 export function useTransactionDelete(onDone?: () => void) {
@@ -16,8 +17,9 @@ export function useTransactionDelete(onDone?: () => void) {
       if (all && t.installmentGroupId) await transactionsApi.removeInstallmentGroup(t.installmentGroupId)
       else await transactionsApi.remove(t.id)
       await refresh(); onDone?.()
+      feedback.done(all ? 'Compra excluída' : t.installmentGroupId ? 'Parcela excluída' : 'Excluído')
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Não foi possível excluir.')
+      feedback.error(err instanceof Error ? err.message : 'Não foi possível excluir.')
     }
   }
 
