@@ -6,6 +6,7 @@ import { BillOccurrenceSheet } from '@/components/bills/bill-occurrence-sheet'
 import { BillsMonthCard } from '@/components/bills/bills-month-card'
 import { DueBadge } from '@/components/bills/due-badge'
 import { InvoiceSheet, type InvoiceRef } from '@/components/bills/invoice-sheet'
+import { Badge } from '@/components/ui/badge'
 import { SharedInvoiceSheet, type SharedInvoice } from '@/components/bills/shared-invoice-sheet'
 import { useMyDebts } from '@/hooks/use-family'
 import { useWallets } from '@/hooks/use-wallets'
@@ -123,8 +124,8 @@ export default function BillsPage() {
                     <span className="flex items-center gap-1.5">
                       Vence {formatDate(i.due).slice(0, 5)}
                       {!i.paid && i.paidAmount > 0 && ` · ${formatCurrency(i.paidAmount)} pago`}
-                      {!i.paid && i.kind === 'shared' && i.inv.debt.reported > 0 && ` · ${formatCurrency(i.inv.debt.reported)} aguardando`}
                       <DueBadge dueDate={nextBusinessDay(i.due)} paid={i.paid} />
+                      {!i.paid && i.kind === 'shared' && i.inv.debt.reported > 0 && <Badge variant="warning">Não confirmado</Badge>}
                     </span>
                   }
                   trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(i.paid ? i.amount : i.amount - i.paidAmount)}</span>}

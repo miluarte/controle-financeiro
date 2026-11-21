@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { Badge } from '@/components/ui/badge'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { useMyDebts } from '@/hooks/use-family'
@@ -41,7 +42,12 @@ export function FamilyBalances({ month }: { month: string }) {
           onClick={() => router.push('/config/wallets')} chevron />
       )}
       {[...people.entries()].map(([ownerId, p]) => (
-        <ListRow key={ownerId} title={`Você deve a ${p.name}`} subtitle={p.reported > 0 ? `${formatCurrency(p.reported)} aguardando confirmação` : p.cards.join(' e ')}
+        <ListRow key={ownerId} title={`Você deve a ${p.name}`} subtitle={
+            <span className="flex items-center gap-1.5">
+              {p.cards.join(' e ')}
+              {p.reported > 0 && <Badge variant="warning">Não confirmado</Badge>}
+            </span>
+          }
           trailing={<span className="font-semibold text-foreground">{formatCurrency(p.total)}</span>}
           onClick={() => router.push(`/transactions?pagamento=${p.ids.join(',')}&mes=${p.ref}`)} chevron />
       ))}

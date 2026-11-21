@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import useSWR from 'swr'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
@@ -57,6 +58,9 @@ function Body({ inv, owner, onPay }: { inv: SharedInvoice; owner: string; onPay:
         <p className="text-subheadline text-muted-foreground">
           {paid ? `Paga a ${owner}` : `Você deve a ${owner}`} · vence {formatDate(debt.dueDate)}
         </p>
+        {!paid && debt.reported > 0 && (
+          <Badge variant="warning" className="mt-2">Não confirmado</Badge>
+        )}
         {!paid && debt.settled > 0 && (
           <p className="text-footnote text-muted-foreground">{formatCurrency(debt.settled)} já acertado de {formatCurrency(debt.total)}</p>
         )}
