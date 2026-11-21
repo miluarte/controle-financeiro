@@ -407,17 +407,6 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                   className="text-right"
                 />
               </FormRow>
-              {creditLike && (
-                <FormRow label="Parcelas" htmlFor="installments">
-                  <NumberField id="installments" min={1} max={48} value={installments}
-                    onChange={setInstallments} className="w-16 text-right" />
-                </FormRow>
-              )}
-              {creditLike && installments > 1 && (
-                <InstallmentProgress installments={installments} current={currentInstallment} onCurrentChange={setCurrentInstallment}
-                  amountIsInstallment={amountIsInstallment} onAmountIsInstallmentChange={setAmountIsInstallment}
-                  purchaseDate={date} />
-              )}
             </ListGroup>
 
             {mode === 'income' && (
@@ -446,6 +435,17 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                     ]} />
                 )}
                 {unknownCard && <HolderPicker holders={holders} value={holder} onChange={setHolderId} me={me} />}
+                {creditLike && (
+                  <FormRow label="Parcelas" htmlFor="installments">
+                    <NumberField id="installments" min={1} max={48} value={installments}
+                      onChange={setInstallments} className="w-16 text-right" />
+                  </FormRow>
+                )}
+                {creditLike && installments > 1 && (
+                  <InstallmentProgress installments={installments} current={currentInstallment} onCurrentChange={setCurrentInstallment}
+                    amountIsInstallment={amountIsInstallment} onAmountIsInstallmentChange={setAmountIsInstallment}
+                    purchaseDate={date} amount={amount} />
+                )}
               </ListGroup>
             )}
 
