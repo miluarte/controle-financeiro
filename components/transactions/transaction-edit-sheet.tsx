@@ -23,6 +23,10 @@ import { useTransactionDelete } from './use-transaction-delete'
 import { usePinAction } from './use-pin-action'
 import { Switch } from '@/components/ui/switch'
 import { feedback } from '@/lib/feedback'
+import { useCardPeople } from '@/hooks/use-card-people'
+import { SPLIT_ALL } from '@/lib/split'
+import { ListRow } from '@/components/ios/list-row'
+import { formatCurrency } from '@/lib/utils'
 
 // TRA-6: abrir, editar e excluir um lançamento.
 export function TransactionEditSheet({
@@ -63,6 +67,10 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
   const [, setBusy] = useState(false)
 
   const editable = ['expense', 'income', 'save_apply', 'save_redeem'].includes(t.type)
+  // compra dividida (split_purchase): divisão da compra inteira por pessoa
+  const { nameOf } = useCardPeople()
+  const split = Array.isArray(t.sourceData?.split_parts) ? (t.sourceData.split_parts as { user_id: string; amount: number }[]) : null
+  const splitTotal = split ? split.reduce((sum, p) => sum + Number(p.amount), 0) : 0
   const catType = t.type === 'income' ? 'income' : 'expense'
   const showCategory = t.type === 'expense' || t.type === 'income'
   const showWallet = t.type !== 'income'
@@ -121,7 +129,19 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
         </ListGroup>
       )}
 
-      {t.type === 'expense' && <ItemsEditor items={items} onChange={setItems} total={amount} disabled={!editable} />}
+      {/* compra dividida: todos os itens, com o dono de cada um, e quanto fica para cada pessoa */}
+      {t.type === 'expense' && (split ? (
+        <>
+          <ItemsEditor items={items} onChange={setItems} total={splitTotal} disabled
+            ownerName={o => (o === SPLIT_ALL ? 'Dividido' : nameOf(o ?? t.owner))} />
+          <ListGroup header="Divisão" footer={`Total da compra ${formatCurrency(splitTotal)}${t.installmentsTotal ? ` em ${t.installmentsTotal}x` : ''}.`}>
+            {split.map(p => (
+              <ListRow key={p.user_id} title={nameOf(p.user_id)}
+                trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(p.amount)}</span>} />
+            ))}
+          </ListGroup>
+        </>
+      ) : <ItemsEditor items={items} onChange={setItems} total={amount} disabled={!editable} />)}
 
       {t.type === 'expense' && t.invoiceRef && wallets.some(w => w.id === t.walletId && w.type === 'credit' && !w.ownerName) && (
         <PrepayGroup t={t} onDone={onDone} />
