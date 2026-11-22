@@ -5,8 +5,8 @@ import { FormRow } from '@/components/ios/form-row'
 import { SelectField } from '@/components/shared/select-field'
 import type { FamilyMember } from '@/lib/types'
 
-// Quem enviou o dinheiro (receita, ex.: Pix recebido): alguém da família no app ou outro nome digitado.
-// Opcional; fica em source_data.sender.
+// A outra pessoa do dinheiro: quem enviou (receita, "Remetente") ou quem recebeu (gasto no Pix, "Destinatário").
+// Alguém da família no app ou outro nome digitado. Opcional; fica em source_data.sender.
 export interface Sender { userId: string | null; name: string }
 
 const OTHER = '__outra'
@@ -18,8 +18,9 @@ export const senderOf = (data: Record<string, unknown> | null | undefined): Send
 export const senderData = (s: Sender | null) =>
   s && s.name.trim() ? { sender: { user_id: s.userId, name: s.name.trim() } } : {}
 
-export function SenderRows({ id, value, onChange, people, me, disabled }: {
+export function SenderRows({ id, label = 'Remetente', value, onChange, people, me, disabled }: {
   id: string
+  label?: string
   value: Sender | null
   onChange: (s: Sender | null) => void
   people: FamilyMember[]
@@ -40,7 +41,7 @@ export function SenderRows({ id, value, onChange, people, me, disabled }: {
 
   return (
     <>
-      <FormRow label="Remetente" htmlFor={id}>
+      <FormRow label={label} htmlFor={id}>
         <SelectField id={id} value={selected} onChange={pick} placeholder="Opcional"
           options={[...others.map(p => ({ value: p.userId, label: p.name })), { value: OTHER, label: 'Outra pessoa' }]} />
       </FormRow>
