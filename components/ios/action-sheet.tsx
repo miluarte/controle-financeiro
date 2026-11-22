@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { ListGroup } from './list-group'
@@ -16,6 +17,14 @@ export function ActionSheet({ open, onOpenChange, title, actions }: {
   open: boolean; onOpenChange: (o: boolean) => void; title: string; actions: ActionSheetAction[]
 }) {
   const single = actions.length === 1 ? actions[0] : null
+  // o toque que abriu a folha (ex.: deslizar a linha até o fim) não pode confirmar a ação: no iPhone, ao soltar
+  // o dedo, o clique cai no botão que apareceu embaixo dele. Ações só valem depois de um instante.
+  const openedAt = useRef(0)
+  useEffect(() => { if (open) openedAt.current = Date.now() }, [open])
+  const run = (a: ActionSheetAction) => async () => {
+    if (Date.now() - openedAt.current < 500) return
+    onOpenChange(false); await a.onSelect()
+  }
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" showCloseButton={false} className="gap-3 px-3 pb-3">
@@ -25,7 +34,7 @@ export function ActionSheet({ open, onOpenChange, title, actions }: {
           // em vermelho claro; Cancelar à direita ocupando o resto
           <div className="flex gap-3">
             <Button type="button" variant={single.destructive ? 'destructive' : 'secondary'} size="lg" className="shrink-0 px-6"
-              onClick={async () => { onOpenChange(false); await single.onSelect() }}>
+              onClick={run(single)}>
               {single.label}
             </Button>
             <Button type="button" variant="secondary" size="lg" className="min-w-0 flex-1" onClick={() => onOpenChange(false)}>Cancelar</Button>
@@ -37,7 +46,7 @@ export function ActionSheet({ open, onOpenChange, title, actions }: {
             <li key={a.label} className="border-b border-separator last:border-b-0">
               <Button type="button" variant={a.destructive ? 'plain-destructive' : 'plain'} size="nav"
                 className="h-row w-full text-body"
-                onClick={async () => { onOpenChange(false); await a.onSelect() }}>
+                onClick={run(a)}>
                 {a.label}
               </Button>
             </li>

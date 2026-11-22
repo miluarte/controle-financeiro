@@ -9,12 +9,14 @@ import { transactionsApi } from '@/lib/api/transactions'
 import type { Transaction } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { feedback } from '@/lib/feedback'
+import { useConfirmDelete } from '@/components/ios/use-delete-action'
 
 // Pares de compras possivelmente repetidas: apagar a repetida ou marcar que não é.
 export function DuplicatesSheet({ open, pairs, onOpenChange }: {
   open: boolean; pairs: [Transaction, Transaction][]; onOpenChange: (o: boolean) => void
 }) {
   const refresh = useRefresh()
+  const confirmDel = useConfirmDelete()
   const [busy, setBusy] = useState<string | null>(null)
 
   async function run(key: string, fn: () => Promise<unknown>, done: string) {
@@ -34,6 +36,7 @@ export function DuplicatesSheet({ open, pairs, onOpenChange }: {
 
   return (
     <ModalSheet open={open} onOpenChange={onOpenChange} title="Possíveis repetidas">
+      {confirmDel.sheet}
       {pairs.length === 0 && <p className="py-6 text-center text-subheadline text-muted-foreground">Nada repetido.</p>}
       {pairs.map(([a, b]) => {
         const key = `${a.id}-${b.id}`
@@ -47,7 +50,7 @@ export function DuplicatesSheet({ open, pairs, onOpenChange }: {
             ))}
             <li className="grid grid-cols-2 gap-2 p-3">
               <Button variant="secondary" disabled={busy === key} onClick={() => run(key, () => keepBoth(a, b), 'Mantidas')}>Manter ambas</Button>
-              <Button variant="destructive" disabled={busy === key} onClick={() => run(key, () => transactionsApi.remove(b.id), 'Excluído')}>Excluir uma</Button>
+              <Button variant="destructive" disabled={busy === key} onClick={() => confirmDel.ask({ title: 'Excluir compra repetida?', remove: () => transactionsApi.remove(b.id) })}>Excluir uma</Button>
             </li>
           </ListGroup>
         )

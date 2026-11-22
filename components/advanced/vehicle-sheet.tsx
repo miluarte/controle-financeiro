@@ -8,7 +8,7 @@ import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { ModalSheet } from '@/components/ios/modal-sheet'
-import { useDeleteAction } from '@/components/ios/use-delete-action'
+import { useConfirmDelete, useDeleteAction } from '@/components/ios/use-delete-action'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { DecimalField } from '@/components/shared/decimal-field'
 import { NumberField } from '@/components/shared/number-field'
@@ -49,6 +49,7 @@ function VehicleForm({ vehicle, trips, maintenance, onDone }: {
   vehicle: Vehicle | null; trips: VehicleTrip[]; maintenance: VehicleMaintenance[]; onDone: () => void
 }) {
   const refresh = useRefresh()
+  const confirmDel = useConfirmDelete()
   const [name, setName] = useState(vehicle?.name ?? '')
   const [kmPerLiter, setKmPerLiter] = useState(vehicle?.kmPerLiter ?? 0)
   const [fuelPrice, setFuelPrice] = useState(vehicle?.fuelPrice ?? 0)
@@ -76,6 +77,7 @@ function VehicleForm({ vehicle, trips, maintenance, onDone }: {
 
   return (
     <form id="vehicle-form" onSubmit={save} className="space-y-6">
+      {confirmDel.sheet}
       <ListGroup>
         <FormRow label="Nome" htmlFor="v-name">
           <Input id="v-name" variant="bare" value={name} onChange={e => setName(e.target.value)} placeholder="Carro, moto…" className="text-right" />
@@ -101,8 +103,8 @@ function VehicleForm({ vehicle, trips, maintenance, onDone }: {
               onClick={() => { if (tripKm > 0) run(async () => { await vehiclesApi.addTrip(vehicle.id, tripDate, tripKm); setTripKm(0) }, false, 'Trajeto adicionado') }} />
             {trips.map(t => (
               <ListRow key={t.id} title={`${t.km.toLocaleString('pt-BR')} km`} subtitle={formatDate(t.date)}
-                onDelete={() => run(() => vehiclesApi.removeTrip(t.id), false, 'Excluído')}
-                trailing={<TripDelete onClick={() => run(() => vehiclesApi.removeTrip(t.id), false, 'Excluído')} />} />
+                onDelete={() => confirmDel.ask({ title: 'Excluir trajeto?', remove: () => vehiclesApi.removeTrip(t.id) })}
+                trailing={<TripDelete onClick={() => confirmDel.ask({ title: 'Excluir trajeto?', remove: () => vehiclesApi.removeTrip(t.id) })} />} />
             ))}
           </ListGroup>
 
@@ -124,9 +126,9 @@ function VehicleForm({ vehicle, trips, maintenance, onDone }: {
               }} />
             {maintenance.map(m => (
               <ListRow key={m.id} title={m.name}
-                onDelete={() => run(() => vehiclesApi.removeMaintenance(m.id), false, 'Excluído')}
+                onDelete={() => confirmDel.ask({ title: 'Excluir item?', remove: () => vehiclesApi.removeMaintenance(m.id) })}
                 subtitle={`${formatCurrency(m.cost)} a cada ${m.everyMonths} ${m.everyMonths === 1 ? 'mês' : 'meses'}`}
-                trailing={<TripDelete onClick={() => run(() => vehiclesApi.removeMaintenance(m.id), false, 'Excluído')} />} />
+                trailing={<TripDelete onClick={() => confirmDel.ask({ title: 'Excluir item?', remove: () => vehiclesApi.removeMaintenance(m.id) })} />} />
             ))}
           </ListGroup>
         </>
