@@ -17,7 +17,17 @@ export function useTransactionDelete(onDone?: () => void) {
       if (all && t.installmentGroupId) await transactionsApi.removeInstallmentGroup(t.installmentGroupId)
       else await transactionsApi.remove(t.id)
       await refresh(); onDone?.()
-      feedback.done(all ? 'Compra excluída' : t.installmentGroupId ? 'Parcela excluída' : 'Excluído')
+      // lançamento avulso (não parcela): "Desfazer" no aviso recria igual
+      const undo = !t.installmentGroupId && ['expense', 'income', 'save_apply', 'save_redeem'].includes(t.type)
+        ? async () => {
+            await transactionsApi.create({
+              type: t.type as 'expense', amount: t.amount, date: t.date, categoryId: t.categoryId, walletId: t.walletId,
+              place: t.place, description: t.description, source: t.source, sourceData: t.sourceData, receiptPath: t.receiptPath,
+            })
+            await refresh(); feedback.done('Restaurado')
+          }
+        : undefined
+      feedback.done(all ? 'Compra excluída' : t.installmentGroupId ? 'Parcela excluída' : 'Excluído', undo)
     } catch (err) {
       feedback.error(err instanceof Error ? err.message : 'Não foi possível excluir.')
     }

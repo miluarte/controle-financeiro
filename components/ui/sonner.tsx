@@ -22,6 +22,7 @@ export function Toaster(props: ToasterProps) {
         classNames: {
           toast: 'glass-strong mx-auto flex w-fit max-w-[min(90vw,24rem)] items-center gap-2 rounded-full px-4 py-2.5 text-subheadline font-medium text-foreground shadow-lg',
           title: 'truncate',
+          actionButton: 'ml-2 shrink-0 rounded-full bg-fill px-3 py-1 text-subheadline font-semibold text-tint',
         },
       }}
       {...props}

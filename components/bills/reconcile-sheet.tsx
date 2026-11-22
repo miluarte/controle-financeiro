@@ -20,6 +20,7 @@ import { daysInMonth, formatCurrency, formatDate } from '@/lib/utils'
 import { LoadingDots } from '@/components/shared/loading-dots'
 import { useCategorySuggest } from '@/hooks/use-category-suggest'
 import { feedback } from '@/lib/feedback'
+import { useConfirmDelete } from '@/components/ios/use-delete-action'
 
 // Conferir a fatura com o PDF do banco: o que falta no app, o que sobra e o que bate.
 export function ReconcileSheet({ open, onOpenChange, wallet, invoiceRef, dueDate }: {
@@ -43,6 +44,7 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
   wallet: OwnWallet; invoiceRef: string; dueDate: string; initialFile?: File
 }) {
   const refresh = useRefresh()
+  const confirmDel = useConfirmDelete()
   const suggest = useCategorySuggest()
   const input = useRef<HTMLInputElement>(null)
   const [status, setStatus] = useState<string | null>(null)
@@ -132,6 +134,7 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
 
   return (
     <div className="space-y-6">
+      {confirmDel.sheet}
       {!initialFile && <Button variant="secondary" size="lg" className="w-full gap-2" disabled={!!status && status.startsWith('Lendo')}
         onClick={() => input.current?.click()}>
         <DocumentAddLinearIcon className="size-5" />{result ? 'Trocar PDF' : 'Escolher PDF'}
@@ -196,7 +199,7 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
                     <span className="flex items-center gap-2">
                       <span className="tabular-nums">{formatCurrency(t.amount)}</span>
                       <Button variant="plain-destructive" size="nav" disabled={!!busy}
-                        onClick={() => { if (confirm('Excluir compra?')) run(t.id, () => transactionsApi.remove(t.id), 'Excluído') }}>
+                        onClick={() => confirmDel.ask({ title: 'Excluir compra?', remove: async () => { await transactionsApi.remove(t.id); await compare(items) } })}>
                         Excluir
                       </Button>
                     </span>} />
