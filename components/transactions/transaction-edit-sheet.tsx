@@ -24,6 +24,7 @@ import { usePinAction } from './use-pin-action'
 import { Switch } from '@/components/ui/switch'
 import { feedback } from '@/lib/feedback'
 import { useCardPeople } from '@/hooks/use-card-people'
+import { SenderRows, senderData, senderOf, type Sender } from './sender-field'
 import { SPLIT_ALL } from '@/lib/split'
 import { ListRow } from '@/components/ios/list-row'
 import { capitalize, cn, formatCurrency, monthName } from '@/lib/utils'
@@ -68,7 +69,8 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
 
   const editable = ['expense', 'income', 'save_apply', 'save_redeem'].includes(t.type)
   // compra dividida (split_purchase): divisão da compra inteira por pessoa
-  const { nameOf } = useCardPeople()
+  const { nameOf, people, me } = useCardPeople()
+  const [sender, setSender] = useState<Sender | null>(() => senderOf(t.sourceData))
   const split = Array.isArray(t.sourceData?.split_parts) ? (t.sourceData.split_parts as { user_id: string; amount: number }[]) : null
   const splitTotal = split ? split.reduce((sum, p) => sum + Number(p.amount), 0) : 0
   const n = t.installmentsTotal ?? 1
@@ -94,6 +96,7 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
         amount, date, categoryId, walletId,
         ...(t.type === 'expense' && !t.installmentGroupId && { sourceData: { ...(t.sourceData ?? {}), items } }),
         ...(t.type === 'income' ? { description: text.trim() || null } : { place: text.trim() || null }),
+        ...(t.type === 'income' && { sourceData: { ...Object.fromEntries(Object.entries(t.sourceData ?? {}).filter(([k]) => k !== 'sender')), ...senderData(sender) } }),
       })
       if (t.type === 'expense' && t.installmentGroupId) await transactionsApi.setGroupItems(t.installmentGroupId, items)
       await refresh(); onDone(); feedback.done('Salvo')
@@ -114,6 +117,9 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
           <Input id="edit-text" variant="bare" value={text} onChange={e => setText(e.target.value)}
             placeholder="Opcional" className="text-right" disabled={!editable} />
         </FormRow>
+        {t.type === 'income' && editable && (
+          <SenderRows id="edit-sender" value={sender} onChange={setSender} people={people} me={me} />
+        )}
       </ListGroup>
 
       {((showCategory && editable) || (showWallet && editable && !t.installmentGroupId)) && (

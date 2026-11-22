@@ -145,6 +145,8 @@ Conferir fatura pelo PDF (2026-11-16): na fatura, "Conferir com o PDF da fatura"
 
 Itens da compra parcelada valem para todas as parcelas (`setGroupItems`).
 
+Remetente da receita (2026-11-22): na Receita (não fixa) e na edição, "Remetente" opcional (`SenderRows`, `components/transactions/sender-field.tsx`): alguém da família no app ou "Outra pessoa" com o nome digitado; fica em `source_data.sender` (`{user_id, name}`), aparece no subtítulo da linha ("De …") e entra na busca de Transações.
+
 Central de notificações (2026-11-16): tabela `notifications` (histórico por pessoa, `read_at`). Todo aviso que entra na fila (`notification_queue`, menos `test`) é copiado pelo gatilho `private.copy_to_notifications`; os avisos agendados da `notify` gravam direto (`alert`). Sino na Home (`NotificationsButton`, ponto vermelho com não lidas) abre `/notifications`; tocar marca como lida e abre o link.
 
 Vencimento em dia sem expediente (2026-11-16): `lib/business-days.ts` (fins de semana e feriados nacionais, inclusive Carnaval, Sexta-feira Santa e Corpus Christi). Fatura que vence nesses dias pode ser paga no próximo dia útil sem encargos: o selo de vencida e a estimativa de atraso usam `nextBusinessDay`. O fechamento não muda (é dia fixo do calendário).

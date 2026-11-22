@@ -40,6 +40,7 @@ import { PickerRow } from '@/components/shared/picker-row'
 import { walletOption } from '@/components/shared/wallet-picker'
 import { useCardPeople } from '@/hooks/use-card-people'
 import { SPLIT_ALL, splitParts } from '@/lib/split'
+import { SenderRows, senderData, type Sender } from './sender-field'
 import { itemOwnerOptions, SplitRows, splitDefault, splitMode, splitPeople, splitSummary } from './split-group'
 import { feedback } from '@/lib/feedback'
 
@@ -109,6 +110,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const [repeat, setRepeat] = useState(() => ({ ...repeatDefault(todayIso().slice(0, 7)), on: initialRepeat }))
   // dividir a compra no cartão entre pessoas (por item, igual ou por valor)
   const [split, setSplit] = useState(splitDefault)
+  // receita: quem enviou (opcional; alguém da família ou outro nome)
+  const [sender, setSender] = useState<Sender | null>(null)
 
   function onReceipt(result: ReceiptResult, image: Blob) {
     setReceipt({ result, image })
@@ -147,6 +150,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     setOwner('')
     setRepeat(repeatDefault(todayIso().slice(0, 7)))
     setSplit(splitDefault())
+    setSender(null)
   }
 
   function changeMode(next: Mode) {
@@ -235,7 +239,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
           } : pending ? {
             source: pending.source,
             sourceData: { ...(pending.sourceData ?? {}), ...(mode === 'expense' && items.length ? { items: plainItems } : {}) },
-          } : mode === 'expense' && items.length ? { sourceData: { items: plainItems } } : {}),
+          } : mode === 'expense' && items.length ? { sourceData: { items: plainItems } }
+            : mode === 'income' && sender ? { sourceData: senderData(sender) } : {}),
           type: mode === 'save' ? (saveDirection === 'apply' ? 'save_apply' : 'save_redeem') : mode,
           amount,
           date,
@@ -433,6 +438,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                   className="text-right"
                 />
               </FormRow>
+              {mode === 'income' && !repeat.on && (
+                <SenderRows id="qa-sender" value={sender} onChange={setSender} people={cardPeople.people} me={me} />
+              )}
             </ListGroup>
 
             {mode === 'income' && (
