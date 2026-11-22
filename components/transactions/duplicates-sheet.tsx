@@ -10,6 +10,7 @@ import type { Transaction } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { feedback } from '@/lib/feedback'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
+import { ButtonRow } from '@/components/ios/button-row'
 
 // Pares de compras possivelmente repetidas: apagar a repetida ou marcar que não é.
 export function DuplicatesSheet({ open, pairs, onOpenChange }: {
@@ -48,9 +49,11 @@ export function DuplicatesSheet({ open, pairs, onOpenChange }: {
                 <span className="min-w-0 truncate text-muted-foreground">{t.place ?? 'Sem local'}</span>
               </li>
             ))}
-            <li className="grid grid-cols-2 gap-2 p-3">
-              <Button variant="secondary" disabled={busy === key} onClick={() => run(key, () => keepBoth(a, b), 'Mantidas')}>Manter ambas</Button>
-              <Button variant="destructive" disabled={busy === key} onClick={() => confirmDel.ask({ title: 'Excluir compra repetida?', remove: () => transactionsApi.remove(b.id) })}>Excluir uma</Button>
+            <li className="p-3">
+              <ButtonRow>
+                <Button variant="destructive" disabled={busy === key} onClick={() => confirmDel.ask({ title: 'Excluir compra repetida?', remove: () => transactionsApi.remove(b.id) })}>Excluir uma</Button>
+                <Button variant="secondary" disabled={busy === key} onClick={() => run(key, () => keepBoth(a, b), 'Mantidas')}>Manter ambas</Button>
+              </ButtonRow>
             </li>
           </ListGroup>
         )

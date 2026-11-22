@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { ListGroup } from './list-group'
+import { ButtonRow } from './button-row'
 
 export interface ActionSheetAction {
   label: string
@@ -32,13 +33,13 @@ export function ActionSheet({ open, onOpenChange, title, actions }: {
         {single ? (
           // uma ação só (ex.: Excluir): lado a lado com Cancelar; a ação à esquerda, do tamanho do texto,
           // em vermelho claro; Cancelar à direita ocupando o resto
-          <div className="flex gap-3">
-            <Button type="button" variant={single.destructive ? 'destructive' : 'secondary'} size="lg" className="shrink-0 px-6"
+          <ButtonRow>
+            <Button type="button" variant={single.destructive ? 'destructive' : 'secondary'} size="lg"
               onClick={run(single)}>
               {single.label}
             </Button>
-            <Button type="button" variant="secondary" size="lg" className="min-w-0 flex-1" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          </div>
+            <Button type="button" variant="secondary" size="lg" onClick={() => onOpenChange(false)}>Cancelar</Button>
+          </ButtonRow>
         ) : (
         <>
         <ListGroup>

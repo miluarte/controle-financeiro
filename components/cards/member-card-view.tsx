@@ -9,7 +9,6 @@ import { TransactionEditSheet } from '@/components/transactions/transaction-edit
 import { TransactionItem } from '@/components/transactions/transaction-item'
 import { useCategories } from '@/hooks/use-categories'
 import { useMyDebts, useSettlements } from '@/hooks/use-family'
-import { useRefresh } from '@/hooks/use-refresh'
 import { familyApi } from '@/lib/api/family'
 import { transactionsApi } from '@/lib/api/transactions'
 import { openInvoiceRef } from '@/lib/invoice'
@@ -17,7 +16,7 @@ import type { Transaction, Wallet } from '@/lib/types'
 import { addMonths, capitalize, formatCurrency, formatDate, monthName, todayIso } from '@/lib/utils'
 import { InvoiceNavigator } from './invoice-navigator'
 import { SettlementSheet } from './settlement-sheet'
-import { feedback } from '@/lib/feedback'
+import { useConfirmDelete } from '@/components/ios/use-delete-action'
 
 // VIS-1 e VIS-2: visão do membro. Só as próprias compras e quanto deve ao titular.
 export function MemberCardView({ wallet }: { wallet: Wallet }) {
@@ -29,7 +28,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [paying, setPaying] = useState(false)
   const settlements = useSettlements(wallet.id)
-  const refresh = useRefresh()
+  const ask = useConfirmDelete()
   const waiting = settlements.filter(st => st.status === 'reported')
   const confirmed = settlements.filter(st => st.status === 'confirmed')
   // faturas com saldo, das mais antigas para as mais novas (fechadas primeiro)
@@ -45,6 +44,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
 
   return (
     <div className="space-y-7">
+      {ask.sheet}
       <section className="space-y-1 rounded-3xl bg-grouped p-4 text-center">
         <p className="text-subheadline text-muted-foreground">Você deve a {owner} na fatura de {monthName(openRef)}</p>
         <p className="text-large-title font-bold tabular-nums">{formatCurrency(at(openRef)?.open ?? 0)}</p>
@@ -63,7 +63,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
               subtitle={`Fatura de ${monthName(st.invoiceRef.slice(0, 7))}${st.paidOn ? ` · pago em ${formatDate(st.paidOn)}` : ''}`}
               trailing={
                 <button type="button" className="text-body text-destructive"
-                  onClick={async () => { if (confirm('Cancelar acerto?')) { await familyApi.cancelSettlement(st.id); await refresh(); feedback.done('Acerto cancelado') } }}>
+                  onClick={() => ask.ask({ title: 'Cancelar acerto?', label: 'Cancelar acerto', remove: () => familyApi.cancelSettlement(st.id) })}>
                   Cancelar
                 </button>
               } />

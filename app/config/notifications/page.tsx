@@ -13,6 +13,7 @@ import { useSession } from '@/hooks/use-session'
 import { disablePush, enablePush, pushState, sendTest, type PushState } from '@/lib/push'
 import { supabase, unwrap } from '@/lib/supabase/client'
 import { feedback } from '@/lib/feedback'
+import { ButtonRow } from '@/components/ios/button-row'
 
 type Setting = { type: string; enabled: boolean; time: string | null; days_before: number | null }
 
@@ -67,17 +68,19 @@ export default function NotificationsPage() {
       <LargeTitleHeader back title="Notificações" />
       <div className="space-y-7 px-4 pt-2">
         <ListGroup header="Este aparelho" footer={message ?? (state ? STATE_TEXT[state] || undefined : undefined)}>
-          <li className={state === 'on' ? 'flex gap-3 p-3' : 'p-3'}>
-            <Button size="lg" variant={state === 'on' ? 'secondary' : 'default'} className={state === 'on' ? 'shrink-0 px-6' : 'w-full'} disabled={busy || !state || state === 'unsupported' || state === 'needs-install' || state === 'denied'}
+          <li className="p-3">
+            <ButtonRow>
+            <Button size="lg" variant={state === 'on' ? 'secondary' : 'default'} disabled={busy || !state || state === 'unsupported' || state === 'needs-install' || state === 'denied'}
               onClick={toggleDevice}>
               {state === 'on' ? 'Desativar' : 'Ativar notificações'}
             </Button>
             {state === 'on' && (
-              <Button size="lg" className="w-full min-w-0 flex-1" disabled={busy}
+              <Button size="lg" disabled={busy}
                 onClick={async () => { await sendTest(); setMessage('Teste enviado. Deve chegar em alguns segundos.') }}>
                 Enviar teste
               </Button>
             )}
+            </ButtonRow>
           </li>
         </ListGroup>
 

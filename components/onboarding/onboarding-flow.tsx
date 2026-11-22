@@ -21,6 +21,7 @@ import { IncomeStep, type IncomeDraft } from './income-step'
 import { SecurityStep } from './security-step'
 import { NotificationsStep } from './notifications-step'
 import { OnboardingStep, StepIcon } from './onboarding-step'
+import { ButtonRow } from '@/components/ios/button-row'
 
 const STEPS = ['welcome', 'name', 'cards', 'income', 'budget', 'notifications', 'security', 'done'] as const
 
@@ -154,14 +155,14 @@ export function OnboardingFlow() {
       </div>
 
       {error && <p className="pb-2 text-center text-footnote text-destructive">{error}</p>}
-      <div className={optional ? 'flex gap-3' : undefined}>
+      <ButtonRow>
         {optional && (
-          <Button variant="secondary" size="lg" className="shrink-0 px-6" onClick={skip} disabled={busy}>Pular</Button>
+          <Button variant="secondary" size="lg" onClick={skip} disabled={busy}>Pular</Button>
         )}
-        <Button size="lg" className="w-full min-w-0 flex-1" onClick={next} disabled={busy || (step === 'name' && !name.trim())}>
+        <Button size="lg" onClick={next} disabled={busy || (step === 'name' && !name.trim())}>
           {nextLabel}
         </Button>
-      </div>
+      </ButtonRow>
     </div>
   )
 }

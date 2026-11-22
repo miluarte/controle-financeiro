@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { GlassButton } from './glass-button'
 import { SheetCloseButton } from './sheet-close-button'
+import { ButtonRow } from './button-row'
 
 // Folha modal padrão do app (iOS 26): fechar (só o X) | título | ação principal em cápsula.
 // O conteúdo vai num <form id={formId}>; a ação do topo envia esse formulário.
@@ -47,15 +48,14 @@ export function ModalSheet({
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-2 pb-6">
           {children}
           {saveBelow && (
-            // secundário do tamanho do texto à esquerda; principal ocupa o resto
-            <div className={secondaryAction ? 'flex gap-3' : undefined}>
+            <ButtonRow>
               {secondaryAction && (
-                <Button type="button" variant="secondary" size="lg" className="shrink-0 px-6" disabled={secondaryAction.disabled} onClick={secondaryAction.onClick}>
+                <Button type="button" variant="secondary" size="lg" disabled={secondaryAction.disabled} onClick={secondaryAction.onClick}>
                   {secondaryAction.label}
                 </Button>
               )}
-              <Button type="submit" form={formId} size="lg" className="w-full min-w-0 flex-1" disabled={actionDisabled}>{actionLabel}</Button>
-            </div>
+              <Button type="submit" form={formId} size="lg" disabled={actionDisabled}>{actionLabel}</Button>
+            </ButtonRow>
           )}
         </div>
       </SheetContent>
