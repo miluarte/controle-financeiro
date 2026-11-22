@@ -166,6 +166,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const walletId = unknownCard ? null : pickedWalletId ?? profile?.defaultWalletId ?? null
   const wallet = wallets.find(w => w.id === walletId)
   const isCredit = mode === 'expense' && wallet?.type === 'credit'
+  // gasto no Pix: para quem foi (Destinatário)
+  const isPix = mode === 'expense' && wallet?.type === 'pix' && !cardUnknown
   // parcelas valem no crédito e também quando o cartão ainda não foi escolhido
   const creditLike = isCredit || unknownCard
   const needsCategory = mode !== 'save'
@@ -230,17 +232,19 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         }
       } else {
         const fromPhoto = mode === 'expense' && receipt
+        // receita: quem enviou; gasto no Pix: para quem foi
+        const withSender = mode === 'income' || isPix ? senderData(sender) : {}
         const receiptPath = fromPhoto ? await takeReceipt() : null
         const created = await transactionsApi.create({
           ...(fromPhoto ? {
             source: 'photo',
-            sourceData: { reader: receipt.result.source, items: plainItems, ...(receipt.result.chave ? { chave: receipt.result.chave } : {}) },
+            sourceData: { reader: receipt.result.source, items: plainItems, ...(receipt.result.chave ? { chave: receipt.result.chave } : {}), ...withSender },
             receiptPath,
           } : pending ? {
             source: pending.source,
-            sourceData: { ...(pending.sourceData ?? {}), ...(mode === 'expense' && items.length ? { items: plainItems } : {}) },
-          } : mode === 'expense' && items.length ? { sourceData: { items: plainItems } }
-            : mode === 'income' && sender ? { sourceData: senderData(sender) } : {}),
+            sourceData: { ...(pending.sourceData ?? {}), ...(mode === 'expense' && items.length ? { items: plainItems } : {}), ...withSender },
+          } : mode === 'expense' && items.length ? { sourceData: { items: plainItems, ...withSender } }
+            : sender && (mode === 'income' || isPix) ? { sourceData: withSender } : {}),
           type: mode === 'save' ? (saveDirection === 'apply' ? 'save_apply' : 'save_redeem') : mode,
           amount,
           date,
@@ -468,6 +472,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                     ]} />
                 )}
                 {unknownCard && <HolderPicker holders={holders} value={holder} onChange={setHolderId} me={me} />}
+                {isPix && !repeatExpense && (
+                  <SenderRows id="qa-recipient" label="Destinatário" value={sender} onChange={setSender} people={cardPeople.people} me={me} />
+                )}
                 {creditLike && (
                   <FormRow label="Parcelas" htmlFor="installments">
                     <NumberField id="installments" min={1} max={48} value={installments}

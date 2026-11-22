@@ -37,9 +37,9 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
   const walletName = wallet?.name ?? t.walletNameSnapshot
   const installment = t.installmentN && t.installmentsTotal ? `${t.installmentN} de ${t.installmentsTotal}` : null
   // subtítulo: só a forma de pagamento e a parcela (categoria fica no ícone; itens e detalhes, ao abrir)
-  // receita: quem enviou (source_data.sender)
-  const sender = t.type === 'income' ? senderOf(t.sourceData)?.name : null
-  const subtitle = [sender ? `De ${sender}` : null, walletName, installment, note].filter(Boolean).join(' · ')
+  // receita: quem enviou; gasto no Pix: para quem foi (source_data.sender)
+  const sender = senderOf(t.sourceData)?.name
+  const subtitle = [sender ? `${t.type === 'income' ? 'De' : 'Para'} ${sender}` : null, walletName, installment, note].filter(Boolean).join(' · ')
   const inflow = INFLOW.has(t.type)
 
   return (

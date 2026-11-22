@@ -86,6 +86,12 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
   const catType = t.type === 'income' ? 'income' : 'expense'
   const showCategory = t.type === 'expense' || t.type === 'income'
   const showWallet = t.type !== 'income'
+  // gasto no Pix: para quem foi (Destinatário); receita: quem enviou (Remetente)
+  const isPix = t.type === 'expense' && wallets.find(w => w.id === walletId)?.type === 'pix'
+  const withSender = (data: Record<string, unknown> | null) => ({
+    ...Object.fromEntries(Object.entries(data ?? {}).filter(([k]) => k !== 'sender')),
+    ...(t.type === 'income' || isPix ? senderData(sender) : {}),
+  })
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
@@ -94,9 +100,9 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
     try {
       await transactionsApi.update(t.id, {
         amount, date, categoryId, walletId,
-        ...(t.type === 'expense' && !t.installmentGroupId && { sourceData: { ...(t.sourceData ?? {}), items } }),
+        ...(t.type === 'expense' && !t.installmentGroupId && { sourceData: { ...withSender(t.sourceData), items } }),
         ...(t.type === 'income' ? { description: text.trim() || null } : { place: text.trim() || null }),
-        ...(t.type === 'income' && { sourceData: { ...Object.fromEntries(Object.entries(t.sourceData ?? {}).filter(([k]) => k !== 'sender')), ...senderData(sender) } }),
+        ...(t.type === 'income' && { sourceData: withSender(t.sourceData) }),
       })
       if (t.type === 'expense' && t.installmentGroupId) await transactionsApi.setGroupItems(t.installmentGroupId, items)
       await refresh(); onDone(); feedback.done('Salvo')
@@ -117,8 +123,8 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
           <Input id="edit-text" variant="bare" value={text} onChange={e => setText(e.target.value)}
             placeholder="Opcional" className="text-right" disabled={!editable} />
         </FormRow>
-        {t.type === 'income' && editable && (
-          <SenderRows id="edit-sender" value={sender} onChange={setSender} people={people} me={me} />
+        {(t.type === 'income' || isPix) && editable && (
+          <SenderRows id="edit-sender" label={t.type === 'income' ? 'Remetente' : 'Destinatário'} value={sender} onChange={setSender} people={people} me={me} />
         )}
       </ListGroup>
 
