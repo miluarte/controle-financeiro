@@ -16,12 +16,14 @@ import type { Family } from '@/lib/types'
 import { MemberAvatar } from './member-avatar'
 import { GuestForm } from './guest-form'
 import { feedback } from '@/lib/feedback'
+import { useConfirmDelete } from '@/components/ios/use-delete-action'
 
 // FAM-3, FAM-5 e FAM-7: código, membros, aprovação, remoção e saída.
 export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: boolean }) {
   const { session } = useSession()
   const members = useFamilyMembers()
   const refresh = useRefresh()
+  const ask = useConfirmDelete()
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const me = session?.user.id
@@ -44,6 +46,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
 
   return (
     <div className="space-y-7">
+      {ask.sheet}
       <section className="space-y-1 rounded-3xl bg-grouped p-4 text-center">
         <p className="text-subheadline text-muted-foreground">{family.name}</p>
         <p className="font-mono text-title1 font-bold tracking-widest">{family.code}</p>
@@ -54,7 +57,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
           </Button>
           {isAdmin && (
             <Button variant="secondary" size="sm" className="rounded-full"
-              onClick={() => { if (confirm('Gerar novo código? O atual deixa de valer.')) run(() => familyApi.regenerateCode(), 'Novo código gerado') }}>
+              onClick={() => ask.ask({ title: 'Gerar novo código? O atual deixa de valer.', label: 'Gerar código', destructive: false, done: null, remove: () => run(() => familyApi.regenerateCode(), 'Novo código gerado') })}>
               <RefreshLinearIcon className="size-4" />Gerar código
             </Button>
           )}
@@ -89,7 +92,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
         {active.map(m => (
           <ListRow key={m.userId}
             onClick={isAdmin && m.userId !== me
-              ? () => { if (confirm(`Remover ${m.name} da família? As compras continuam no histórico.`)) run(() => familyApi.remove(m.userId), 'Removido') }
+              ? () => ask.ask({ title: `Remover ${m.name} da família? As compras continuam no histórico.`, label: 'Remover', done: null, remove: () => run(() => familyApi.remove(m.userId), 'Removido') })
               : undefined}
             leading={<MemberAvatar name={m.name} color={m.avatarColor} />}
             title={m.userId === me ? `${m.name} (você)` : m.name}
@@ -104,7 +107,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
 
       <ListGroup footer={isAdmin && active.length > 1 ? 'O membro mais antigo vira admin.' : undefined}>
         <ListRow tone="destructive" title="Sair da família"
-          onClick={() => { if (confirm('Sair da família? Você perde o acesso aos cartões compartilhados.')) run(() => familyApi.leave(), 'Você saiu da família') }} />
+          onClick={() => ask.ask({ title: 'Sair da família? Você perde o acesso aos cartões compartilhados.', label: 'Sair', done: null, remove: () => run(() => familyApi.leave(), 'Você saiu da família') })} />
       </ListGroup>
     </div>
   )
