@@ -170,7 +170,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   // gasto no Pix: para quem foi (Destinatário)
   const isPix = mode === 'expense' && wallet?.type === 'pix' && !cardUnknown
   // parcelas valem no crédito e também quando o cartão ainda não foi escolhido
-  const creditLike = isCredit || unknownCard
+  // carteira do tipo Outro (ex.: linha de crédito) também parcela: cada parcela é um gasto no seu mês, sem fatura
+  const installable = mode === 'expense' && wallet?.type === 'other'
+  const creditLike = isCredit || unknownCard || installable
   const needsCategory = mode !== 'save'
   const needsWallet = mode !== 'income'
   const access = useCardAccess(isCredit ? walletId : null)
@@ -211,7 +213,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         await createRecurringExpense(placeValue)
       } else if (unknownCard) {
         await createWithoutCard(placeValue)
-      } else if (isCredit && installments > 1) {
+      } else if ((isCredit || installable) && installments > 1) {
         const group = await transactionsApi.createInstallments({
           walletId: walletId!, categoryId, installments, firstDate: date, place: placeValue,
           total: amountIsInstallment ? amount * installments : amount,
