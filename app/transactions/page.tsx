@@ -19,6 +19,7 @@ import { useWallets } from '@/hooks/use-wallets'
 import type { Transaction } from '@/lib/types'
 import { LoadingBlock } from '@/components/shared/loading-dots'
 import { matchesFilters, NO_FILTER, TransactionFilters } from '@/components/transactions/transaction-filters'
+import { senderOf } from '@/components/transactions/sender-field'
 
 function normalize(s: string) {
   return s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
@@ -51,7 +52,7 @@ function TransactionsContent() {
       if (!matchesFilters(t, extra)) return false
       if (!q) return true
       const itemNames = Array.isArray(t.sourceData?.items) ? (t.sourceData.items as { name: string }[]).map(i => i.name) : []
-      const hay = [t.place, t.description, t.categoryId && catName.get(t.categoryId), t.walletId && walletName.get(t.walletId), ...itemNames]
+      const hay = [t.place, t.description, t.categoryId && catName.get(t.categoryId), t.walletId && walletName.get(t.walletId), ...itemNames, senderOf(t.sourceData)?.name]
         .filter(Boolean).join(' ')
       return normalize(hay).includes(q)
     })
