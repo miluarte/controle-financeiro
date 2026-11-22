@@ -40,7 +40,7 @@ import { PickerRow } from '@/components/shared/picker-row'
 import { walletOption } from '@/components/shared/wallet-picker'
 import { useCardPeople } from '@/hooks/use-card-people'
 import { SPLIT_ALL, splitParts } from '@/lib/split'
-import { SenderRows, senderData, type Sender } from './sender-field'
+import { SenderRows, senderData, senderOf, type Sender } from './sender-field'
 import { itemOwnerOptions, SplitRows, splitDefault, splitMode, splitPeople, splitSummary } from './split-group'
 import { feedback } from '@/lib/feedback'
 
@@ -78,14 +78,15 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const { session } = useSession()
   const suggest = useCategorySuggest()
 
-  const [mode, setMode] = useState<Mode>(initialMode)
+  // receita pendente (Pix de alguém da família) abre como Receita
+  const [mode, setMode] = useState<Mode>(pending?.type === 'income' ? 'income' : initialMode)
   const [saveDirection, setSaveDirection] = useState<SaveDirection>('apply')
   const [amount, setAmount] = useState(pending?.amount ?? 0)
   const [date, setDate] = useState(() => pending?.date ?? todayIso())
   const [categoryId, setCategoryId] = useState<string | null>(() => pending ? pending.categoryId ?? suggest(pending.place) : null)
   // null = ainda não escolheu: usa a carteira padrão do perfil
   const [pickedWalletId, setWalletId] = useState<string | null>(pending?.walletId ?? null)
-  const [place, setPlace] = useState(pending?.place ?? '')
+  const [place, setPlace] = useState(pending?.place ?? pending?.description ?? '')
   const [installments, setInstallments] = useState(() => pendingNumber(pending, 'installments', 1))
   // compra parcelada que já estava andando antes do app: parcela atual e valor da parcela
   const [currentInstallment, setCurrentInstallment] = useState(() => pendingNumber(pending, 'current_installment', 1))
@@ -111,7 +112,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   // dividir a compra no cartão entre pessoas (por item, igual ou por valor)
   const [split, setSplit] = useState(splitDefault)
   // receita: quem enviou (opcional; alguém da família ou outro nome)
-  const [sender, setSender] = useState<Sender | null>(null)
+  const [sender, setSender] = useState<Sender | null>(() => senderOf(pending?.sourceData))
 
   function onReceipt(result: ReceiptResult, image: Blob) {
     setReceipt({ result, image })
@@ -258,7 +259,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
       }
       if (pending) await finishPending(pending)
       await refreshMonth()
-      const done = pending ? 'Gasto confirmado'
+      const done = pending ? (mode === 'income' ? 'Receita confirmada' : 'Gasto confirmado')
         : mode === 'save' ? (saveDirection === 'apply' ? 'Guardado' : 'Resgatado')
         : mode === 'income' ? (repeat.on ? 'Receita fixa adicionada' : 'Receita adicionada')
         : repeatExpense ? 'Conta fixa adicionada'
@@ -360,14 +361,14 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const placeLabel = mode === 'income' ? 'Descrição' : mode === 'save' ? 'Onde?' : 'Onde foi?'
   const placePlaceholder = mode === 'income' ? (repeat.on ? 'Salário, aluguel…' : 'Opcional') : mode === 'save' ? 'CDB, Tesouro' : 'Opcional'
 
-  const modeTitle = pending ? 'Gasto pendente'
+  const modeTitle = pending ? (pending.type === 'income' ? 'Receita pendente' : 'Gasto pendente')
     : mode === 'expense' ? (repeat.on ? 'Nova conta fixa' : 'Novo gasto')
     : mode === 'income' ? (repeat.on ? 'Nova receita fixa' : 'Nova receita') : 'Guardar'
   const submitLabel = pending ? 'Confirmar' : 'Adicionar'
 
   function askDiscard(t: Transaction) {
     discard.ask({
-      title: 'Descartar gasto?', label: 'Descartar',
+      title: t.type === 'income' ? 'Descartar receita?' : 'Descartar gasto?', label: 'Descartar',
       remove: async () => { await transactionsApi.remove(t.id); reset(); onOpenChange(false) },
     })
   }
@@ -447,7 +448,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
               )}
             </ListGroup>
 
-            {mode === 'income' && (
+            {mode === 'income' && !pending && (
               <RepeatGroup value={repeat} onChange={setRepeat} start={date.slice(0, 7)} lastLabel="último recebimento" />
             )}
             {mode === 'expense' && !unknownCard && installments <= 1 && (
