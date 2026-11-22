@@ -47,13 +47,14 @@ export function ModalSheet({
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-2 pb-6">
           {children}
           {saveBelow && (
-            <div className={secondaryAction ? 'grid grid-cols-2 gap-3' : undefined}>
+            // secundário do tamanho do texto à esquerda; principal ocupa o resto
+            <div className={secondaryAction ? 'flex gap-3' : undefined}>
               {secondaryAction && (
-                <Button type="button" variant="secondary" size="lg" disabled={secondaryAction.disabled} onClick={secondaryAction.onClick}>
+                <Button type="button" variant="secondary" size="lg" className="shrink-0 px-6" disabled={secondaryAction.disabled} onClick={secondaryAction.onClick}>
                   {secondaryAction.label}
                 </Button>
               )}
-              <Button type="submit" form={formId} size="lg" className="w-full" disabled={actionDisabled}>{actionLabel}</Button>
+              <Button type="submit" form={formId} size="lg" className="w-full min-w-0 flex-1" disabled={actionDisabled}>{actionLabel}</Button>
             </div>
           )}
         </div>
