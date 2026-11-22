@@ -54,3 +54,8 @@ drop trigger if exists transactions_pix_to_member on public.transactions;
 create trigger transactions_pix_to_member
   after insert or update of amount, date, source_data, wallet_id, status, type or delete on public.transactions
   for each row execute function private.pix_to_member();
+
+-- origem 'pix' (receita pendente vinda de Pix de alguém da família)
+alter table public.transactions drop constraint transactions_source_check;
+alter table public.transactions add constraint transactions_source_check
+  check (source = any (array['manual','back_tap','apple_pay','notification','photo','csv','import','system','pix']));

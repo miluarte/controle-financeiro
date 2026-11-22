@@ -11,8 +11,9 @@ import { transactionsApi } from '@/lib/api/transactions'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
 import { useCardPeople } from '@/hooks/use-card-people'
 import { ChooseCardSheet } from './choose-card-sheet'
+import { senderOf } from '@/components/transactions/sender-field'
 
-const SOURCE_LABEL: Record<string, string> = { apple_pay: 'Apple Pay', back_tap: 'Toque duplo', notification: 'SMS do banco' }
+const SOURCE_LABEL: Record<string, string> = { apple_pay: 'Apple Pay', back_tap: 'Toque duplo', notification: 'SMS do banco', pix: 'Pix' }
 
 // Fila de pendentes: o que chegou pelas automações, compras sem cartão definido e, para o titular,
 // compras da família no cartão dele esperando ele dizer qual cartão foi.
@@ -41,6 +42,9 @@ export function PendingSheet({ open, pending, onOpenChange }: {
     const when = formatDate(t.date).slice(0, 5)
     if (isHolderView(t)) return `De ${nameOf(t.owner)} · qual cartão? · ${when}`
     if (t.holderId) return `${t.holderId === me ? 'Meu cartão' : `Cartão de ${nameOf(t.holderId)}`} · falta o cartão · ${when}`
+    // Pix de alguém da família: receita para confirmar
+    const from = senderOf(t.sourceData)?.name
+    if (t.type === 'income' && from) return `Pix de ${from} · ${when}`
     return `${SOURCE_LABEL[t.source] ?? 'Automação'} · ${when}`
   }
 
@@ -57,8 +61,8 @@ export function PendingSheet({ open, pending, onOpenChange }: {
             {pending.map(t => (
               <ListRow key={t.id} chevron onClick={() => setSelectedId(t.id)}
                 onDelete={isHolderView(t) ? undefined
-                  : () => del.ask({ title: 'Descartar gasto?', label: 'Descartar', remove: () => transactionsApi.remove(t.id) })}
-                title={t.place || 'Sem local'}
+                  : () => del.ask({ title: t.type === 'income' ? 'Descartar receita?' : 'Descartar gasto?', label: 'Descartar', remove: () => transactionsApi.remove(t.id) })}
+                title={t.place || t.description || 'Sem local'}
                 subtitle={subtitle(t)}
                 trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(t.amount)}</span>} />
             ))}
