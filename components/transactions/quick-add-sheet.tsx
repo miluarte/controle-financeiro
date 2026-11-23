@@ -216,7 +216,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     : access.people
   const splitting = split.on && splitWith.length > 1
   // Pix dividido: com a família toda; quem pagou pode ser você ou outra pessoa
-  const pixPeople = isPix && !bill && !repeatExpense && !payLater && installments <= 1 ? cardPeople.people : []
+  // gasto dividido: qualquer forma de pagamento fora do crédito (Pix, débito, dinheiro, outro à vista)
+  const shareable = mode === 'expense' && !!wallet && wallet.type !== 'credit' && !cardUnknown
+  const pixPeople = shareable && !bill && !repeatExpense && !payLater && installments <= 1 ? cardPeople.people : []
   const payerId = payer || me
   const sharedPix = pixPeople.length > 1 && (split.on || payerId !== me)
   const pixIds = sharedPix && split.on ? splitPeople(split, pixPeople, me) : [me]
@@ -224,7 +226,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     ? splitParts({ mode: splitMode(split, items), total: amount, people: splitPeople(split, splitWith, me), items, values: split.values })
     : sharedPix
       ? (pixIds.length === 1
-        ? { parts: [{ userId: pixIds[0], amount }], error: pixIds[0] === payerId ? 'Escolha quem divide o Pix.' : null }
+        ? { parts: [{ userId: pixIds[0], amount }], error: pixIds[0] === payerId ? 'Escolha quem divide o gasto.' : null }
         : splitParts({ mode: splitMode(split, items), total: amount, people: pixIds, items, values: split.values }))
       : null
   // pessoas cuja divisão aparece no grupo (cartão ou Pix)
@@ -327,7 +329,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         : repeatExpense ? 'Gasto fixo adicionado'
         : payLater ? 'Enviado para Contas'
         : unknownCard ? 'Enviado para confirmar'
-        : splitting ? 'Compra dividida' : sharedPix ? 'Pix dividido' : 'Gasto adicionado'
+        : splitting ? 'Compra dividida' : sharedPix ? 'Gasto dividido' : 'Gasto adicionado'
       reset()
       onOpenChange(false)
       feedback.done(done)

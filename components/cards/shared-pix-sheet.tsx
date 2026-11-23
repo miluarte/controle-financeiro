@@ -25,9 +25,9 @@ export function SharedPixSheet({ debt, onClose }: { debt: SharedDebt | null; onC
   const canDelete = !!debt && (debt.payerId === me || debt.createdBy === me)
   return (
     <>
-      <ModalSheet open={!!debt && !paying} onOpenChange={o => { if (!o) onClose() }} title="Pix dividido"
+      <ModalSheet open={!!debt && !paying} onOpenChange={o => { if (!o) onClose() }} title="Gasto dividido"
         onDelete={canDelete ? () => remove.ask({
-          title: 'Excluir este Pix? Sai a parte de todas as pessoas.', label: 'Excluir',
+          title: 'Excluir este gasto? Sai a parte de todas as pessoas.', label: 'Excluir',
           remove: async () => { await sharedApi.remove(debt!.sharedPaymentId); onClose() },
         }) : undefined}>
         {debt && <Body key={`${debt.sharedPaymentId}-${debt.debtorId}`} debt={debt} me={me} onPay={() => setPaying(true)} />}
@@ -95,11 +95,11 @@ function Body({ debt, me, onPay }: { debt: SharedDebt; me: string; onPay: () => 
       )}
       {cancel.sheet}
 
-      <ListGroup header={`${debt.place ?? 'Pix'} · ${formatDate(debt.date)}`}
-        footer={`${payer === 'Você' ? 'Você pagou' : `${payer} pagou`} ${formatCurrency(debt.total)} por Pix.`}>
+      <ListGroup header={`${debt.place ?? 'Gasto'} · ${formatDate(debt.date)}`}
+        footer={`${payer === 'Você' ? 'Você pagou' : `${payer} pagou`} ${formatCurrency(debt.total)}.`}>
         {(parts ?? []).map(p => (
           <ListRow key={p.userId} title={nameOf(p.userId)}
-            subtitle={p.userId === debt.payerId ? 'Pagou o Pix' : p.open <= 0 ? 'Acertado' : p.settled > 0 ? `Falta ${formatCurrency(p.open)}` : undefined}
+            subtitle={p.userId === debt.payerId ? 'Pagou' : p.open <= 0 ? 'Acertado' : p.settled > 0 ? `Falta ${formatCurrency(p.open)}` : undefined}
             trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(p.part)}</span>} />
         ))}
       </ListGroup>

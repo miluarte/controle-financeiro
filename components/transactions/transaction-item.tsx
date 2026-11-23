@@ -42,7 +42,7 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
   const sender = senderOf(t.sourceData)?.name
   // Pix dividido: de quem foi o Pix (quando não foi você)
   const { nameOf } = useCardPeople()
-  const shared = t.sharedPaymentId ? (t.paidBy && t.paidBy !== t.owner ? `Pix de ${nameOf(t.paidBy)}` : 'Pix dividido') : null
+  const shared = t.sharedPaymentId ? (t.paidBy && t.paidBy !== t.owner ? `Pago por ${nameOf(t.paidBy)}` : 'Dividido') : null
   const subtitle = [sender ? `${t.type === 'income' ? 'De' : 'Para'} ${sender}` : null, walletName, shared, installment, note].filter(Boolean).join(' · ')
   const inflow = INFLOW.has(t.type)
 

@@ -48,7 +48,7 @@ function Body({ s, name, onDone }: { s: Settlement; name: string; onDone: () => 
       <div className="text-center">
         <p className="text-large-title font-bold tabular-nums">{formatCurrency(s.amount)}</p>
         <p className="text-subheadline text-muted-foreground">
-          {name} pagou {s.paidOn ? `em ${formatDate(s.paidOn)} ` : ''}{s.invoiceRef ? `a fatura de ${monthName(s.invoiceRef.slice(0, 7))}` : 'a parte do Pix dividido'}
+          {name} pagou {s.paidOn ? `em ${formatDate(s.paidOn)} ` : ''}{s.invoiceRef ? `a fatura de ${monthName(s.invoiceRef.slice(0, 7))}` : 'a parte do gasto dividido'}
         </p>
       </div>
       <ListGroup header="Receber em" footer="Entra como receita (Reembolso) no dia do pagamento.">
