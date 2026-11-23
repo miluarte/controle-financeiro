@@ -45,6 +45,9 @@ import { PayerRow } from './payer-field'
 import { sharedApi } from '@/lib/api/shared'
 import { itemOwnerOptions, SplitRows, splitDefault, splitMode, splitPeople, splitSummary } from './split-group'
 import { feedback } from '@/lib/feedback'
+import { useBills } from '@/hooks/use-data'
+import { normPlace } from '@/lib/category-suggest'
+import { Switch } from '@/components/ui/switch'
 import posthog from 'posthog-js'
 
 const UNKNOWN_CARD = '__sem-cartao'
@@ -125,6 +128,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const [repeat, setRepeat] = useState(() => billRepeat(editBill, initialRepeat))
   // gasto único que fica em Contas para pagar no vencimento
   const [later, setLater] = useState(false)
+  // gasto com o nome de um gasto fixo em aberto no mês: paga o mês com este valor (padrão ligado)
+  const [payFixed, setPayFixed] = useState(true)
   // dividir a compra no cartão entre pessoas (por item, igual ou por valor)
   const [split, setSplit] = useState(splitDefault)
   // Pix dividido: quem pagou ('' = você)
@@ -169,6 +174,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     setOwner('')
     setRepeat(repeatDefault(todayIso().slice(0, 7)))
     setLater(false)
+    setPayFixed(true)
     setSplit(splitDefault())
     setPayer('')
     setSender(null)
@@ -197,6 +203,13 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   // "Pagar depois": gasto único, fora do cartão de crédito, que entra em Contas
   const canLater = mode === 'expense' && !bill && !pending && !isCredit && !unknownCard && !installable
   const payLater = canLater && later && !repeat.on
+  // gasto fixo em aberto no mês da data com o mesmo nome: o registro paga esse mês, sem criar outro
+  const { occurrences: monthBills } = useBills(date.slice(0, 7))
+  const placeKey = normPlace(place.trim())
+  const fixedMatch = mode === 'expense' && !bill && !pending && !cardUnknown && placeKey
+    ? monthBills.find(o => o.bill.type === 'expense' && !o.bill.onCard && !o.paidAt && normPlace(o.bill.name) === placeKey) ?? null
+    : null
+  const payingFixed = !!fixedMatch && payFixed
   const needsCategory = mode !== 'save'
   const needsWallet = mode !== 'income'
   // séries antigas podem estar sem categoria ou forma de pagamento: a edição não exige
@@ -211,14 +224,14 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const hasWallet = unknownCard ? !!holder : !!walletId
   // divisão: no cartão próprio compartilhado, quem tem acesso; no cartão de outra pessoa, você e a titular
   const cardPeople = useCardPeople()
-  const splitWith = !isCredit || repeatExpense ? []
+  const splitWith = !isCredit || repeatExpense || payingFixed ? []
     : wallet?.ownerId && wallet.ownerId !== me ? cardPeople.people.filter(p => p.userId === me || p.userId === wallet.ownerId)
     : access.people
   const splitting = split.on && splitWith.length > 1
   // Pix dividido: com a família toda; quem pagou pode ser você ou outra pessoa
   // gasto dividido: qualquer forma de pagamento fora do crédito (Pix, débito, dinheiro, outro à vista)
   const shareable = mode === 'expense' && !!wallet && wallet.type !== 'credit' && !cardUnknown
-  const pixPeople = shareable && !bill && !repeatExpense && !payLater && installments <= 1 ? cardPeople.people : []
+  const pixPeople = shareable && !bill && !payingFixed && !repeatExpense && !payLater && installments <= 1 ? cardPeople.people : []
   const payerId = payer || me
   const sharedPix = pixPeople.length > 1 && (split.on || payerId !== me)
   const pixIds = sharedPix && split.on ? splitPeople(split, pixPeople, me) : [me]
@@ -256,6 +269,10 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
       const placeValue = place.trim() || null
       if (bill) {
         await updateBill(placeValue)
+      } else if (payingFixed && fixedMatch) {
+        // o valor deste mês pode ser outro: muda só esta ocorrência e paga
+        if (amount !== fixedMatch.amount) await billsApi.updateOccurrence(fixedMatch.id, amount, fixedMatch.dueDate)
+        await billsApi.pay(fixedMatch.id, walletId, date)
       } else if (payLater) {
         await createPayLater(placeValue)
       } else if (mode === 'income' && repeat.on) {
@@ -322,7 +339,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         is_split: splitting || sharedPix,
         card_unknown: unknownCard,
       })
-      const done = bill ? 'Salvo'
+      const done = bill ? 'Salvo' : payingFixed ? 'Pago'
         : pending ? (mode === 'income' ? 'Receita confirmada' : 'Gasto confirmado')
         : mode === 'save' ? (saveDirection === 'apply' ? 'Guardado' : 'Resgatado')
         : mode === 'income' ? (repeat.on ? 'Receita fixa adicionada' : 'Receita adicionada')
@@ -570,7 +587,14 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
               <RepeatGroup value={repeat} onChange={setRepeat} start={bill ? bill.startMonth.slice(0, 7) : date.slice(0, 7)}
                 lastLabel="último recebimento" fixed={!!bill} />
             )}
-            {mode === 'expense' && !unknownCard && installments <= 1 && (!bill || repeat.on) && (
+            {fixedMatch && (
+              <ListGroup footer={payFixed ? `Paga ${fixedMatch.bill.name} deste mês com este valor.` : undefined}>
+                <FormRow label="Pagar gasto fixo">
+                  <Switch checked={payFixed} onCheckedChange={setPayFixed} />
+                </FormRow>
+              </ListGroup>
+            )}
+            {mode === 'expense' && !payingFixed && !unknownCard && installments <= 1 && (!bill || repeat.on) && (
               <RepeatGroup value={repeat} onChange={setRepeat} start={bill ? bill.startMonth.slice(0, 7) : date.slice(0, 7)}
                 lastLabel={isCredit ? 'último lançamento no cartão' : 'último pagamento'} fixed={!!bill}
                 later={canLater ? { on: later, onChange: setLater } : undefined} />

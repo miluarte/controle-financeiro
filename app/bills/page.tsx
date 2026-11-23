@@ -16,9 +16,7 @@ import { useMonth } from '@/hooks/use-month'
 import type { BillOccurrence } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { LoadingBlock } from '@/components/shared/loading-dots'
-import { billsApi } from '@/lib/api/bills'
-import { useConfirmDelete } from '@/components/ios/use-delete-action'
-import { endBillCopy } from '@/components/bills/end-bill-copy'
+import { useBillDelete } from '@/components/bills/use-bill-delete'
 import { QuickAddSheet } from '@/components/transactions/quick-add-sheet'
 
 export default function BillsPage() {
@@ -28,8 +26,8 @@ export default function BillsPage() {
   const { categories } = useCategories()
   const [openBill, setOpenBill] = useState<BillOccurrence | null>(null)
   const [editing, setEditing] = useState<BillOccurrence | null>(null)
-  const del = useConfirmDelete()
-  const askEnd = (o: BillOccurrence) => del.ask({ ...endBillCopy(o.bill), remove: () => billsApi.endSeries(o.billId, month) })
+  const del = useBillDelete()
+  const askEnd = del.ask
   const catById = new Map(categories.map(c => [c.id, c]))
 
   // Contas mostra só o que é fixo; as faturas dos cartões ficam na aba Cartões.

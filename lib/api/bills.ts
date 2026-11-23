@@ -1,4 +1,4 @@
-import type { BillInput } from '../types'
+import type { BillInput, BillOccurrence } from '../types'
 import { supabase, unwrap } from '../supabase/client'
 import { toBillOccurrence } from '../supabase/mappers'
 import { todayIso } from '../utils'
@@ -42,7 +42,7 @@ export const billsApi = {
     unwrap(await supabase.rpc('ensure_bill_occurrences', { p_month: `${month}-01` }))
     const rows = unwrap(
       await supabase.from('bill_occurrences').select('*, bills(*, wallet:wallets(type))')
-        .eq('ref_month', `${month}-01`).order('due_date'),
+        .eq('ref_month', `${month}-01`).eq('skipped', false).order('due_date'),
     )
     return rows.map(toBillOccurrence)
   },
@@ -84,6 +84,20 @@ export const billsApi = {
       await supabase.from('bill_occurrences').delete()
         .eq('bill_id', billId).gte('ref_month', `${fromMonth}-01`).is('paid_at', null),
     )
+  },
+
+  // "Só este mês": o mês fica pulado (não volta a ser gerado, não avisa, não entra no cartão) e o
+  // lançamento do pagamento, se houver, sai.
+  skip: async (o: BillOccurrence) => {
+    unwrap(await supabase.from('bill_occurrences')
+      .update({ skipped: true, paid_at: o.paidAt ?? o.dueDate, transaction_id: null }).eq('id', o.id))
+    if (o.transactionId) unwrap(await supabase.from('transactions').delete().eq('id', o.transactionId))
+  },
+
+  // gasto único a pagar: sai o mês e a conta deixa de existir em Contas
+  removeSingle: async (o: BillOccurrence) => {
+    await billsApi.skip(o)
+    unwrap(await supabase.from('bills').update({ active: false }).eq('id', o.billId))
   },
 
   pay: async (occurrenceId: string, walletId: string | null, date: string) => {

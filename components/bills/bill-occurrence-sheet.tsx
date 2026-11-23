@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
-import { useDeleteAction } from '@/components/ios/use-delete-action'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { WalletPicker } from '@/components/shared/wallet-picker'
 import { useMonth } from '@/hooks/use-month'
@@ -17,23 +16,18 @@ import type { BillOccurrence } from '@/lib/types'
 import { formatCurrency, formatDate, todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { feedback } from '@/lib/feedback'
-import { endBillCopy } from './end-bill-copy'
+import { useBillDelete } from './use-bill-delete'
 
 // CON-6 e CON-9: pagar, desfazer pagamento, editar só este mês ou a série, encerrar.
 // Receita fixa usa o mesmo fluxo: marcar como recebida gera a receita na carteira escolhida.
 export function BillOccurrenceSheet({ occurrence, onClose, onEdit }: {
   occurrence: BillOccurrence | null; onClose: () => void; onEdit: (o: BillOccurrence) => void
 }) {
-  const { month } = useMonth()
-  const copy = occurrence ? endBillCopy(occurrence.bill) : { title: '', label: 'Encerrar' }
-  const del = useDeleteAction({
-    ...copy,
-    remove: () => billsApi.endSeries(occurrence!.billId, month), onDone: onClose,
-  })
+  const del = useBillDelete(onClose)
   return (
     <>
       <ModalSheet open={!!occurrence} onOpenChange={o => { if (!o) onClose() }} title={occurrence?.bill.name ?? ''}
-        onDelete={del.ask} deleteLabel={copy.label}>
+        onDelete={() => occurrence && del.ask(occurrence)}>
         {occurrence && <Body key={occurrence.id} o={occurrence} onDone={onClose} onEdit={() => onEdit(occurrence)} />}
       </ModalSheet>
       {del.sheet}
