@@ -63,6 +63,16 @@ export const billsApi = {
       await supabase.from('bill_occurrences').delete()
         .eq('bill_id', billId).gte('ref_month', `${fromMonth}-01`).is('paid_at', null),
     )
+    // as já pagas ficam, mas passam a valer o novo valor, junto com o gasto do pagamento
+    if (b.amount !== undefined) {
+      const paid = unwrap(
+        await supabase.from('bill_occurrences').update({ amount: b.amount })
+          .eq('bill_id', billId).gte('ref_month', `${fromMonth}-01`).not('paid_at', 'is', null)
+          .select('transaction_id'),
+      )
+      const txIds = paid.map(r => r.transaction_id as string | null).filter((id): id is string => !!id)
+      if (txIds.length) unwrap(await supabase.from('transactions').update({ amount: b.amount }).in('id', txIds))
+    }
   },
 
   // Encerra a conta a partir deste mês (mantém o histórico pago).
