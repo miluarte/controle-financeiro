@@ -60,7 +60,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
         <ListGroup header="Aguardando confirmação" footer={`${owner} recebeu um aviso para confirmar.`}>
           {waiting.map(st => (
             <ListRow key={st.id} title={formatCurrency(st.amount)}
-              subtitle={`Fatura de ${monthName(st.invoiceRef.slice(0, 7))}${st.paidOn ? ` · pago em ${formatDate(st.paidOn)}` : ''}`}
+              subtitle={`Fatura de ${monthName((st.invoiceRef ?? '').slice(0, 7))}${st.paidOn ? ` · pago em ${formatDate(st.paidOn)}` : ''}`}
               trailing={
                 <button type="button" className="text-body text-destructive"
                   onClick={() => ask.ask({ title: 'Cancelar acerto?', label: 'Cancelar acerto', remove: () => familyApi.cancelSettlement(st.id) })}>
@@ -94,7 +94,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
         <ListGroup header="Acertos confirmados">
           {confirmed.map(st => (
             <ListRow key={st.id} title={formatCurrency(st.amount)}
-              subtitle={`Fatura de ${monthName(st.invoiceRef.slice(0, 7))}${st.confirmedAt ? ` · confirmado em ${formatDate(st.confirmedAt.slice(0, 10))}` : ''}`} />
+              subtitle={`Fatura de ${monthName((st.invoiceRef ?? '').slice(0, 7))}${st.confirmedAt ? ` · confirmado em ${formatDate(st.confirmedAt.slice(0, 10))}` : ''}`} />
           ))}
         </ListGroup>
       )}

@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ConfirmSettlementSheet } from '@/components/cards/confirm-settlement-sheet'
-import { InvoiceStatus } from '@/components/cards/invoice-status'
+import { InvoiceStatus, PixStatus } from '@/components/cards/invoice-status'
+import { SharedPixSheet } from '@/components/cards/shared-pix-sheet'
 import { SummaryCard } from '@/components/cards/summary-card'
 import { SharedInvoiceSheet, type SharedInvoice } from '@/components/bills/shared-invoice-sheet'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
@@ -14,10 +15,11 @@ import { MonthSelector } from '@/components/shared/month-selector'
 import { TokenIcon } from '@/components/shared/token-icon'
 import { useCardInvoices, type PersonInvoice } from '@/hooks/use-card-invoices'
 import { useMonth } from '@/hooks/use-month'
-import type { Settlement, Wallet } from '@/lib/types'
+import type { Settlement, SharedDebt, Wallet } from '@/lib/types'
 import { cn, formatCurrency, formatDate, monthName } from '@/lib/utils'
 
-// Uma pessoa da família: o que eu repasso nos cartões dela e o que ela me deve nos meus, fatura por fatura.
+// Uma pessoa da família: o que eu repasso nos cartões dela e o que ela me deve nos meus, fatura por fatura,
+// e os Pix divididos entre nós (quem pagou e quem deve).
 export default function PersonCardsPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
@@ -25,6 +27,7 @@ export default function PersonCardsPage() {
   const { owe, receive, settlements, loading } = useCardInvoices(month)
   const [openShared, setOpenShared] = useState<SharedInvoice | null>(null)
   const [confirming, setConfirming] = useState<Settlement | null>(null)
+  const [openPix, setOpenPix] = useState<SharedDebt | null>(null)
   const toOwe = owe.find(g => g.id === id)
   const toReceive = receive.find(g => g.id === id)
   const name = toOwe?.name ?? toReceive?.name ?? 'Pessoa'
@@ -54,12 +57,37 @@ export default function PersonCardsPage() {
     />
   )
 
+  const pixRow = (d: SharedDebt, kind: 'owe' | 'receive') => (
+    <ListRow
+      key={`${d.sharedPaymentId}-${d.debtorId}`}
+      onClick={() => setOpenPix(d)}
+      leading={<TokenIcon icon="wallet" color="gray" />}
+      title={d.place ?? 'Pix'}
+      subtitle={
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span className="truncate">
+            {formatDate(d.date).slice(0, 5)} · Pix de {formatCurrency(d.total)}
+            {d.open > 0 && d.settled > 0 && ` · ${formatCurrency(d.settled)} acertado`}
+          </span>
+          <PixStatus debt={d} kind={kind} />
+        </span>
+      }
+      trailing={
+        <span className={cn('text-body font-semibold tabular-nums', kind === 'receive' && d.open > 0 ? 'text-success' : 'text-foreground')}>
+          {formatCurrency(d.open > 0 ? d.open : d.part)}
+        </span>
+      }
+      chevron
+    />
+  )
+  const pix = [...(toOwe?.pix ?? []).map(d => pixRow(d, 'owe')), ...(toReceive?.pix ?? []).map(d => pixRow(d, 'receive'))]
+
   return (
     <>
       <LargeTitleHeader back title={name} actions={<MonthSelector />} />
       <div className="space-y-7 px-4 pt-2">
         {loading ? <LoadingBlock /> : !toOwe && !toReceive ? (
-          <p className="py-10 text-center text-subheadline text-muted-foreground">Nenhuma fatura com {name} neste mês</p>
+          <p className="py-10 text-center text-subheadline text-muted-foreground">Nada com {name} neste mês</p>
         ) : (
           <>
             <SummaryCard rows={[
@@ -67,7 +95,7 @@ export default function PersonCardsPage() {
               ...(toReceive ? [{ label: 'A receber', value: toReceive.open, tone: 'success' as const }] : []),
             ]} />
 
-            {toOwe && (
+            {toOwe && toOwe.invoices.length > 0 && (
               <ListGroup header={`Cartões de ${name}`}>
                 {toOwe.invoices.map(i => row(i, 'owe', () => setOpenShared({ wallet: i.wallet as Wallet, debt: i.debt })))}
               </ListGroup>
@@ -78,12 +106,14 @@ export default function PersonCardsPage() {
                 {waiting.map(st => (
                   <ListRow key={st.id} onClick={() => setConfirming(st)} chevron
                     title={`${name} pagou ${formatCurrency(st.amount)}`}
-                    subtitle={`Fatura de ${monthName(st.invoiceRef.slice(0, 7))}${st.paidOn ? ` · em ${formatDate(st.paidOn)}` : ''}`} />
+                    subtitle={`${st.invoiceRef ? `Fatura de ${monthName(st.invoiceRef.slice(0, 7))}` : 'Pix dividido'}${st.paidOn ? ` · em ${formatDate(st.paidOn)}` : ''}`} />
                 ))}
               </ListGroup>
             )}
 
-            {toReceive && (
+            {pix.length > 0 && <ListGroup header="Pix divididos">{pix}</ListGroup>}
+
+            {toReceive && toReceive.invoices.length > 0 && (
               <ListGroup header="Meus cartões">
                 {toReceive.invoices.map(i => row(i, 'receive',
                   () => router.push(`/cards/${i.wallet.id}?fatura=${i.debt.invoiceRef.slice(0, 7)}`)))}
@@ -93,6 +123,7 @@ export default function PersonCardsPage() {
         )}
       </div>
       <SharedInvoiceSheet invoice={openShared} onClose={() => setOpenShared(null)} />
+      <SharedPixSheet debt={openPix} onClose={() => setOpenPix(null)} />
       <ConfirmSettlementSheet settlement={confirming} debtorName={name} onClose={() => setConfirming(null)} />
     </>
   )
