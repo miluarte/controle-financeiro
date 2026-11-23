@@ -13,6 +13,7 @@ import { goalsApi } from '@/lib/api/advanced'
 import type { Goal } from '@/lib/types'
 import { DateField } from '@/components/shared/date-field'
 import { feedback } from '@/lib/feedback'
+import posthog from 'posthog-js'
 
 // Criar ou editar um objetivo (ex.: comprar uma moto).
 export function GoalSheet({ open, goal, nextPriority, onOpenChange }: {
@@ -39,9 +40,13 @@ function GoalForm({ goal, nextPriority, onDone }: { goal: Goal | null; nextPrior
   const [priority, setPriority] = useState(goal?.priority ?? nextPriority)
   const [error, setError] = useState<string | null>(null)
 
-  async function run(fn: () => Promise<void>) {
+  async function run(fn: () => Promise<void>, action: 'created' | 'updated') {
     setError(null)
-    try { await fn(); await refresh(); onDone(); feedback.done('Salvo') }
+    try {
+      await fn(); await refresh()
+      posthog.capture('goal_saved', { action, has_target_date: Boolean(date) })
+      onDone(); feedback.done('Salvo')
+    }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível salvar.') }
   }
 
@@ -50,7 +55,7 @@ function GoalForm({ goal, nextPriority, onDone }: { goal: Goal | null; nextPrior
     if (!name.trim()) { setError('Dê um nome.'); return }
     if (target <= 0) { setError('Informe o valor.'); return }
     const input = { name: name.trim(), targetAmount: target, savedAmount: saved, targetDate: date ? `${date}-01` : null, priority }
-    run(() => goal ? goalsApi.update(goal.id, input) : goalsApi.create(input))
+    run(() => goal ? goalsApi.update(goal.id, input) : goalsApi.create(input), goal ? 'updated' : 'created')
   }
 
   return (

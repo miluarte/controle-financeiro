@@ -43,6 +43,7 @@ import { SPLIT_ALL, splitParts } from '@/lib/split'
 import { SenderRows, senderData, senderOf, type Sender } from './sender-field'
 import { itemOwnerOptions, SplitRows, splitDefault, splitMode, splitPeople, splitSummary } from './split-group'
 import { feedback } from '@/lib/feedback'
+import posthog from 'posthog-js'
 
 const UNKNOWN_CARD = '__sem-cartao'
 
@@ -261,6 +262,14 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
       }
       if (pending) await finishPending(pending)
       await refreshMonth()
+      posthog.capture('transaction_recorded', {
+        transaction_type: mode === 'save' ? `save_${saveDirection}` : mode,
+        entry_pattern: pending ? 'pending_confirmation' : repeat.on ? 'recurring' : installments > 1 ? 'installment' : 'one_time',
+        has_receipt: Boolean(receipt),
+        has_items: items.length > 0,
+        is_split: splitting,
+        card_unknown: unknownCard,
+      })
       const done = pending ? (mode === 'income' ? 'Receita confirmada' : 'Gasto confirmado')
         : mode === 'save' ? (saveDirection === 'apply' ? 'Guardado' : 'Resgatado')
         : mode === 'income' ? (repeat.on ? 'Receita fixa adicionada' : 'Receita adicionada')

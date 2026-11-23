@@ -6,6 +6,7 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { transactionsApi } from '@/lib/api/transactions'
 import type { Transaction } from '@/lib/types'
 import { feedback } from '@/lib/feedback'
+import posthog from 'posthog-js'
 
 // Excluir lançamento com confirmação; parcelado pergunta se é só esta parcela ou a compra inteira.
 export function useTransactionDelete(onDone?: () => void) {
@@ -16,7 +17,13 @@ export function useTransactionDelete(onDone?: () => void) {
     try {
       if (all && t.installmentGroupId) await transactionsApi.removeInstallmentGroup(t.installmentGroupId)
       else await transactionsApi.remove(t.id)
-      await refresh(); onDone?.()
+      await refresh()
+      posthog.capture('transaction_deleted', {
+        transaction_type: t.type,
+        deletion_scope: all ? 'installment_group' : 'single_transaction',
+        is_installment: Boolean(t.installmentGroupId),
+      })
+      onDone?.()
       // lançamento avulso (não parcela): "Desfazer" no aviso recria igual
       const undo = !t.installmentGroupId && ['expense', 'income', 'save_apply', 'save_redeem'].includes(t.type)
         ? async () => {
