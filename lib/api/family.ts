@@ -1,5 +1,12 @@
-import type { CardDebt, Family, FamilyMember, Settlement } from '../types'
+import type { CardDebt, Family, FamilyMember, InvoiceTotal, Settlement } from '../types'
 import { supabase, unwrap } from '../supabase/client'
+import { toInvoiceTotal } from '../supabase/mappers'
+
+const toSettlement = (r: Record<string, any>): Settlement => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
+  id: r.id, walletId: r.wallet_id, debtorId: r.debtor_id, holderId: r.holder_id,
+  invoiceRef: r.invoice_ref, amount: Number(r.amount), status: r.status,
+  reportedAt: r.reported_at, confirmedAt: r.confirmed_at, paidOn: r.paid_on ?? null,
+})
 
 // 5.7: família e cartões compartilhados. Escritas sensíveis passam pelas RPCs do banco.
 export const familyApi = {
@@ -77,11 +84,17 @@ export const familyApi = {
   // 5.7.8: acertos de um cartão (o RLS mostra só os meus, como devedor ou titular).
   settlements: async (walletId: string): Promise<Settlement[]> => {
     const rows = unwrap(await supabase.from('settlements').select('*').eq('wallet_id', walletId).order('created_at', { ascending: false }))
-    return rows.map(r => ({
-      id: r.id, walletId: r.wallet_id, debtorId: r.debtor_id, holderId: r.holder_id,
-      invoiceRef: r.invoice_ref, amount: Number(r.amount), status: r.status,
-      reportedAt: r.reported_at, confirmedAt: r.confirmed_at, paidOn: r.paid_on ?? null,
-    }))
+    return rows.map(toSettlement)
+  },
+
+  // O que outras pessoas devem nos meus cartões: totais por fatura e pessoa e os acertos em que sou titular.
+  receivables: async (me: string, walletIds: string[]): Promise<{ totals: InvoiceTotal[]; settlements: Settlement[] }> => {
+    if (walletIds.length === 0) return { totals: [], settlements: [] }
+    const [totals, settlements] = await Promise.all([
+      supabase.from('invoice_totals').select('*').in('wallet_id', walletIds).neq('assigned_to', me),
+      supabase.from('settlements').select('*').eq('holder_id', me).order('created_at', { ascending: false }),
+    ])
+    return { totals: unwrap(totals).map(toInvoiceTotal), settlements: unwrap(settlements).map(toSettlement) }
   },
 
   reportSettlement: async (walletId: string, invoiceRef: string, amount: number, fromWalletId: string, date: string) => {

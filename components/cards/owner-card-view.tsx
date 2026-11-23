@@ -5,6 +5,7 @@ import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
 import { ListGroup } from '@/components/ios/list-group'
 import { InvoiceSheet, type InvoiceRef } from '@/components/bills/invoice-sheet'
+import { ReconcileSheet } from '@/components/bills/reconcile-sheet'
 import { MemberAvatar } from '@/components/family/member-avatar'
 import { ProgressBar, toneFor } from '@/components/shared/progress-bar'
 import { TransactionEditSheet } from '@/components/transactions/transaction-edit-sheet'
@@ -28,7 +29,8 @@ import { personStatementPdf, shareOrDownload } from '@/lib/person-statement-pdf'
 import { useTransactionDelete } from '@/components/transactions/use-transaction-delete'
 
 // CAR-5 e VIS-3: visão do titular. Fatura total, fatia de cada pessoa, limite, compras e compartilhamento.
-export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
+// initialRef (AAAA-MM): fatura que abre primeiro (ex.: a que vence no mês, vinda da aba Cartões).
+export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initialRef?: string | null }) {
   const { session } = useSession()
   const { profile } = useProfile()
   const { family, status } = useFamily()
@@ -37,15 +39,16 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
   const { categories } = useCategories()
   const today = todayIso()
   const openRef = openInvoiceRef(wallet, today)
-  const [ref, setRef] = useState(openRef)
+  const [ref, setRef] = useState(initialRef ?? openRef)
   const [paying, setPaying] = useState<InvoiceRef | null>(null)
+  const [checking, setChecking] = useState(false)
   const [assigning, setAssigning] = useState<Transaction | null>(null)
   const [editing, setEditing] = useState<Transaction | null>(null)
   const delTx = useTransactionDelete()
   const [splitting, setSplitting] = useState<Transaction | null>(null)
   const [confirming, setConfirming] = useState<Settlement | null>(null)
   const settlements = useSettlements(wallet.id)
-  const { totals, paid } = useInvoices(today.slice(0, 7))
+  const { totals, paid, paidAmounts } = useInvoices(today.slice(0, 7))
   const { data: purchases } = useSWR(['invoice-tx', wallet.id, ref], () => transactionsApi.getByInvoice(wallet.id, `${ref}-01`))
   const me = session?.user.id
 
@@ -121,11 +124,22 @@ export function OwnerCardView({ wallet }: { wallet: OwnWallet }) {
         )}
         {!paidAt && total > 0 && (
           <Button size="lg" className="w-full"
-            onClick={() => setPaying({ wallet, ref, dueDate: due, total, paidAt })}>
+            onClick={() => {
+              // compras pagas antes saem do valor a pagar; pagamento parcial já feito vira "já pago"
+              const prepaid = totals.filter(t => t.walletId === wallet.id && t.invoiceRef.slice(0, 7) === ref).reduce((s, t) => s + t.prepaid, 0)
+              const paidAmount = paidAmounts.find(p => p.walletId === wallet.id && p.invoiceRef === ref)?.paid ?? 0
+              setPaying({ wallet, ref, dueDate: due, total: total - prepaid, prepaid, paidAt, paidAmount })
+            }}>
             Pagar fatura
           </Button>
         )}
+        {total > 0 && (
+          <Button variant="secondary" size="lg" className="w-full" onClick={() => setChecking(true)}>
+            Conferir com o PDF da fatura
+          </Button>
+        )}
       </section>
+      <ReconcileSheet open={checking} onOpenChange={setChecking} wallet={wallet} invoiceRef={ref} dueDate={due} />
 
       {reported.length > 0 && (
         <ListGroup header="Acertos para confirmar">
