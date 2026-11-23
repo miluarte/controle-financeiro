@@ -7,6 +7,8 @@ import { AddMenu } from './add-menu'
 import {
   BillListLinearIcon,
   BillListBoldIcon,
+  CardLinearIcon,
+  CardBoldIcon,
   ChartSquareLinearIcon,
   ChartSquareBoldIcon,
   Home2LinearIcon,
@@ -17,13 +19,18 @@ import {
 
 type SolarIcon = React.ComponentType<{ className?: string }>
 
-// NAV-1: Contas, Início, Análise e Ajustes. Transações abre por "Ver todas" no Início.
-export const NAV_ITEMS: { href: string; label: string; icon: SolarIcon; activeIcon: SolarIcon; also?: string[] }[] = [
-  { href: '/bills',    label: 'Contas',  icon: BillListLinearIcon,    activeIcon: BillListBoldIcon },
+type NavItem = { href: string; label: string; icon: SolarIcon; activeIcon: SolarIcon; also?: string[] }
+
+// Início, Contas (só fixas), Cartões (faturas) e Análise. Transações abre por "Ver todas" no Início.
+// Ajustes abre pelo avatar no Início (no desktop, também no fim do menu lateral).
+export const NAV_ITEMS: NavItem[] = [
   { href: '/home',     label: 'Início',  icon: Home2LinearIcon,       activeIcon: Home2BoldIcon, also: ['/transactions'] },
+  { href: '/bills',    label: 'Contas',  icon: BillListLinearIcon,    activeIcon: BillListBoldIcon },
+  { href: '/cards',    label: 'Cartões', icon: CardLinearIcon,        activeIcon: CardBoldIcon },
   { href: '/analysis', label: 'Análise', icon: ChartSquareLinearIcon, activeIcon: ChartSquareBoldIcon },
-  { href: '/config',   label: 'Ajustes', icon: SettingsLinearIcon,    activeIcon: SettingsBoldIcon },
 ]
+
+export const SETTINGS_ITEM: NavItem = { href: '/config', label: 'Ajustes', icon: SettingsLinearIcon, activeIcon: SettingsBoldIcon }
 
 // Barra de abas Liquid Glass (iOS 26): cápsula de vidro flutuante, aba ativa marcada por uma
 // "lente" de vidro mais densa, ícone preenchido e na cor principal. Ao lado, o botão + (AddMenu).
