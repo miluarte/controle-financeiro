@@ -13,11 +13,11 @@ Regras de escrita de toda a interface: voz e tom, como escrever cada elemento e 
 ## 2. Regras gerais
 
 1. Todo texto em português. Nomes próprios e de produto ficam como são (Face ID, Pix, Apple Pay).
-2. Maiúscula só na primeira palavra e em nome próprio: "Conta fixa", "Ler nota fiscal".
+2. Maiúscula só na primeira palavra e em nome próprio: "Gasto fixo", "Ler nota fiscal".
 3. Sem artigo no começo de rótulos e botões: "Excluir conta", não "Excluir a conta".
 4. Sem ponto final em botão, título, rótulo, aba, chip, item de menu e selo. Ponto só em frase completa (texto de apoio, erro, aviso).
 5. Contagem de palavras:
-   - Termo composto conta como uma palavra: "nota fiscal", "conta fixa", "Face ID", "cartão de crédito", "fatura atual".
+   - Termo composto conta como uma palavra: "nota fiscal", "gasto fixo", "Face ID", "cartão de crédito", "fatura atual".
    - Conector não conta: de, do, da, com, por, para, em, no, na, a, e, ou.
 6. Não repetir o contexto: em tela com seletor de mês, o texto não repete o mês ("Gasto no mês").
 7. Mesma coisa, mesma palavra: seguir os glossários (seções 5 e 6).
@@ -33,10 +33,10 @@ Regras de escrita de toda a interface: voz e tom, como escrever cada elemento e 
 | Botão principal de folha | só o verbo | 1 palavra | Salvar, Pagar, Adicionar | Salvar alterações |
 | Link, "ver mais" | verbo no infinitivo | 2 palavras | Ver todas, Ver comprovante | Clique para ver |
 | Item de menu (ação) | igual ao botão | 2 palavras | Editar, Exportar CSV | |
-| Item de menu (tipo a criar) | substantivo | 2 palavras | Gasto, Receita, Conta fixa | Novo gasto |
+| Item de menu (tipo a criar) | substantivo | 2 palavras | Gasto, Receita, Guardar | Novo gasto |
 | Aba | substantivo | 1 palavra | Contas, Análise | Minhas contas |
 | Título de página | substantivo | 3 palavras | Transações, Suas categorias | Gerencie suas categorias |
-| Título de folha (criar) | "Novo/Nova" + substantivo | 3 palavras | Novo gasto, Nova conta fixa | Adicionar um novo gasto |
+| Título de folha (criar) | "Novo/Nova" + substantivo | 3 palavras | Novo gasto, Novo gasto fixo | Adicionar um novo gasto |
 | Título de folha (editar) | nome da coisa | 3 palavras | Conta de luz | Editar transação |
 | Título de grupo | substantivo | 3 palavras | Faturas, A receber, Compras pagas | Suas faturas deste mês |
 | Rótulo de campo | substantivo | 3 palavras | Valor, Data da compra, Dia do vencimento | Informe o valor |
@@ -94,7 +94,7 @@ Exceções aceitas em botão (respostas, não ações):
 | Ler | extrair dados de nota ou PDF | Escanear, Digitalizar, Processar |
 | Conferir | comparar fatura do PDF com o app | Reconciliar, Verificar, Checar |
 | Importar, Exportar | trazer ou levar arquivo | Carregar, Baixar, Upload |
-| Fixar, Desafixar | tornar um gasto conta fixa | Repetir, Recorrente |
+| Fixar, Desafixar | tornar um gasto fixo | Repetir, Recorrente |
 | Dividir | repartir compra entre pessoas | Ratear, Separar |
 | Aprovar, Recusar | pedido de entrada ou acerto | Aceitar, Rejeitar, Negar |
 | Entrar, Sair | sessão ou família | Logar, Login, Logout, Deslogar |
@@ -111,7 +111,7 @@ Exceções aceitas em botão (respostas, não ações):
 | Receita | Entrada, Ganho | "Renda" só na pergunta de planejamento |
 | Guardado | Poupança, Investimento | |
 | Transação | Lançamento, Movimentação | lista geral (gasto, receita, guardar) |
-| Conta fixa | Conta recorrente, Despesa fixa | |
+| Gasto fixo | Conta fixa, Conta recorrente, Despesa fixa | |
 | Receita fixa | Salário fixo, Entrada recorrente | |
 | Fatura | Boleto do cartão | do cartão de crédito |
 | Extrato | Relatório | da conta bancária |

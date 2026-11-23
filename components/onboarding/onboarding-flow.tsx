@@ -33,7 +33,7 @@ const HIGHLIGHTS = [
 ]
 
 const TIPS = [
-  'Toque no + para registrar um gasto, uma receita ou uma conta fixa.',
+  'Toque no + para registrar um gasto ou uma receita, avulsos ou fixos.',
   'Já tem compras parceladas? No gasto, informe a parcela atual.',
   'Apple Pay e toque duplo: Ajustes > Automações.',
 ]

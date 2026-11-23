@@ -17,6 +17,7 @@ function toRow(b: Partial<BillInput>) {
   if (b.installmentsTotal !== undefined) r.installments_total = b.installmentsTotal
   if (b.endMonth !== undefined) r.end_month = b.endMonth
   if (b.walletId !== undefined) r.wallet_id = b.walletId
+  if (b.recipient !== undefined) r.recipient = b.recipient ? { user_id: b.recipient.userId, name: b.recipient.name } : null
   return r
 }
 
@@ -40,7 +41,7 @@ export const billsApi = {
   getMonth: async (month: string) => {
     unwrap(await supabase.rpc('ensure_bill_occurrences', { p_month: `${month}-01` }))
     const rows = unwrap(
-      await supabase.from('bill_occurrences').select('*, bills(*)')
+      await supabase.from('bill_occurrences').select('*, bills(*, wallet:wallets(type))')
         .eq('ref_month', `${month}-01`).order('due_date'),
     )
     return rows.map(toBillOccurrence)

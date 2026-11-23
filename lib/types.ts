@@ -162,9 +162,14 @@ export interface Bill {
   installmentsTotal: number | null
   endMonth: string | null
   active: boolean
-  // cobrada todo mês neste cartão de crédito (assinatura): entra na fatura, não é paga à parte
+  // forma de pagamento: no cartão de crédito é lançado sozinho na fatura (onCard); nas outras, sugerida ao pagar
   walletId: string | null
+  onCard: boolean
+  // destinatário do Pix (alguém da família ou outro nome); vai para o gasto ao pagar
+  recipient: BillRecipient | null
 }
+
+export interface BillRecipient { userId: string | null; name: string }
 
 export interface BillInput {
   type: BillType
@@ -179,6 +184,7 @@ export interface BillInput {
   installmentCurrent: number | null
   installmentsTotal: number | null
   walletId?: string | null
+  recipient?: BillRecipient | null
 }
 
 export interface BillOccurrence {

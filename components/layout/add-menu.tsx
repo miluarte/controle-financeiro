@@ -4,7 +4,6 @@ import { useRef, useState } from 'react'
 import {
   AddBoldIcon,
   AddLinearIcon,
-  BillListLinearIcon,
   CameraLinearIcon,
   CartLargeMinimalisticLinearIcon,
   SafeSquareLinearIcon,
@@ -14,9 +13,8 @@ import { buttonVariants } from '@/components/ui/button'
 import { QuickAddSheet, type QuickAddMode } from '@/components/transactions/quick-add-sheet'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel,
-  DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { BillType } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { FabMenu } from './fab-menu'
 
@@ -28,33 +26,24 @@ const QUICK: { mode: QuickAddMode; label: string; icon: SolarIcon }[] = [
   { mode: 'save',    label: 'Guardar', icon: SafeSquareLinearIcon },
 ]
 
-const FIXED: { type: BillType; label: string; icon: SolarIcon }[] = [
-  { type: 'expense', label: 'Conta fixa',   icon: BillListLinearIcon },
-]
-
 // Botão + da barra de abas (FabMenu, opções empilhadas acima) ou "Adicionar" no menu lateral do desktop (menu suspenso).
 export function AddMenu({ variant = 'tab' }: { variant?: 'tab' | 'sidebar' }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [quick, setQuick] = useState<{ mode: QuickAddMode; n: number; receipt?: File; repeat?: boolean } | null>(null)
+  const [quick, setQuick] = useState<{ mode: QuickAddMode; n: number; receipt?: File } | null>(null)
   const receiptInput = useRef<HTMLInputElement>(null)
   const [quickOpen, setQuickOpen] = useState(false)
 
-  function openQuick(mode: QuickAddMode, receipt?: File, repeat = false) {
+  // gasto fixo e receita fixa são o mesmo formulário, com "Repetir todo mês"
+  function openQuick(mode: QuickAddMode, receipt?: File) {
     // a chave nova recria o formulário já no tipo escolhido (e, com a foto, já lendo a nota)
-    setQuick(q => ({ mode, n: (q?.n ?? 0) + 1, receipt, repeat }))
+    setQuick(q => ({ mode, n: (q?.n ?? 0) + 1, receipt }))
     setQuickOpen(true)
-  }
-
-  // conta fixa é o mesmo formulário do gasto (ou receita) com "Repetir todo mês" já ligado
-  function openBill(type: BillType) {
-    openQuick(type === 'income' ? 'income' : 'expense', undefined, true)
   }
 
   const Icon = menuOpen ? AddBoldIcon : AddLinearIcon
 
   // celular: opções empilhadas acima do + (de cima para baixo; Gasto fica mais perto do dedo)
   const fabItems = [
-    ...FIXED.map(({ type, label, icon }) => ({ key: `bill-${type}`, label, icon, onSelect: () => openBill(type) })),
     ...[...QUICK].reverse().map(({ mode, label, icon }) => ({ key: mode, label, icon, onSelect: () => openQuick(mode) })),
     { key: 'receipt', label: 'Ler nota fiscal', icon: CameraLinearIcon, accept: 'image/*',
       onSelect: () => {}, onFile: (file: File) => openQuick('expense', file) },
@@ -79,15 +68,6 @@ export function AddMenu({ variant = 'tab' }: { variant?: 'tab' | 'sidebar' }) {
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Todo mês</DropdownMenuLabel>
-            {FIXED.map(({ type, label, icon: ItemIcon }) => (
-              <DropdownMenuItem key={type} onClick={() => openBill(type)}>
-                <ItemIcon />{label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
       )}
@@ -95,7 +75,7 @@ export function AddMenu({ variant = 'tab' }: { variant?: 'tab' | 'sidebar' }) {
       <input ref={receiptInput} type="file" accept="image/*" className="sr-only"
         onChange={e => { const file = e.target.files?.[0]; e.target.value = ''; if (file) openQuick('expense', file) }} />
       {quick && (
-        <QuickAddSheet key={quick.n} open={quickOpen} onOpenChange={setQuickOpen} initialMode={quick.mode} initialReceipt={quick.receipt} initialRepeat={quick.repeat} />
+        <QuickAddSheet key={quick.n} open={quickOpen} onOpenChange={setQuickOpen} initialMode={quick.mode} initialReceipt={quick.receipt} />
       )}
     </>
   )

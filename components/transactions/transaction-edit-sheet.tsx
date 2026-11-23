@@ -169,7 +169,7 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
       {pin.sheet}
       {pin.can(t) && (
         <ListGroup footer={pin.pinned(t) ? 'Repete todo mês até você desligar.' : undefined}>
-          <FormRow label="Conta fixa">
+          <FormRow label="Gasto fixo">
             <Switch checked={pin.pinned(t)}
               onCheckedChange={on => { if (on) pin.pin(t).then(onDone); else pin.askUnpin(t) }} />
           </FormRow>
