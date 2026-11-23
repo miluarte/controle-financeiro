@@ -200,9 +200,6 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   // carteira do tipo Outro (ex.: linha de crédito) também parcela: cada parcela é um gasto no seu mês, sem fatura
   const installable = mode === 'expense' && wallet?.type === 'other'
   const creditLike = !bill && (isCredit || unknownCard || installable)
-  // "Pagar depois": gasto único, fora do cartão de crédito, que entra em Contas
-  const canLater = mode === 'expense' && !bill && !pending && !isCredit && !unknownCard && !installable
-  const payLater = canLater && later && !repeat.on
   // gasto fixo em aberto no mês da data com o mesmo nome: o registro paga esse mês, sem criar outro
   const { occurrences: monthBills } = useBills(date.slice(0, 7))
   const placeKey = normPlace(place.trim())
@@ -210,6 +207,19 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     ? monthBills.find(o => o.bill.type === 'expense' && !o.bill.onCard && !o.paidAt && normPlace(o.bill.name) === placeKey) ?? null
     : null
   const payingFixed = !!fixedMatch && payFixed
+  const me = session?.user.id ?? ''
+  // divisão: no cartão próprio compartilhado, quem tem acesso; no cartão de outra pessoa, você e a titular
+  const cardPeople = useCardPeople()
+  // gasto dividido: qualquer forma de pagamento fora do crédito (Pix, débito, dinheiro, outro à vista);
+  // quem pagou pode ser você ou outra pessoa da família
+  const shareable = mode === 'expense' && !!wallet && wallet.type !== 'credit' && !cardUnknown
+  const payerPeople = shareable && !bill && !payingFixed && !repeatExpense && installments <= 1 ? cardPeople.people : []
+  const payerId = payer || me
+  // outra pessoa já pagou: o que você deve vai para Repassar, sem "Pagar depois"
+  const otherPaid = payerPeople.length > 1 && payerId !== me
+  // "Pagar depois": gasto único, fora do cartão de crédito, que entra em Contas
+  const canLater = mode === 'expense' && !bill && !pending && !isCredit && !unknownCard && !installable && !otherPaid
+  const payLater = canLater && later && !repeat.on
   const needsCategory = mode !== 'save'
   const needsWallet = mode !== 'income'
   // séries antigas podem estar sem categoria ou forma de pagamento: a edição não exige
@@ -218,21 +228,15 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const access = useCardAccess(isCredit ? walletId : null)
   const assignTo = access.people.some(p => p.userId === owner) && owner !== access.me ? owner : null
   // titulares possíveis: eu (se tenho cartão de crédito) e quem compartilha cartão comigo
-  const me = session?.user.id ?? ''
   const holders = cardHolders(wallets, me)
   const holder = holderId ?? (holders.length === 1 ? holders[0].id : null)
   const hasWallet = unknownCard ? !!holder : !!walletId
-  // divisão: no cartão próprio compartilhado, quem tem acesso; no cartão de outra pessoa, você e a titular
-  const cardPeople = useCardPeople()
   const splitWith = !isCredit || repeatExpense || payingFixed ? []
     : wallet?.ownerId && wallet.ownerId !== me ? cardPeople.people.filter(p => p.userId === me || p.userId === wallet.ownerId)
     : access.people
   const splitting = split.on && splitWith.length > 1
-  // Pix dividido: com a família toda; quem pagou pode ser você ou outra pessoa
-  // gasto dividido: qualquer forma de pagamento fora do crédito (Pix, débito, dinheiro, outro à vista)
-  const shareable = mode === 'expense' && !!wallet && wallet.type !== 'credit' && !cardUnknown
-  const pixPeople = shareable && !bill && !payingFixed && !repeatExpense && !payLater && installments <= 1 ? cardPeople.people : []
-  const payerId = payer || me
+  // Pix dividido: com a família toda; pago por você e para pagar depois, não divide
+  const pixPeople = payLater ? [] : payerPeople
   const sharedPix = pixPeople.length > 1 && (split.on || payerId !== me)
   const pixIds = sharedPix && split.on ? splitPeople(split, pixPeople, me) : [me]
   const splitResult = splitting
@@ -622,7 +626,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                 {isPix && (
                   <SenderRows id="qa-recipient" label="Destinatário" value={sender} onChange={setSender} people={cardPeople.people} me={me} />
                 )}
-                {pixPeople.length > 1 && <PayerRow id="qa-payer" value={payerId} onChange={pickPayer} people={pixPeople} me={me} />}
+                {payerPeople.length > 1 && <PayerRow id="qa-payer" value={payerId} onChange={pickPayer} people={pixPeople} me={me} />}
                 {creditLike && (
                   <FormRow label="Parcelas" htmlFor="installments">
                     <NumberField id="installments" min={1} max={48} value={installments}
