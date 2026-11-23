@@ -69,6 +69,9 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
   const [, setBusy] = useState(false)
 
   const editable = ['expense', 'income', 'save_apply', 'save_redeem'].includes(t.type)
+  // parte de Pix dividido: valor, data e carteira só mudam excluindo o Pix e registrando de novo
+  const shared = !!t.sharedPaymentId
+  const sharedParts = Array.isArray(t.sourceData?.shared_parts) ? (t.sourceData.shared_parts as { user_id: string; amount: number }[]) : []
   // compra dividida (split_purchase): divisão da compra inteira por pessoa
   const { nameOf, people, me } = useCardPeople()
   const [sender, setSender] = useState<Sender | null>(() => senderOf(t.sourceData))
@@ -120,11 +123,11 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
 
   return (
     <form id="edit-transaction" onSubmit={save} className="space-y-6">
-      <CurrencyInput id="edit-amount" aria-label="Valor" variant="display" value={amount} onChange={setAmount} disabled={!editable} />
+      <CurrencyInput id="edit-amount" aria-label="Valor" variant="display" value={amount} onChange={setAmount} disabled={!editable || shared} />
 
       <ListGroup footer={t.installmentN ? `Parcela ${t.installmentN} de ${t.installmentsTotal}` : undefined}>
         <FormRow label="Data" htmlFor="edit-date">
-          <DateField id="edit-date" value={date} disabled={!editable} onChange={v => setDate(v || t.date)} />
+          <DateField id="edit-date" value={date} disabled={!editable || shared} onChange={v => setDate(v || t.date)} />
         </FormRow>
         <FormRow label={t.type === 'income' ? 'Descrição' : 'Onde?'} htmlFor="edit-text">
           <Input id="edit-text" variant="bare" value={text} onChange={e => setText(e.target.value)}
@@ -135,18 +138,33 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
         )}
       </ListGroup>
 
-      {((showCategory && editable) || (showWallet && editable && !t.installmentGroupId)) && (
+      {((showCategory && editable) || (showWallet && editable && !t.installmentGroupId && !shared)) && (
         <ListGroup>
           {showCategory && editable && (
             <CategoryField id="edit-category" categories={categories.filter(c => c.type === catType)} value={categoryId}
               onChange={id => id && setCategoryId(id)} />
           )}
-          {showWallet && editable && !t.installmentGroupId && (
+          {showWallet && editable && !t.installmentGroupId && !shared && (
             <WalletPicker id="edit-wallet" wallets={wallets} value={walletId} onChange={setWalletId} />
           )}
         </ListGroup>
       )}
 
+
+      {/* Pix dividido: quem pagou e a parte de cada pessoa */}
+      {shared && (
+        <ListGroup header="Pix dividido" footer="Para mudar valor ou pessoas, exclua e registre de novo.">
+          <ListRow title="Quem pagou" trailing={<span className="text-body text-foreground">{t.paidBy ? nameOf(t.paidBy) : 'Você'}</span>} />
+          {sharedParts.map(p => (
+            <ListRow key={p.user_id} title={nameOf(p.user_id)}
+              trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(Number(p.amount))}</span>} />
+          ))}
+          {typeof t.sourceData?.shared_total === 'number' && (
+            <ListRow title="Total do Pix"
+              trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(t.sourceData.shared_total as number)}</span>} />
+          )}
+        </ListGroup>
+      )}
 
       {pin.sheet}
       {pin.can(t) && (

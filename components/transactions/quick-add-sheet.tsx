@@ -20,7 +20,7 @@ import { ReceiptResultGroup } from '@/components/receipt/receipt-result-group'
 import { ReceiptScanButton } from '@/components/receipt/receipt-scan-button'
 import { useSession } from '@/hooks/use-session'
 import type { Transaction } from '@/lib/types'
-import { todayIso } from '@/lib/utils'
+import { formatCurrency, todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { InstallmentProgress } from './installment-progress'
 import { ItemsEditor } from './items-editor'
@@ -41,6 +41,8 @@ import { walletOption } from '@/components/shared/wallet-picker'
 import { useCardPeople } from '@/hooks/use-card-people'
 import { SPLIT_ALL, splitParts } from '@/lib/split'
 import { SenderRows, senderData, senderOf, type Sender } from './sender-field'
+import { PayerRow } from './payer-field'
+import { sharedApi } from '@/lib/api/shared'
 import { itemOwnerOptions, SplitRows, splitDefault, splitMode, splitPeople, splitSummary } from './split-group'
 import { feedback } from '@/lib/feedback'
 import posthog from 'posthog-js'
@@ -112,6 +114,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const [repeat, setRepeat] = useState(() => ({ ...repeatDefault(todayIso().slice(0, 7)), on: initialRepeat }))
   // dividir a compra no cartão entre pessoas (por item, igual ou por valor)
   const [split, setSplit] = useState(splitDefault)
+  // Pix dividido: quem pagou ('' = você)
+  const [payer, setPayer] = useState('')
   // receita: quem enviou (opcional; alguém da família ou outro nome)
   const [sender, setSender] = useState<Sender | null>(() => senderOf(pending?.sourceData))
 
@@ -152,6 +156,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     setOwner('')
     setRepeat(repeatDefault(todayIso().slice(0, 7)))
     setSplit(splitDefault())
+    setPayer('')
     setSender(null)
   }
 
@@ -189,9 +194,20 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     : wallet?.ownerId && wallet.ownerId !== me ? cardPeople.people.filter(p => p.userId === me || p.userId === wallet.ownerId)
     : access.people
   const splitting = split.on && splitWith.length > 1
+  // Pix dividido: com a família toda; quem pagou pode ser você ou outra pessoa
+  const pixPeople = isPix && !repeatExpense && installments <= 1 ? cardPeople.people : []
+  const payerId = payer || me
+  const sharedPix = pixPeople.length > 1 && (split.on || payerId !== me)
+  const pixIds = sharedPix && split.on ? splitPeople(split, pixPeople, me) : [me]
   const splitResult = splitting
     ? splitParts({ mode: splitMode(split, items), total: amount, people: splitPeople(split, splitWith, me), items, values: split.values })
-    : null
+    : sharedPix
+      ? (pixIds.length === 1
+        ? { parts: [{ userId: pixIds[0], amount }], error: pixIds[0] === payerId ? 'Escolha quem divide o Pix.' : null }
+        : splitParts({ mode: splitMode(split, items), total: amount, people: pixIds, items, values: split.values }))
+      : null
+  // pessoas cuja divisão aparece no grupo (cartão ou Pix)
+  const dividing = splitting ? splitWith : sharedPix && split.on ? pixPeople : []
   // itens guardam o dono só na compra dividida
   const plainItems = items.map(it => ({ name: it.name, amount: it.amount }))
   const canSubmit = amount > 0 && (!needsCategory || !!categoryId) && (!needsWallet || hasWallet) && !splitResult?.error && !submitting
@@ -199,6 +215,13 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   function pickWallet(id: string) {
     setCardUnknown(false)
     setWalletId(id)
+    // "Você" fora da divisão só vale no Pix pago por outra pessoa
+    setSplit(v => ({ ...v, withoutMe: false }))
+  }
+
+  function pickPayer(id: string) {
+    setPayer(id)
+    if (id === me) setSplit(v => ({ ...v, withoutMe: false }))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -212,6 +235,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         await createRecurringIncome(placeValue)
       } else if (mode === 'expense' && repeatExpense) {
         await createRecurringExpense(placeValue)
+      } else if (sharedPix) {
+        await createSharedPix(placeValue)
       } else if (unknownCard) {
         await createWithoutCard(placeValue)
       } else if ((isCredit || installable) && installments > 1) {
@@ -267,7 +292,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         entry_pattern: pending ? 'pending_confirmation' : repeat.on ? 'recurring' : installments > 1 ? 'installment' : 'one_time',
         has_receipt: Boolean(receipt),
         has_items: items.length > 0,
-        is_split: splitting,
+        is_split: splitting || sharedPix,
         card_unknown: unknownCard,
       })
       const done = pending ? (mode === 'income' ? 'Receita confirmada' : 'Gasto confirmado')
@@ -275,7 +300,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         : mode === 'income' ? (repeat.on ? 'Receita fixa adicionada' : 'Receita adicionada')
         : repeatExpense ? 'Conta fixa adicionada'
         : unknownCard ? 'Enviado para confirmar'
-        : splitting ? 'Compra dividida' : 'Gasto adicionado'
+        : splitting ? 'Compra dividida' : sharedPix ? 'Pix dividido' : 'Gasto adicionado'
       reset()
       onOpenChange(false)
       feedback.done(done)
@@ -306,6 +331,26 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     const byItem = splitMode(split, items) === 'item'
     await familyApi.splitPurchase(id, splitResult.parts,
       items.map(it => ({ ...it, owner: byItem ? it.owner ?? me : SPLIT_ALL })))
+  }
+
+  // Pix dividido: cada pessoa ganha a sua parte; o dinheiro sai de quem pagou. Por item, os itens vão com o dono.
+  async function createSharedPix(placeValue: string | null) {
+    if (!splitResult) return
+    const byItem = split.on && splitMode(split, items) === 'item'
+    const fromPhoto = receipt
+    const receiptPath = fromPhoto ? await takeReceipt() : null
+    await sharedApi.create({
+      payerId, walletId: payerId === me ? walletId : null, amount, date, place: placeValue, categoryId,
+      parts: splitResult.parts,
+      source: fromPhoto ? 'photo' : pending?.source ?? 'manual',
+      receiptPath,
+      sourceData: {
+        ...(pending?.sourceData ?? {}),
+        ...(fromPhoto ? { reader: receipt.result.source, ...(receipt.result.chave ? { chave: receipt.result.chave } : {}) } : {}),
+        ...(items.length ? { items: items.map(it => ({ name: it.name, amount: it.amount, owner: byItem ? it.owner ?? pixIds[0] : SPLIT_ALL })) } : {}),
+        ...senderData(sender),
+      },
+    })
   }
 
   // compra sem cartão: pendente, com o titular e as parcelas guardadas para quando escolherem o cartão
@@ -472,7 +517,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
             )}
 
             {(needsCategory || needsWallet) && (
-              <ListGroup footer={unknownCard ? holderFooter(holders, holder, me) : splitting ? splitSummary(split, splitWith, me, items, amount) : undefined}>
+              <ListGroup footer={unknownCard ? holderFooter(holders, holder, me)
+                : splitting || (sharedPix && split.on) ? splitSummary(split, dividing, me, items, amount)
+                : sharedPix ? `Você deve ${formatCurrency(amount)} a ${cardPeople.nameOf(payerId)}.` : undefined}>
                 {needsCategory && <CategoryField id="qa-category" categories={visibleCategories} value={categoryId} onChange={setCategoryId} />}
                 {needsWallet && (
                   <PickerRow id="qa-wallet" label={walletQuestion}
@@ -487,6 +534,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                 {isPix && !repeatExpense && (
                   <SenderRows id="qa-recipient" label="Destinatário" value={sender} onChange={setSender} people={cardPeople.people} me={me} />
                 )}
+                {pixPeople.length > 1 && <PayerRow id="qa-payer" value={payerId} onChange={pickPayer} people={pixPeople} me={me} />}
                 {creditLike && (
                   <FormRow label="Parcelas" htmlFor="installments">
                     <NumberField id="installments" min={1} max={48} value={installments}
@@ -501,6 +549,10 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                 {mode === 'expense' && splitWith.length > 1 && (
                   <SplitRows value={split} onChange={setSplit} people={splitWith} me={me} items={items} total={amount} />
                 )}
+                {pixPeople.length > 1 && (
+                  <SplitRows value={split} onChange={setSplit} people={pixPeople} me={me} items={items} total={amount}
+                    meOptional={payerId !== me} />
+                )}
               </ListGroup>
             )}
 
@@ -509,7 +561,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
             {/* compra dividida por item: cada item mostra de quem é */}
             {mode === 'expense' && (
               <ItemsEditor items={items} onChange={setItems} total={amount}
-                owners={splitting && splitMode(split, items) === 'item' ? { options: itemOwnerOptions(split, splitWith, me), fallback: me } : undefined} />
+                owners={dividing.length > 1 && splitMode(split, items) === 'item'
+                  ? { options: itemOwnerOptions(split, dividing, me), fallback: splitPeople(split, dividing, me)[0] ?? me } : undefined} />
             )}
 
             {error && <p className="px-4 text-footnote text-destructive">{error}</p>}

@@ -5,6 +5,7 @@ import { PinBoldIcon } from '@solar-icons/react'
 import { ListRow } from '@/components/ios/list-row'
 import type { SwipeExtra } from '@/components/ios/swipe-actions'
 import { TokenIcon } from '@/components/shared/token-icon'
+import { useCardPeople } from '@/hooks/use-card-people'
 import type { Category, Transaction, Wallet } from '@/lib/types'
 import { cn, formatCurrency } from '@/lib/utils'
 
@@ -39,7 +40,10 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
   // subtítulo: só a forma de pagamento e a parcela (categoria fica no ícone; itens e detalhes, ao abrir)
   // receita: quem enviou; gasto no Pix: para quem foi (source_data.sender)
   const sender = senderOf(t.sourceData)?.name
-  const subtitle = [sender ? `${t.type === 'income' ? 'De' : 'Para'} ${sender}` : null, walletName, installment, note].filter(Boolean).join(' · ')
+  // Pix dividido: de quem foi o Pix (quando não foi você)
+  const { nameOf } = useCardPeople()
+  const shared = t.sharedPaymentId ? (t.paidBy && t.paidBy !== t.owner ? `Pix de ${nameOf(t.paidBy)}` : 'Pix dividido') : null
+  const subtitle = [sender ? `${t.type === 'income' ? 'De' : 'Para'} ${sender}` : null, walletName, shared, installment, note].filter(Boolean).join(' · ')
   const inflow = INFLOW.has(t.type)
 
   return (

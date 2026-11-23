@@ -2,9 +2,9 @@ import type { CardDebt, Family, FamilyMember, InvoiceTotal, Settlement } from '.
 import { supabase, unwrap } from '../supabase/client'
 import { toInvoiceTotal } from '../supabase/mappers'
 
-const toSettlement = (r: Record<string, any>): Settlement => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
+export const toSettlement = (r: Record<string, any>): Settlement => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
   id: r.id, walletId: r.wallet_id, debtorId: r.debtor_id, holderId: r.holder_id,
-  invoiceRef: r.invoice_ref, amount: Number(r.amount), status: r.status,
+  invoiceRef: r.invoice_ref ?? null, sharedPaymentId: r.shared_payment_id ?? null, amount: Number(r.amount), status: r.status,
   reportedAt: r.reported_at, confirmedAt: r.confirmed_at, paidOn: r.paid_on ?? null,
 })
 

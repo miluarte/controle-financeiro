@@ -77,6 +77,9 @@ export interface Transaction {
   prepaidBy: string | null
   // titular do cartão quando a compra ainda não tem cartão definido (pendente)
   holderId: string | null
+  // Pix dividido: quem pagou (o dinheiro saiu dela) e o Pix a que esta parte pertence
+  paidBy: string | null
+  sharedPaymentId: string | null
   // quando foi registrado (ordem de "Últimas transações")
   createdAt?: string
 }
@@ -255,10 +258,12 @@ export interface CardDebt {
 
 export interface Settlement {
   id: string
-  walletId: string
+  // fatura de cartão (walletId + invoiceRef) ou Pix dividido (sharedPaymentId)
+  walletId: string | null
   debtorId: string
   holderId: string
-  invoiceRef: string
+  invoiceRef: string | null
+  sharedPaymentId: string | null
   amount: number
   status: 'open' | 'reported' | 'confirmed'
   reportedAt: string | null
@@ -266,6 +271,26 @@ export interface Settlement {
   // dia em que o membro pagou a titular
   paidOn: string | null
 }
+
+// Pix dividido: o que uma pessoa (debtorId) deve a quem pagou (payerId) num Pix.
+export interface SharedDebt {
+  sharedPaymentId: string
+  payerId: string
+  debtorId: string
+  createdBy: string | null
+  place: string | null
+  date: string
+  // total do Pix e a parte desta pessoa
+  total: number
+  part: number
+  settled: number
+  reported: number
+  open: number
+  reportedPaidOn: string | null
+}
+
+// Parte de cada pessoa num Pix dividido (quem pagou também aparece, com open 0)
+export interface SharedPart { userId: string; part: number; settled: number; open: number }
 
 export interface MonthlyClosing {
   refMonth: string

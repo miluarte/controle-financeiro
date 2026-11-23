@@ -18,6 +18,8 @@ export interface SplitValue {
   mode: SplitMode
   // por valor: valor fixo de cada pessoa (0 = divide o resto igual)
   values: Record<string, number>
+  // Pix pago por outra pessoa: você pode ficar fora da divisão
+  withoutMe?: boolean
 }
 
 export const splitDefault = (): SplitValue => ({ on: false, selected: [], mode: 'item', values: {} })
@@ -28,8 +30,8 @@ export const splitMode = (value: SplitValue, items: ReceiptItem[]): SplitMode =>
 
 // pessoas da divisão na ordem das pessoas do cartão, com quem divide primeiro
 export function splitPeople(value: SplitValue, people: FamilyMember[], me: string) {
-  const ids = people.map(p => p.userId).filter(id => id === me || value.selected.includes(id))
-  return [me, ...ids.filter(id => id !== me)]
+  const ids = people.map(p => p.userId).filter(id => id !== me && value.selected.includes(id))
+  return value.withoutMe ? ids : [me, ...ids]
 }
 
 // Texto do rodapé: quanto fica para cada pessoa, ou o motivo de não fechar.
@@ -49,13 +51,15 @@ export function itemOwnerOptions(value: SplitValue, people: FamilyMember[], me: 
 // Dividir a compra no cartão (registro de gasto), em linhas dentro do grupo do pagamento: o switch, as pessoas e
 // como dividir. Por item, o dono de cada item é escolhido na própria lista de itens (ItemsEditor owners);
 // por valor, quem fica em branco divide o resto igual.
-export function SplitRows({ value, onChange, people, me, items, total }: {
+export function SplitRows({ value, onChange, people, me, items, total, meOptional = false }: {
   value: SplitValue
   onChange: (v: SplitValue) => void
   people: FamilyMember[]
   me: string
   items: ReceiptItem[]
   total: number
+  // Pix pago por outra pessoa: chip "Você" para ficar fora da divisão
+  meOptional?: boolean
 }) {
   const set = (patch: Partial<SplitValue>) => onChange({ ...value, ...patch })
   const ids = splitPeople(value, people, me)
@@ -81,6 +85,9 @@ export function SplitRows({ value, onChange, people, me, items, total }: {
       {value.on && (
         <>
           <li className="flex flex-wrap gap-2 border-b border-separator p-3">
+            {meOptional && (
+              <ChoiceChip selected={!value.withoutMe} onClick={() => set({ withoutMe: !value.withoutMe })}>Você</ChoiceChip>
+            )}
             {people.filter(p => p.userId !== me).map(p => (
               <ChoiceChip key={p.userId} selected={value.selected.includes(p.userId)} onClick={() => toggle(p.userId)} className="pl-1">
                 <MemberAvatar name={p.name} color={p.avatarColor} size="sm" />{p.name}

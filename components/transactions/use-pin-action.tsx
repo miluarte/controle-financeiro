@@ -47,6 +47,6 @@ export function usePinAction() {
       }] : []} />
   )
   // pode fixar/desafixar (gasto à vista meu e confirmado)
-  const can = (t: Transaction) => t.type === 'expense' && t.status === 'confirmed' && !t.installmentGroupId && t.owner === session?.user.id
+  const can = (t: Transaction) => t.type === 'expense' && t.status === 'confirmed' && !t.installmentGroupId && !t.sharedPaymentId && t.owner === session?.user.id
   return { extra, pinned, can, pin, askUnpin: setUnpinning, sheet }
 }

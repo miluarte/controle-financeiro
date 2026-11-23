@@ -63,7 +63,7 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
   const byPerson = new Map<string, number>()
   for (const t of list) byPerson.set(t.owner, (byPerson.get(t.owner) ?? 0) + t.amount)
   const settledBy = new Map<string, number>()
-  for (const st of settlements) if (st.status === 'confirmed' && st.invoiceRef.slice(0, 7) === ref) settledBy.set(st.debtorId, (settledBy.get(st.debtorId) ?? 0) + st.amount)
+  for (const st of settlements) if (st.status === 'confirmed' && (st.invoiceRef ?? '').slice(0, 7) === ref) settledBy.set(st.debtorId, (settledBy.get(st.debtorId) ?? 0) + st.amount)
   const reported = settlements.filter(st => st.status === 'reported')
   const paidAt = paid.find(p => p.walletId === wallet.id && p.refMonth.slice(0, 7) === ref)?.paidAt ?? null
   const closed = ref < openRef
@@ -147,7 +147,7 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
             <ListRow key={st.id} onClick={() => setConfirming(st)} chevron
               leading={<MemberAvatar name={nameOf(st.debtorId)} color={people.find(p => p.userId === st.debtorId)?.avatarColor ?? 'gray'} />}
               title={`${nameOf(st.debtorId)} pagou ${formatCurrency(st.amount)}`}
-              subtitle={`Fatura de ${monthName(st.invoiceRef.slice(0, 7))}`} />
+              subtitle={`Fatura de ${monthName((st.invoiceRef ?? '').slice(0, 7))}`} />
           ))}
         </ListGroup>
       )}

@@ -2,6 +2,7 @@
 
 import useSWR from 'swr'
 import { familyApi } from '@/lib/api/family'
+import { sharedApi } from '@/lib/api/shared'
 
 export function useFamily() {
   const { data, isLoading } = useSWR(['family'], () => familyApi.mine())
@@ -20,5 +21,10 @@ export function useMyDebts() {
 
 export function useSettlements(walletId: string) {
   const { data } = useSWR(['settlements', walletId], () => familyApi.settlements(walletId))
+  return data ?? []
+}
+
+export function useSharedDebts() {
+  const { data } = useSWR(['shared-debts'], () => sharedApi.debts())
   return data ?? []
 }

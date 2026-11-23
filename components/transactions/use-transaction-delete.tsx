@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { ActionSheet } from '@/components/ios/action-sheet'
 import { useRefresh } from '@/hooks/use-refresh'
 import { transactionsApi } from '@/lib/api/transactions'
+import { sharedApi } from '@/lib/api/shared'
 import type { Transaction } from '@/lib/types'
 import { feedback } from '@/lib/feedback'
 import posthog from 'posthog-js'
@@ -15,7 +16,9 @@ export function useTransactionDelete(onDone?: () => void) {
 
   async function remove(t: Transaction, all: boolean) {
     try {
-      if (all && t.installmentGroupId) await transactionsApi.removeInstallmentGroup(t.installmentGroupId)
+      // parte de Pix dividido: sai o Pix inteiro (a parte de todas as pessoas)
+      if (t.sharedPaymentId) await sharedApi.remove(t.sharedPaymentId)
+      else if (all && t.installmentGroupId) await transactionsApi.removeInstallmentGroup(t.installmentGroupId)
       else await transactionsApi.remove(t.id)
       await refresh()
       posthog.capture('transaction_deleted', {
@@ -25,7 +28,7 @@ export function useTransactionDelete(onDone?: () => void) {
       })
       onDone?.()
       // lançamento avulso (não parcela): "Desfazer" no aviso recria igual
-      const undo = !t.installmentGroupId && ['expense', 'income', 'save_apply', 'save_redeem'].includes(t.type)
+      const undo = !t.installmentGroupId && !t.sharedPaymentId && ['expense', 'income', 'save_apply', 'save_redeem'].includes(t.type)
         ? async () => {
             await transactionsApi.create({
               type: t.type as 'expense', amount: t.amount, date: t.date, categoryId: t.categoryId, walletId: t.walletId,
@@ -43,7 +46,7 @@ export function useTransactionDelete(onDone?: () => void) {
   const t = target
   const sheet = (
     <ActionSheet open={!!t} onOpenChange={o => { if (!o) setTarget(null) }}
-      title={t?.installmentGroupId ? 'O que excluir?' : 'Excluir transação?'}
+      title={t?.sharedPaymentId ? 'Excluir o Pix dividido? Sai a parte de todas as pessoas.' : t?.installmentGroupId ? 'O que excluir?' : 'Excluir transação?'}
       actions={!t ? [] : t.installmentGroupId
         ? [{ label: 'Só esta parcela', destructive: true, onSelect: () => remove(t, false) },
            { label: 'Compra inteira', destructive: true, onSelect: () => remove(t, true) }]

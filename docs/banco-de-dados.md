@@ -41,6 +41,7 @@ Tabelas extras, exigidas por requisitos sem tabela na seção 6:
 - `installment_groups`: dados da compra parcelada (ATR-4, 7.6).
 - `invoices`: estado de pagamento da fatura (CON-8, ATR-3). Os valores vêm da view `invoice_totals`.
 - `wallet_aliases`: cartão do Apple Pay ou da notificação ligado a uma carteira (CAR-6).
+- `shared_payments`: Pix dividido (quem pagou, total, data, local). As partes são gastos com `paid_by` e `shared_payment_id`; gasto com `paid_by` sai do saldo de quem pagou.
 
 ## Decisões tomadas (seção 9)
 
@@ -78,6 +79,7 @@ Adotei as propostas marcadas como [S] na spec. Todas podem mudar.
 | month_summary | Saldo, gasto, guardado, orçamento, a receber, pendências |
 | category_spending, monthly_history | Análise |
 | my_card_debts | Quanto devo a cada titular |
+| create_shared_payment, delete_shared_payment, shared_debts, shared_payment_parts, report_shared_settlement, receive_shared_settlement | Pix dividido: quem pagou, partes, acerto por Pix |
 | delete_account | Excluir conta |
 
 Views: `invoice_totals` (fatura por cartão, mês e pessoa) e `category_usage` (lançamentos por categoria).
