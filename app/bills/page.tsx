@@ -45,7 +45,9 @@ export default function BillsPage() {
     const w = usable.find(x => x.id === id)
     return w ? (w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name) : 'cartão'
   }
-  const total = bills.reduce((s, o) => s + o.amount, 0)
+  // o resumo soma tudo o que a lista de contas mostra, inclusive as fixas no cartão
+  const onCardTotal = onCard.reduce((s, o) => s + o.amount, 0)
+  const total = bills.reduce((s, o) => s + o.amount, 0) + onCardTotal
   const paid = bills.reduce((s, o) => s + (o.paidAt ? o.amount : 0), 0)
 
   return (
@@ -56,7 +58,7 @@ export default function BillsPage() {
         actions={<MonthSelector />}
       />
       <div className="space-y-7 px-4 pt-2">
-        <BillsMonthCard total={total} paid={paid} count={bills.length} />
+        <BillsMonthCard total={total} paid={paid} onCard={onCardTotal} count={bills.length + onCard.length} />
 
         {loading ? (
           <LoadingBlock />
@@ -88,7 +90,7 @@ export default function BillsPage() {
           </ListGroup>
           )}
           {onCard.length > 0 && (
-            <ListGroup header={`Fixas no cartão · ${onCard.length}`} footer="Já entram na fatura do cartão.">
+            <ListGroup header={`Fixas no cartão · ${onCard.length}`} footer="Somam no total e já entram na fatura.">
               {onCard.map(o => {
                 const cat = o.bill.categoryId ? catById.get(o.bill.categoryId) : undefined
                 return (
