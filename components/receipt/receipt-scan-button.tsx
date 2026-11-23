@@ -6,6 +6,7 @@ import { CameraLinearIcon, CheckCircleLinearIcon } from '@solar-icons/react'
 import { Button } from '@/components/ui/button'
 import { LoadingDots } from '@/components/shared/loading-dots'
 import { readReceipt, type ReceiptResult } from '@/lib/receipt'
+import posthog from 'posthog-js'
 
 // 5.4 passos 1 e 2: abre a câmera ou a galeria, lê a nota e guarda a foto (onSave), no fim do progresso
 // "Nota salva". O gasto só é registrado ao confirmar o formulário. Tocar de novo lê outra nota no lugar.
@@ -35,16 +36,36 @@ export function ReceiptScanButton({ onRead, onSave, initialFile = null }: {
     try {
       const { result, image } = await readReceipt(file, onStatus)
       onRead(result, image)
+      posthog.capture('receipt_scanned', {
+        receipt_source: result.source,
+        has_total: Boolean(result.amount),
+        has_line_items: result.items.length > 0,
+        is_installment: result.installments > 1,
+      })
+      posthog.logger.info('receipt_scan_completed', {
+        receipt_source: result.source,
+        has_total: Boolean(result.amount),
+        has_line_items: result.items.length > 0,
+        is_installment: result.installments > 1,
+      })
       let ok = !onSave
       if (onSave) {
         setStatus('Salvando a nota…')
-        try { await onSave(image); ok = true } catch { setError('Não foi possível salvar a foto da nota.') }
+        try { await onSave(image); ok = true } catch {
+          setError('Não foi possível salvar a foto da nota.')
+          posthog.logger.warn('receipt_image_save_failed')
+        }
       }
       clearInterval(tick); setProgress(100)
       if (ok && onSave) { setStatus('Nota salva'); setSaved(true) }
       await new Promise(r => setTimeout(r, ok && onSave ? 600 : 250))
       if (!result.amount) setError('Não foi possível achar o total nesta foto. Tente outra mais nítida ou digite o valor.')
     } catch (err) {
+      posthog.logger.error('receipt_scan_failed', {
+        error_category: err instanceof Error && err.message === 'gemini-timeout'
+          ? 'gemini_timeout'
+          : 'receipt_read_failed',
+      })
       setError(err instanceof Error && err.message !== 'gemini-timeout'
         ? `Não foi possível ler a nota: ${err.message}`
         : 'Não foi possível ler a nota. Tente de novo ou digite os dados.')

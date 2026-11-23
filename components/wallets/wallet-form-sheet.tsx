@@ -22,6 +22,7 @@ import { WALLET_FINISHES, WALLET_TYPES } from '@/lib/constants'
 import type { OwnWallet, WalletType } from '@/lib/types'
 import { CardPreview } from './card-preview'
 import { feedback } from '@/lib/feedback'
+import posthog from 'posthog-js'
 
 // CAR-3, CAR-4, CAR-7: criar, editar, arquivar e excluir carteira.
 export function WalletFormSheet({
@@ -75,9 +76,13 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
   const typeLabel = WALLET_TYPES.find(t => t.value === type)?.label
   const isDefault = !!wallet && profile?.defaultWalletId === wallet.id
 
-  async function run(fn: () => Promise<unknown>, done = 'Salvo') {
+  async function run(fn: () => Promise<unknown>, done = 'Salvo', captureProperties?: Record<string, boolean | string>) {
     setBusy(true); setError(null)
-    try { await fn(); await refresh(); onDone(); feedback.done(done) }
+    try {
+      await fn(); await refresh()
+      if (captureProperties) posthog.capture('wallet_saved', captureProperties)
+      onDone(); feedback.done(done)
+    }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível concluir.') }
     finally { setBusy(false) }
   }
@@ -104,7 +109,11 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
       if (both && isCredit) {
         await walletsApi.create({ ...card, name: finalName, type: 'debit', finish, closingDay: null, dueDay: null, spendingLimit: null, revolvingRate: null })
       }
-    }, wallet ? 'Salvo' : 'Carteira adicionada')
+    }, wallet ? 'Salvo' : 'Carteira adicionada', {
+      action: wallet ? 'updated' : 'created',
+      wallet_type: type,
+      includes_debit_card: both,
+    })
   }
 
   return (

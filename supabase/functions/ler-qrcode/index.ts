@@ -6,6 +6,7 @@
 // Saída: { ok: true, chave, amount (centavos), place, date, items, categoryId, payment, cardLast4, installments }
 //    ou { ok: false, reason } para o app cair na leitura da foto.
 import { createClient } from 'npm:@supabase/supabase-js@2.49.4'
+import { captureGeminiGeneration } from '../_shared/posthog-ai.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -75,7 +76,7 @@ function parseTemplate(html: string) {
   }
 }
 
-async function askGemini(key: string, pageText: string, categories: string[]) {
+async function askGemini(key: string, pageText: string, categories: string[], userId: string) {
   const prompt = `Este é o texto da consulta pública de uma NFC-e (nota fiscal do consumidor) do Brasil.
 Extraia:
 - total: valor a pagar, em reais, como número.
@@ -88,30 +89,62 @@ Extraia:
 Nunca inclua CPF, CNPJ ou dados pessoais.
 
 ${pageText.slice(0, 30000)}`
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0,
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: 'OBJECT',
-          properties: {
-            total: { type: 'NUMBER' }, place: { type: 'STRING' }, date: { type: 'STRING' }, category: { type: 'STRING' },
-            payment: { type: 'STRING' }, installments: { type: 'NUMBER' },
-            items: { type: 'ARRAY', items: { type: 'OBJECT', properties: { name: { type: 'STRING' }, amount: { type: 'NUMBER' } } } },
-          },
-          required: ['total', 'place', 'date', 'category', 'items'],
-        },
-      },
-    }),
-  })
-  if (!res.ok) return null
-  const out = await res.json()
+  const traceId = crypto.randomUUID()
+  const startedAt = Date.now()
+  let res: Response
   try {
-    return JSON.parse(out?.candidates?.[0]?.content?.parts?.[0]?.text) as {
+    res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0,
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: 'OBJECT',
+            properties: {
+              total: { type: 'NUMBER' }, place: { type: 'STRING' }, date: { type: 'STRING' }, category: { type: 'STRING' },
+              payment: { type: 'STRING' }, installments: { type: 'NUMBER' },
+              items: { type: 'ARRAY', items: { type: 'OBJECT', properties: { name: { type: 'STRING' }, amount: { type: 'NUMBER' } } } },
+            },
+            required: ['total', 'place', 'date', 'category', 'items'],
+          },
+        },
+      }),
+    })
+  } catch (error) {
+    await captureGeminiGeneration({
+      distinctId: userId,
+      traceId,
+      sessionId: `receipt-reader:${userId}`,
+      input: prompt,
+      latency: (Date.now() - startedAt) / 1000,
+      error: error instanceof Error ? error.name : 'network_error',
+    })
+    throw error
+  }
+
+  const latency = (Date.now() - startedAt) / 1000
+  if (!res.ok) {
+    await captureGeminiGeneration({ distinctId: userId, traceId, sessionId: `receipt-reader:${userId}`, input: prompt, latency, httpStatus: res.status, error: 'gemini_error' })
+    return null
+  }
+  const out = await res.json()
+  const output = out?.candidates?.[0]?.content?.parts?.[0]?.text
+  await captureGeminiGeneration({
+    distinctId: userId,
+    traceId,
+    sessionId: `receipt-reader:${userId}`,
+    input: prompt,
+    output,
+    inputTokens: out?.usageMetadata?.promptTokenCount,
+    outputTokens: out?.usageMetadata?.candidatesTokenCount,
+    latency,
+    httpStatus: res.status,
+  })
+  try {
+    return JSON.parse(output) as {
       total?: number; place?: string; date?: string; category?: string; payment?: string; installments?: number
       items?: { name: string; amount: number }[]
     }
@@ -166,7 +199,7 @@ Deno.serve(async req => {
   const key = Deno.env.get('GEMINI_API_KEY')
   if (!readByTemplate && key) {
     cats = (await supabase.from('categories').select('id, name').eq('type', 'expense').eq('active', true)).data ?? []
-    g = await askGemini(key, text(html), cats.map(c => c.name)).catch(() => null)
+    g = await askGemini(key, text(html), cats.map(c => c.name), user.user.id).catch(() => null)
   }
 
   const amount = t.amount || Math.round(Number(g?.total || 0) * 100) || offlineAmount

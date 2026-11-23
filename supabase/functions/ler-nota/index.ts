@@ -3,6 +3,7 @@
 // Saída: { ok: true, amount (centavos), place, date (AAAA-MM-DD), items, categoryId, payment, cardLast4, installments }
 //    ou { ok: false, reason } para o app cair na leitura local (Tesseract.js).
 import { createClient } from 'npm:@supabase/supabase-js@2.49.4'
+import { captureGeminiGeneration } from '../_shared/posthog-ai.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -70,16 +71,50 @@ Nunca inclua CPF, CNPJ ou dados pessoais. Se não conseguir ler o total, use 0.`
     },
   }
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  if (res.status === 429) return json({ ok: false, reason: 'quota' })
-  if (!res.ok) return json({ ok: false, reason: 'gemini_error', status: res.status })
+  const traceId = crypto.randomUUID()
+  const startedAt = Date.now()
+  let res: Response
+  try {
+    res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${key}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+  } catch (error) {
+    await captureGeminiGeneration({
+      distinctId: user.user.id,
+      traceId,
+      sessionId: `receipt-reader:${user.user.id}`,
+      input: prompt,
+      latency: (Date.now() - startedAt) / 1000,
+      error: error instanceof Error ? error.name : 'network_error',
+    })
+    throw error
+  }
+
+  const latency = (Date.now() - startedAt) / 1000
+  if (res.status === 429) {
+    await captureGeminiGeneration({ distinctId: user.user.id, traceId, sessionId: `receipt-reader:${user.user.id}`, input: prompt, latency, httpStatus: res.status, error: 'quota' })
+    return json({ ok: false, reason: 'quota' })
+  }
+  if (!res.ok) {
+    await captureGeminiGeneration({ distinctId: user.user.id, traceId, sessionId: `receipt-reader:${user.user.id}`, input: prompt, latency, httpStatus: res.status, error: 'gemini_error' })
+    return json({ ok: false, reason: 'gemini_error', status: res.status })
+  }
 
   const out = await res.json()
   const text = out?.candidates?.[0]?.content?.parts?.[0]?.text
+  await captureGeminiGeneration({
+    distinctId: user.user.id,
+    traceId,
+    sessionId: `receipt-reader:${user.user.id}`,
+    input: prompt,
+    output: text,
+    inputTokens: out?.usageMetadata?.promptTokenCount,
+    outputTokens: out?.usageMetadata?.candidatesTokenCount,
+    latency,
+    httpStatus: res.status,
+  })
   let parsed: { total?: number; place?: string; date?: string; category?: string; payment?: string; card_last4?: string; installments?: number; items?: { name: string; amount: number }[] }
   try { parsed = JSON.parse(text) } catch { return json({ ok: false, reason: 'unreadable' }) }
 

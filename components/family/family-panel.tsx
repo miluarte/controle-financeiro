@@ -17,6 +17,7 @@ import { MemberAvatar } from './member-avatar'
 import { GuestForm } from './guest-form'
 import { feedback } from '@/lib/feedback'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
+import posthog from 'posthog-js'
 
 // FAM-3, FAM-5 e FAM-7: código, membros, aprovação, remoção e saída.
 export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: boolean }) {
@@ -30,9 +31,13 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
   const pending = members.filter(m => m.status === 'pending')
   const active = members.filter(m => m.status === 'active')
 
-  async function run(fn: () => Promise<unknown>, done: string) {
+  async function run(fn: () => Promise<unknown>, done: string, event?: 'family_member_approved') {
     setError(null)
-    try { await fn(); await refresh(); feedback.done(done) }
+    try {
+      await fn(); await refresh()
+      if (event) posthog.capture(event, { approval_path: 'family_panel' })
+      feedback.done(done)
+    }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível concluir.') }
   }
 
@@ -80,7 +85,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
               title={m.name}
               trailing={
                 <span className="flex gap-2">
-                  <Button size="sm" className="rounded-full" onClick={() => run(() => familyApi.approve(m.userId), 'Aprovado')}>Aprovar</Button>
+                  <Button size="sm" className="rounded-full" onClick={() => run(() => familyApi.approve(m.userId), 'Aprovado', 'family_member_approved')}>Aprovar</Button>
                   <Button size="sm" variant="secondary" className="rounded-full" onClick={() => run(() => familyApi.remove(m.userId), 'Recusado')}>Recusar</Button>
                 </span>
               } />

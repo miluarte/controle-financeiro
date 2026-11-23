@@ -12,6 +12,7 @@ import { subscriptionsApi } from '@/lib/api/advanced'
 import type { Subscription } from '@/lib/types'
 import { UseCalendar } from './use-calendar'
 import { feedback } from '@/lib/feedback'
+import posthog from 'posthog-js'
 
 // Criar ou editar uma assinatura e marcar os dias de uso do mês.
 export function SubscriptionSheet({ open, subscription, month, usedDays, onOpenChange }: {
@@ -42,9 +43,13 @@ function SubscriptionForm({ subscription, month, usedDays, onDone }: {
   const [error, setError] = useState<string | null>(null)
 
   // done: aviso depois da ação (salvar fecha a folha e avisa "Salvo")
-  async function run(fn: () => Promise<void>, close = true, done = close ? 'Salvo' : undefined) {
+  async function run(fn: () => Promise<void>, close = true, done = close ? 'Salvo' : undefined, captureSave = false) {
     setError(null)
-    try { await fn(); await refresh(); if (close) onDone(); if (done) feedback.done(done) }
+    try {
+      await fn(); await refresh()
+      if (captureSave) posthog.capture('subscription_saved', { action: subscription ? 'updated' : 'created', has_unit_price: unit > 0 })
+      if (close) onDone(); if (done) feedback.done(done)
+    }
     catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível salvar.') }
   }
 
@@ -53,7 +58,7 @@ function SubscriptionForm({ subscription, month, usedDays, onDone }: {
     if (!name.trim()) { setError('Dê um nome.'); return }
     if (monthly <= 0) { setError('Informe o valor mensal.'); return }
     const input = { name: name.trim(), monthlyAmount: monthly, unitPrice: unit > 0 ? unit : null, active: true }
-    run(() => subscription ? subscriptionsApi.update(subscription.id, input) : subscriptionsApi.create(input))
+    run(() => subscription ? subscriptionsApi.update(subscription.id, input) : subscriptionsApi.create(input), true, undefined, true)
   }
 
   return (

@@ -28,6 +28,7 @@ import { SenderRows, senderData, senderOf, type Sender } from './sender-field'
 import { SPLIT_ALL } from '@/lib/split'
 import { ListRow } from '@/components/ios/list-row'
 import { capitalize, cn, formatCurrency, monthName } from '@/lib/utils'
+import posthog from 'posthog-js'
 
 // TRA-6: abrir, editar e excluir um lançamento.
 export function TransactionEditSheet({
@@ -105,7 +106,13 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
         ...(t.type === 'income' && { sourceData: withSender(t.sourceData) }),
       })
       if (t.type === 'expense' && t.installmentGroupId) await transactionsApi.setGroupItems(t.installmentGroupId, items)
-      await refresh(); onDone(); feedback.done('Salvo')
+      await refresh()
+      posthog.capture('transaction_updated', {
+        transaction_type: t.type,
+        is_installment: Boolean(t.installmentGroupId),
+        has_items: items.length > 0,
+      })
+      onDone(); feedback.done('Salvo')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível salvar.')
     } finally { setBusy(false) }

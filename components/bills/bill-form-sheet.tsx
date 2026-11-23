@@ -20,6 +20,7 @@ import { DateField } from '@/components/shared/date-field'
 import { SelectField } from '@/components/shared/select-field'
 import { useWallets } from '@/hooks/use-wallets'
 import { feedback } from '@/lib/feedback'
+import posthog from 'posthog-js'
 
 // CON-3, CON-4, CON-5: nova conta (fixa, recorrente ou parcelada).
 // Com type="income" vira receita fixa (salário, aluguel recebido): mesma série mensal, mas a pagar vira a receber.
@@ -89,7 +90,13 @@ function BillForm({ type, bill, onDone }: { type: BillType; bill: Bill | null; o
     try {
       if (bill) {
         await billsApi.updateSeries(bill.id, month, { name: name.trim(), amount, dueDay, dueNextMonth: income || cardId ? false : dueNextMonth, categoryId, endMonth: resolvedEnd, walletId: income ? null : cardId || null })
-        await refresh(); onDone(); feedback.done('Salvo')
+        await refresh()
+        posthog.capture('bill_saved', {
+          action: 'updated',
+          bill_type: type,
+          billing_method: cardId ? 'credit_card' : 'direct',
+        })
+        onDone(); feedback.done('Salvo')
         return
       }
       await billsApi.create({
@@ -101,7 +108,15 @@ function BillForm({ type, bill, onDone }: { type: BillType; bill: Bill | null; o
         endMonth: resolvedEnd,
         walletId: income ? null : cardId || null,
       })
-      await refresh(); onDone(); feedback.done(income ? 'Receita adicionada' : 'Conta adicionada')
+      await refresh()
+      posthog.capture('bill_saved', {
+        action: 'created',
+        bill_type: type,
+        billing_method: cardId ? 'credit_card' : 'direct',
+        is_installment: installments,
+        is_recurring: recurring || installments,
+      })
+      onDone(); feedback.done(income ? 'Receita adicionada' : 'Conta adicionada')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível salvar.')
     }
