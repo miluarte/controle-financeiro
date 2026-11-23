@@ -23,18 +23,30 @@ export function repeatLastMonth(r: RepeatValue, start: string): string | null {
   return null
 }
 
-// "Repetir todo mês" no registro rápido: receita vira receita fixa (Contas, "A receber"); gasto vira conta fixa
-// (no cartão de crédito, cobrada sozinha na fatura).
-export function RepeatGroup({ value, onChange, start, lastLabel }: {
+// "Repetir todo mês" no registro rápido: receita vira receita fixa (Contas, "A receber"); gasto vira gasto fixo
+// (no cartão de crédito, cobrado sozinho na fatura). "Pagar depois" (later): gasto único que entra em Contas.
+// fixed: edição de uma série que já repete, só com o fim da recorrência.
+export function RepeatGroup({ value, onChange, start, lastLabel, later, fixed }: {
   value: RepeatValue; onChange: (v: RepeatValue) => void; start: string; lastLabel: string
+  later?: { on: boolean; onChange: (on: boolean) => void }
+  fixed?: boolean
 }) {
   const last = repeatLastMonth(value, start)
   const set = (patch: Partial<RepeatValue>) => onChange({ ...value, ...patch })
+  const footer = last ? `${capitalize(lastLabel)} em ${monthLabel(last)}.`
+    : later?.on && !value.on ? 'Entra em Contas para pagar no vencimento.' : undefined
   return (
-    <ListGroup footer={last ? `${capitalize(lastLabel)} em ${monthLabel(last)}.` : undefined}>
-      <FormRow label="Repetir todo mês">
-        <Switch checked={value.on} onCheckedChange={on => set({ on })} />
-      </FormRow>
+    <ListGroup footer={footer}>
+      {!fixed && (
+        <FormRow label="Repetir todo mês">
+          <Switch checked={value.on} onCheckedChange={on => set({ on })} />
+        </FormRow>
+      )}
+      {later && !value.on && (
+        <FormRow label="Pagar depois">
+          <Switch checked={later.on} onCheckedChange={later.onChange} />
+        </FormRow>
+      )}
       {value.on && (
         <RecurrenceEnd mode={value.mode} onModeChange={mode => set({ mode })} endMonth={value.endMonth}
           onEndMonthChange={endMonth => set({ endMonth })} minMonth={start} times={value.times} onTimesChange={times => set({ times })} />

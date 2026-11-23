@@ -27,7 +27,7 @@ Modelo da especificação funcional v1.0, seção 6. Schema em `supabase/migrati
 | transactions: grupo_parcela_id, parcela_n, parcelas_total | installment_group_id, installment_n, installments_total |
 | transactions: fatura_ref | invoice_ref (calculado pelo banco) |
 | transactions: origem, status, dados_origem | source, status (confirmed/pending), source_data |
-| bills: valor, dia_vencimento, vence_mes_seguinte, recorrente, parcela_atual, parcelas_total | bills: amount, due_day, due_next_month, recurring, installment_current, installments_total (+ start_month) |
+| bills: valor, dia_vencimento, vence_mes_seguinte, recorrente, parcela_atual, parcelas_total | bills: amount, due_day, due_next_month, recurring, installment_current, installments_total (+ start_month, wallet_id = forma de pagamento, recipient = destinatário do Pix) |
 | bill_occurrences: mes_ref, vencimento, pago_em | bill_occurrences: ref_month, due_date, paid_at, installment_n |
 | budgets: mes_ref, valor_total | budgets: ref_month, total_amount |
 | category_goals: valor_meta, vigente_desde | category_goals: goal_amount, effective_from |

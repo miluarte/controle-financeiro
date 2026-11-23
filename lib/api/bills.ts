@@ -1,4 +1,4 @@
-import type { BillInput } from '../types'
+import type { BillInput, BillOccurrence } from '../types'
 import { supabase, unwrap } from '../supabase/client'
 import { toBillOccurrence } from '../supabase/mappers'
 import { todayIso } from '../utils'
@@ -17,6 +17,7 @@ function toRow(b: Partial<BillInput>) {
   if (b.installmentsTotal !== undefined) r.installments_total = b.installmentsTotal
   if (b.endMonth !== undefined) r.end_month = b.endMonth
   if (b.walletId !== undefined) r.wallet_id = b.walletId
+  if (b.recipient !== undefined) r.recipient = b.recipient ? { user_id: b.recipient.userId, name: b.recipient.name } : null
   return r
 }
 
@@ -40,8 +41,8 @@ export const billsApi = {
   getMonth: async (month: string) => {
     unwrap(await supabase.rpc('ensure_bill_occurrences', { p_month: `${month}-01` }))
     const rows = unwrap(
-      await supabase.from('bill_occurrences').select('*, bills(*)')
-        .eq('ref_month', `${month}-01`).order('due_date'),
+      await supabase.from('bill_occurrences').select('*, bills(*, wallet:wallets(type))')
+        .eq('ref_month', `${month}-01`).eq('skipped', false).order('due_date'),
     )
     return rows.map(toBillOccurrence)
   },
@@ -83,6 +84,20 @@ export const billsApi = {
       await supabase.from('bill_occurrences').delete()
         .eq('bill_id', billId).gte('ref_month', `${fromMonth}-01`).is('paid_at', null),
     )
+  },
+
+  // "Só este mês": o mês fica pulado (não volta a ser gerado, não avisa, não entra no cartão) e o
+  // lançamento do pagamento, se houver, sai.
+  skip: async (o: BillOccurrence) => {
+    unwrap(await supabase.from('bill_occurrences')
+      .update({ skipped: true, paid_at: o.paidAt ?? o.dueDate, transaction_id: null }).eq('id', o.id))
+    if (o.transactionId) unwrap(await supabase.from('transactions').delete().eq('id', o.transactionId))
+  },
+
+  // gasto único a pagar: sai o mês e a conta deixa de existir em Contas
+  removeSingle: async (o: BillOccurrence) => {
+    await billsApi.skip(o)
+    unwrap(await supabase.from('bills').update({ active: false }).eq('id', o.billId))
   },
 
   pay: async (occurrenceId: string, walletId: string | null, date: string) => {

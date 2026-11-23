@@ -46,7 +46,7 @@ export function useTransactionDelete(onDone?: () => void) {
   const t = target
   const sheet = (
     <ActionSheet open={!!t} onOpenChange={o => { if (!o) setTarget(null) }}
-      title={t?.sharedPaymentId ? 'Excluir o Pix dividido? Sai a parte de todas as pessoas.' : t?.installmentGroupId ? 'O que excluir?' : 'Excluir transação?'}
+      title={t?.sharedPaymentId ? 'Excluir o gasto dividido? Sai a parte de todas as pessoas.' : t?.installmentGroupId ? 'O que excluir?' : 'Excluir transação?'}
       actions={!t ? [] : t.installmentGroupId
         ? [{ label: 'Só esta parcela', destructive: true, onSelect: () => remove(t, false) },
            { label: 'Compra inteira', destructive: true, onSelect: () => remove(t, true) }]

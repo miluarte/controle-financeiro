@@ -62,7 +62,7 @@ export default function PersonCardsPage() {
       key={`${d.sharedPaymentId}-${d.debtorId}`}
       onClick={() => setOpenPix(d)}
       leading={<TokenIcon icon="wallet" color="gray" />}
-      title={d.place ?? 'Pix'}
+      title={d.place ?? 'Gasto'}
       subtitle={
         <span className="flex min-w-0 items-center gap-1.5">
           <span className="truncate">
@@ -106,12 +106,12 @@ export default function PersonCardsPage() {
                 {waiting.map(st => (
                   <ListRow key={st.id} onClick={() => setConfirming(st)} chevron
                     title={`${name} pagou ${formatCurrency(st.amount)}`}
-                    subtitle={`${st.invoiceRef ? `Fatura de ${monthName(st.invoiceRef.slice(0, 7))}` : 'Pix dividido'}${st.paidOn ? ` · em ${formatDate(st.paidOn)}` : ''}`} />
+                    subtitle={`${st.invoiceRef ? `Fatura de ${monthName(st.invoiceRef.slice(0, 7))}` : 'Gasto dividido'}${st.paidOn ? ` · em ${formatDate(st.paidOn)}` : ''}`} />
                 ))}
               </ListGroup>
             )}
 
-            {pix.length > 0 && <ListGroup header="Pix divididos">{pix}</ListGroup>}
+            {pix.length > 0 && <ListGroup header="Gastos divididos">{pix}</ListGroup>}
 
             {toReceive && toReceive.invoices.length > 0 && (
               <ListGroup header="Meus cartões">

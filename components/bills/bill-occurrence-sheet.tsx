@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
-import { useDeleteAction } from '@/components/ios/use-delete-action'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { WalletPicker } from '@/components/shared/wallet-picker'
 import { useMonth } from '@/hooks/use-month'
@@ -17,23 +16,18 @@ import type { BillOccurrence } from '@/lib/types'
 import { formatCurrency, formatDate, todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { feedback } from '@/lib/feedback'
+import { useBillDelete } from './use-bill-delete'
 
 // CON-6 e CON-9: pagar, desfazer pagamento, editar só este mês ou a série, encerrar.
 // Receita fixa usa o mesmo fluxo: marcar como recebida gera a receita na carteira escolhida.
 export function BillOccurrenceSheet({ occurrence, onClose, onEdit }: {
   occurrence: BillOccurrence | null; onClose: () => void; onEdit: (o: BillOccurrence) => void
 }) {
-  const { month } = useMonth()
-  const income = occurrence?.bill.type === 'income'
-  const del = useDeleteAction({
-    title: income ? 'Encerrar receita? Os meses recebidos continuam.' : 'Encerrar conta? Os meses pagos continuam.',
-    label: 'Encerrar',
-    remove: () => billsApi.endSeries(occurrence!.billId, month), onDone: onClose,
-  })
+  const del = useBillDelete(onClose)
   return (
     <>
       <ModalSheet open={!!occurrence} onOpenChange={o => { if (!o) onClose() }} title={occurrence?.bill.name ?? ''}
-        onDelete={del.ask} deleteLabel="Encerrar">
+        onDelete={() => occurrence && del.ask(occurrence)}>
         {occurrence && <Body key={occurrence.id} o={occurrence} onDone={onClose} onEdit={() => onEdit(occurrence)} />}
       </ModalSheet>
       {del.sheet}
@@ -49,7 +43,9 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
   const income = o.bill.type === 'income'
   // receita não entra em cartão de crédito
   const payable = wallets.filter(w => !w.ownerName && (!income || w.type !== 'credit'))
-  const [walletId, setWalletId] = useState<string | null>(profile?.defaultWalletId ?? payable[0]?.id ?? null)
+  // a forma de pagamento do gasto fixo vem escolhida; senão, a carteira padrão
+  const billWallet = payable.some(w => w.id === o.bill.walletId) ? o.bill.walletId : null
+  const [walletId, setWalletId] = useState<string | null>(billWallet ?? profile?.defaultWalletId ?? payable[0]?.id ?? null)
   const [payDate, setPayDate] = useState(todayIso())
   const [amount, setAmount] = useState(o.amount)
   const [dueDate, setDueDate] = useState(o.dueDate)
@@ -64,16 +60,17 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
   }
 
   const changed = amount !== o.amount || dueDate !== o.dueDate
-  const installment = o.installmentN ? `Parcela ${o.installmentN} de ${o.bill.installmentsTotal}` : o.bill.recurring ? 'Repete todo mês' : income ? 'Receita única' : 'Conta única'
+  const installment = o.installmentN ? `Parcela ${o.installmentN} de ${o.bill.installmentsTotal}` : o.bill.recurring ? 'Repete todo mês' : income ? 'Receita única' : 'Gasto único'
 
   return (
     <div className="space-y-6">
       <div className="text-center">
         <p className="text-large-title font-bold tabular-nums">{formatCurrency(o.amount)}</p>
         <p className="text-subheadline text-muted-foreground">{income ? 'Receber em' : 'Vence'} {formatDate(o.dueDate)} · {installment}</p>
+        {o.bill.recipient && <p className="truncate text-subheadline text-muted-foreground">Para {o.bill.recipient.name}</p>}
       </div>
 
-      {o.bill.walletId ? (
+      {o.bill.onCard ? (
         <p className="px-4 text-center text-footnote text-muted-foreground">
           {o.paidAt ? `Lançada no cartão em ${formatDate(o.paidAt)}.` : 'Entra sozinha na fatura do cartão.'}
         </p>
@@ -132,7 +129,7 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
       {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
 
       <Button variant="secondary" size="lg" className="w-full" disabled={busy} onClick={onEdit}>
-        {income ? 'Editar receita' : 'Editar conta'}
+        {income ? 'Editar receita' : 'Editar gasto'}
       </Button>
     </div>
   )

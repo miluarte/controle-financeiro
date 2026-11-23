@@ -13,7 +13,7 @@ import type { Transaction } from '@/lib/types'
 import { addMonths, currentMonth } from '@/lib/utils'
 import { feedback } from '@/lib/feedback'
 
-// Fixar um gasto no deslizar da linha: vira conta fixa que repete todo mês até ser desafixada.
+// Fixar um gasto no deslizar da linha: vira gasto fixo que repete todo mês até ser desafixada.
 // Desafixar encerra a conta a partir do mês seguinte (o que já foi lançado continua).
 export function usePinAction() {
   const refresh = useRefresh()
@@ -27,7 +27,7 @@ export function usePinAction() {
     catch (err) { feedback.error(err instanceof Error ? err.message : 'Não foi possível fixar.') }
   }
 
-  // ação do deslizar (só gasto à vista confirmado; parcelada não vira conta fixa)
+  // ação do deslizar (só gasto à vista confirmado; parcelada não vira gasto fixo)
   function extra(t: Transaction): SwipeExtra | undefined {
     if (t.type !== 'expense' || t.status !== 'confirmed' || t.installmentGroupId || t.owner !== session?.user.id) return undefined
     if (pinned(t)) return { label: 'Desafixar', icon: <PinBoldIcon />, onClick: () => setUnpinning(t) }

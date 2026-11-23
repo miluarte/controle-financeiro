@@ -73,7 +73,7 @@ export const transactionsApi = {
       .or(`assigned_to.eq.${userId},holder_id.eq.${userId}`)
       .order('created_at', { ascending: false })).map(toTransaction),
 
-  // Fixar: o gasto vira conta fixa sem fim a partir do mês dele (no crédito, cobrada sozinha na fatura).
+  // Fixar: o gasto vira gasto fixo sem fim a partir do mês dele (no crédito, cobrada sozinha na fatura).
   pin: async (id: string) => {
     unwrap(await supabase.rpc('pin_transaction', { p_transaction: id }))
   },

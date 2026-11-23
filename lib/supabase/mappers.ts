@@ -133,6 +133,9 @@ export function toBill(r: Row): Bill {
     endMonth: r.end_month ?? null,
     active: !!r.active,
     walletId: r.wallet_id ?? null,
+    // sem a carteira na leitura (cartão de outra pessoa sem acesso), vale a regra antiga: só cartão tinha carteira
+    onCard: r.wallet ? r.wallet.type === 'credit' : !!r.wallet_id,
+    recipient: r.recipient?.name ? { userId: r.recipient.user_id ?? null, name: r.recipient.name } : null,
   }
 }
 

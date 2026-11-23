@@ -151,9 +151,9 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
       )}
 
 
-      {/* Pix dividido: quem pagou e a parte de cada pessoa */}
+      {/* gasto dividido (Pix, débito, dinheiro): quem pagou e a parte de cada pessoa */}
       {shared && (
-        <ListGroup header="Pix dividido" footer="Para mudar valor ou pessoas, exclua e registre de novo.">
+        <ListGroup header="Gasto dividido" footer="Para mudar valor ou pessoas, exclua e registre de novo.">
           <ListRow title="Quem pagou" trailing={<span className="text-body text-foreground">{t.paidBy ? nameOf(t.paidBy) : 'Você'}</span>} />
           {sharedParts.map(p => (
             <ListRow key={p.user_id} title={nameOf(p.user_id)}
@@ -169,7 +169,7 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
       {pin.sheet}
       {pin.can(t) && (
         <ListGroup footer={pin.pinned(t) ? 'Repete todo mês até você desligar.' : undefined}>
-          <FormRow label="Conta fixa">
+          <FormRow label="Gasto fixo">
             <Switch checked={pin.pinned(t)}
               onCheckedChange={on => { if (on) pin.pin(t).then(onDone); else pin.askUnpin(t) }} />
           </FormRow>

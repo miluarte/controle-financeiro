@@ -19,7 +19,7 @@ import { commitReceiptDraft, saveReceiptDraft, walletForReceipt, type ReceiptRes
 import { ReceiptResultGroup } from '@/components/receipt/receipt-result-group'
 import { ReceiptScanButton } from '@/components/receipt/receipt-scan-button'
 import { useSession } from '@/hooks/use-session'
-import type { Transaction } from '@/lib/types'
+import type { BillOccurrence, Transaction } from '@/lib/types'
 import { formatCurrency, todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { InstallmentProgress } from './installment-progress'
@@ -45,6 +45,9 @@ import { PayerRow } from './payer-field'
 import { sharedApi } from '@/lib/api/shared'
 import { itemOwnerOptions, SplitRows, splitDefault, splitMode, splitPeople, splitSummary } from './split-group'
 import { feedback } from '@/lib/feedback'
+import { useBills } from '@/hooks/use-data'
+import { normPlace } from '@/lib/category-suggest'
+import { Switch } from '@/components/ui/switch'
 import posthog from 'posthog-js'
 
 const UNKNOWN_CARD = '__sem-cartao'
@@ -62,8 +65,10 @@ interface QuickAddSheetProps {
   pending?: Transaction | null
   // foto da nota já escolhida no botão +: abre lendo a nota
   initialReceipt?: File | null
-  // "Conta fixa" do botão +: o mesmo formulário com "Repetir todo mês" já ligado
+  // o mesmo formulário com "Repetir todo mês" já ligado
   initialRepeat?: boolean
+  // edição de um gasto fixo, receita fixa ou gasto a pagar (Contas): a série a partir do mês da ocorrência
+  editBill?: BillOccurrence | null
 }
 
 const pendingItems = (t: Transaction | null | undefined): ReceiptItem[] =>
@@ -73,7 +78,16 @@ const pendingItems = (t: Transaction | null | undefined): ReceiptItem[] =>
 const pendingNumber = (t: Transaction | null | undefined, key: string, fallback: number) =>
   typeof t?.sourceData?.[key] === 'number' ? (t.sourceData[key] as number) : fallback
 
-export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pending = null, initialReceipt = null, initialRepeat = false }: QuickAddSheetProps) {
+// série em edição: repete todo mês (sem parcelas) e o fim que já tem
+function billRepeat(o: BillOccurrence | null | undefined, initialRepeat: boolean) {
+  const base = repeatDefault(todayIso().slice(0, 7))
+  if (!o) return { ...base, on: initialRepeat }
+  const end = o.bill.endMonth?.slice(0, 7)
+  return { ...base, on: o.bill.recurring && o.bill.installmentsTotal == null, mode: end ? 'month' as const : 'never' as const, endMonth: end ?? base.endMonth }
+}
+
+export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pending = null, initialReceipt = null, initialRepeat = false, editBill = null }: QuickAddSheetProps) {
+  const bill = editBill?.bill ?? null
   const { categories } = useCategories()
   const { wallets } = useWallets()
   const { profile } = useProfile()
@@ -82,14 +96,14 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const suggest = useCategorySuggest()
 
   // receita pendente (Pix de alguém da família) abre como Receita
-  const [mode, setMode] = useState<Mode>(pending?.type === 'income' ? 'income' : initialMode)
+  const [mode, setMode] = useState<Mode>(pending?.type === 'income' || bill?.type === 'income' ? 'income' : initialMode)
   const [saveDirection, setSaveDirection] = useState<SaveDirection>('apply')
-  const [amount, setAmount] = useState(pending?.amount ?? 0)
-  const [date, setDate] = useState(() => pending?.date ?? todayIso())
-  const [categoryId, setCategoryId] = useState<string | null>(() => pending ? pending.categoryId ?? suggest(pending.place) : null)
+  const [amount, setAmount] = useState(pending?.amount ?? bill?.amount ?? 0)
+  const [date, setDate] = useState(() => pending?.date ?? editBill?.dueDate ?? todayIso())
+  const [categoryId, setCategoryId] = useState<string | null>(() => pending ? pending.categoryId ?? suggest(pending.place) : bill?.categoryId ?? null)
   // null = ainda não escolheu: usa a carteira padrão do perfil
-  const [pickedWalletId, setWalletId] = useState<string | null>(pending?.walletId ?? null)
-  const [place, setPlace] = useState(pending?.place ?? pending?.description ?? '')
+  const [pickedWalletId, setWalletId] = useState<string | null>(pending?.walletId ?? bill?.walletId ?? null)
+  const [place, setPlace] = useState(pending?.place ?? pending?.description ?? bill?.name ?? '')
   const [installments, setInstallments] = useState(() => pendingNumber(pending, 'installments', 1))
   // compra parcelada que já estava andando antes do app: parcela atual e valor da parcela
   const [currentInstallment, setCurrentInstallment] = useState(() => pendingNumber(pending, 'current_installment', 1))
@@ -111,13 +125,17 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   // cartão próprio compartilhado: de quem é a compra ('' = sua)
   const [owner, setOwner] = useState('')
   // receita que repete todo mês vira receita fixa (Contas, "A receber")
-  const [repeat, setRepeat] = useState(() => ({ ...repeatDefault(todayIso().slice(0, 7)), on: initialRepeat }))
+  const [repeat, setRepeat] = useState(() => billRepeat(editBill, initialRepeat))
+  // gasto único que fica em Contas para pagar no vencimento
+  const [later, setLater] = useState(false)
+  // gasto com o nome de um gasto fixo em aberto no mês: paga o mês com este valor (padrão ligado)
+  const [payFixed, setPayFixed] = useState(true)
   // dividir a compra no cartão entre pessoas (por item, igual ou por valor)
   const [split, setSplit] = useState(splitDefault)
   // Pix dividido: quem pagou ('' = você)
   const [payer, setPayer] = useState('')
   // receita: quem enviou (opcional; alguém da família ou outro nome)
-  const [sender, setSender] = useState<Sender | null>(() => senderOf(pending?.sourceData))
+  const [sender, setSender] = useState<Sender | null>(() => bill?.recipient ?? senderOf(pending?.sourceData))
 
   function onReceipt(result: ReceiptResult, image: Blob) {
     setReceipt({ result, image })
@@ -155,6 +173,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     setItems([])
     setOwner('')
     setRepeat(repeatDefault(todayIso().slice(0, 7)))
+    setLater(false)
+    setPayFixed(true)
     setSplit(splitDefault())
     setPayer('')
     setSender(null)
@@ -170,7 +190,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const unknownCard = mode === 'expense' && cardUnknown
   // gasto "Repetir todo mês": só à vista e com a carteira escolhida
   const repeatExpense = mode === 'expense' && repeat.on && !cardUnknown && installments <= 1
-  const walletId = unknownCard ? null : pickedWalletId ?? profile?.defaultWalletId ?? null
+  // na edição, gasto fixo sem forma de pagamento continua sem (escolhida ao pagar)
+  const walletId = unknownCard ? null : pickedWalletId ?? (bill ? null : profile?.defaultWalletId ?? null)
   const wallet = wallets.find(w => w.id === walletId)
   const isCredit = mode === 'expense' && wallet?.type === 'credit'
   // gasto no Pix: para quem foi (Destinatário)
@@ -178,9 +199,22 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   // parcelas valem no crédito e também quando o cartão ainda não foi escolhido
   // carteira do tipo Outro (ex.: linha de crédito) também parcela: cada parcela é um gasto no seu mês, sem fatura
   const installable = mode === 'expense' && wallet?.type === 'other'
-  const creditLike = isCredit || unknownCard || installable
+  const creditLike = !bill && (isCredit || unknownCard || installable)
+  // "Pagar depois": gasto único, fora do cartão de crédito, que entra em Contas
+  const canLater = mode === 'expense' && !bill && !pending && !isCredit && !unknownCard && !installable
+  const payLater = canLater && later && !repeat.on
+  // gasto fixo em aberto no mês da data com o mesmo nome: o registro paga esse mês, sem criar outro
+  const { occurrences: monthBills } = useBills(date.slice(0, 7))
+  const placeKey = normPlace(place.trim())
+  const fixedMatch = mode === 'expense' && !bill && !pending && !cardUnknown && placeKey
+    ? monthBills.find(o => o.bill.type === 'expense' && !o.bill.onCard && !o.paidAt && normPlace(o.bill.name) === placeKey) ?? null
+    : null
+  const payingFixed = !!fixedMatch && payFixed
   const needsCategory = mode !== 'save'
   const needsWallet = mode !== 'income'
+  // séries antigas podem estar sem categoria ou forma de pagamento: a edição não exige
+  const requireCategory = needsCategory && !bill
+  const requireWallet = needsWallet && !bill
   const access = useCardAccess(isCredit ? walletId : null)
   const assignTo = access.people.some(p => p.userId === owner) && owner !== access.me ? owner : null
   // titulares possíveis: eu (se tenho cartão de crédito) e quem compartilha cartão comigo
@@ -190,12 +224,14 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const hasWallet = unknownCard ? !!holder : !!walletId
   // divisão: no cartão próprio compartilhado, quem tem acesso; no cartão de outra pessoa, você e a titular
   const cardPeople = useCardPeople()
-  const splitWith = !isCredit || repeatExpense ? []
+  const splitWith = !isCredit || repeatExpense || payingFixed ? []
     : wallet?.ownerId && wallet.ownerId !== me ? cardPeople.people.filter(p => p.userId === me || p.userId === wallet.ownerId)
     : access.people
   const splitting = split.on && splitWith.length > 1
   // Pix dividido: com a família toda; quem pagou pode ser você ou outra pessoa
-  const pixPeople = isPix && !repeatExpense && installments <= 1 ? cardPeople.people : []
+  // gasto dividido: qualquer forma de pagamento fora do crédito (Pix, débito, dinheiro, outro à vista)
+  const shareable = mode === 'expense' && !!wallet && wallet.type !== 'credit' && !cardUnknown
+  const pixPeople = shareable && !bill && !payingFixed && !repeatExpense && !payLater && installments <= 1 ? cardPeople.people : []
   const payerId = payer || me
   const sharedPix = pixPeople.length > 1 && (split.on || payerId !== me)
   const pixIds = sharedPix && split.on ? splitPeople(split, pixPeople, me) : [me]
@@ -203,14 +239,14 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     ? splitParts({ mode: splitMode(split, items), total: amount, people: splitPeople(split, splitWith, me), items, values: split.values })
     : sharedPix
       ? (pixIds.length === 1
-        ? { parts: [{ userId: pixIds[0], amount }], error: pixIds[0] === payerId ? 'Escolha quem divide o Pix.' : null }
+        ? { parts: [{ userId: pixIds[0], amount }], error: pixIds[0] === payerId ? 'Escolha quem divide o gasto.' : null }
         : splitParts({ mode: splitMode(split, items), total: amount, people: pixIds, items, values: split.values }))
       : null
   // pessoas cuja divisão aparece no grupo (cartão ou Pix)
   const dividing = splitting ? splitWith : sharedPix && split.on ? pixPeople : []
   // itens guardam o dono só na compra dividida
   const plainItems = items.map(it => ({ name: it.name, amount: it.amount }))
-  const canSubmit = amount > 0 && (!needsCategory || !!categoryId) && (!needsWallet || hasWallet) && !splitResult?.error && !submitting
+  const canSubmit = amount > 0 && (!requireCategory || !!categoryId) && (!requireWallet || hasWallet) && !splitResult?.error && !submitting
 
   function pickWallet(id: string) {
     setCardUnknown(false)
@@ -231,7 +267,15 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     setError(null)
     try {
       const placeValue = place.trim() || null
-      if (mode === 'income' && repeat.on) {
+      if (bill) {
+        await updateBill(placeValue)
+      } else if (payingFixed && fixedMatch) {
+        // o valor deste mês pode ser outro: muda só esta ocorrência e paga
+        if (amount !== fixedMatch.amount) await billsApi.updateOccurrence(fixedMatch.id, amount, fixedMatch.dueDate)
+        await billsApi.pay(fixedMatch.id, walletId, date)
+      } else if (payLater) {
+        await createPayLater(placeValue)
+      } else if (mode === 'income' && repeat.on) {
         await createRecurringIncome(placeValue)
       } else if (mode === 'expense' && repeatExpense) {
         await createRecurringExpense(placeValue)
@@ -287,20 +331,22 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
       }
       if (pending) await finishPending(pending)
       await refreshMonth()
-      posthog.capture('transaction_recorded', {
+      if (!bill) posthog.capture('transaction_recorded', {
         transaction_type: mode === 'save' ? `save_${saveDirection}` : mode,
-        entry_pattern: pending ? 'pending_confirmation' : repeat.on ? 'recurring' : installments > 1 ? 'installment' : 'one_time',
+        entry_pattern: pending ? 'pending_confirmation' : repeat.on ? 'recurring' : payLater ? 'pay_later' : installments > 1 ? 'installment' : 'one_time',
         has_receipt: Boolean(receipt),
         has_items: items.length > 0,
         is_split: splitting || sharedPix,
         card_unknown: unknownCard,
       })
-      const done = pending ? (mode === 'income' ? 'Receita confirmada' : 'Gasto confirmado')
+      const done = bill ? 'Salvo' : payingFixed ? 'Pago'
+        : pending ? (mode === 'income' ? 'Receita confirmada' : 'Gasto confirmado')
         : mode === 'save' ? (saveDirection === 'apply' ? 'Guardado' : 'Resgatado')
         : mode === 'income' ? (repeat.on ? 'Receita fixa adicionada' : 'Receita adicionada')
-        : repeatExpense ? 'Conta fixa adicionada'
+        : repeatExpense ? 'Gasto fixo adicionado'
+        : payLater ? 'Enviado para Contas'
         : unknownCard ? 'Enviado para confirmar'
-        : splitting ? 'Compra dividida' : sharedPix ? 'Pix dividido' : 'Gasto adicionado'
+        : splitting ? 'Compra dividida' : sharedPix ? 'Gasto dividido' : 'Gasto adicionado'
       reset()
       onOpenChange(false)
       feedback.done(done)
@@ -381,20 +427,51 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     if (card && walletId && needsWallet) await automationsApi.rememberCard(t.owner, card, walletId)
   }
 
-  // gasto que repete todo mês vira conta fixa: no cartão de crédito, entra sozinho na fatura (bills.wallet_id);
-  // em Pix/débito/dinheiro, é conta a pagar. Se a data já chegou, este mês já entra lançado.
+  // destinatário só vale no Pix
+  const billRecipient = () => (isPix && sender?.name.trim() ? { userId: sender.userId, name: sender.name.trim() } : null)
+
+  // gasto que repete todo mês vira gasto fixo: no cartão de crédito, entra sozinho na fatura (bills.wallet_id);
+  // em Pix/débito/dinheiro, é conta a pagar com essa forma de pagamento (e o destinatário, no Pix).
+  // Se a data já chegou, este mês já entra lançado.
   async function createRecurringExpense(name: string | null) {
     const start = date.slice(0, 7)
     const last = repeatLastMonth(repeat, start)
     const billId = await billsApi.create({
-      type: 'expense', name: name ?? categories.find(c => c.id === categoryId)?.name ?? 'Conta',
+      type: 'expense', name: name ?? categories.find(c => c.id === categoryId)?.name ?? 'Gasto fixo',
       amount, dueDay: Number(date.slice(8, 10)), dueNextMonth: false, categoryId, recurring: true,
       startMonth: `${start}-01`, installmentCurrent: null, installmentsTotal: null,
-      endMonth: last ? `${last}-01` : null, walletId: isCredit ? walletId : null,
+      endMonth: last ? `${last}-01` : null, walletId, recipient: billRecipient(),
     })
     // o cartão é lançado sozinho ao gerar o mês; nas outras carteiras, paga a ocorrência se a data já chegou
     const occurrence = (await billsApi.getMonth(start)).find(o => o.billId === billId)
     if (!isCredit && occurrence && date <= todayIso() && walletId) await billsApi.pay(occurrence.id, walletId, date)
+  }
+
+  // gasto único a pagar no vencimento: conta que não repete, no mês da data
+  async function createPayLater(name: string | null) {
+    await billsApi.create({
+      type: 'expense', name: name ?? categories.find(c => c.id === categoryId)?.name ?? 'Gasto',
+      amount, dueDay: Number(date.slice(8, 10)), dueNextMonth: false, categoryId, recurring: false,
+      startMonth: `${date.slice(0, 7)}-01`, installmentCurrent: null, installmentsTotal: null,
+      endMonth: null, walletId, recipient: billRecipient(),
+    })
+  }
+
+  // edição da série a partir do mês da ocorrência; o gasto único muda de mês junto com a data
+  async function updateBill(name: string | null) {
+    if (!bill || !editBill) return
+    const income = bill.type === 'income'
+    const single = !bill.recurring && bill.installmentsTotal == null
+    const base = bill.startMonth.slice(0, 7)
+    const last = repeat.on ? repeatLastMonth(repeat, base) : null
+    await billsApi.updateSeries(bill.id, single ? base : editBill.refMonth.slice(0, 7), {
+      name: name ?? bill.name, amount, dueDay: Number(date.slice(8, 10)), categoryId,
+      ...(isCredit ? { dueNextMonth: false } : {}),
+      ...(repeat.on ? { endMonth: last ? `${last}-01` : null } : {}),
+      ...(single ? { startMonth: `${date.slice(0, 7)}-01` } : {}),
+      walletId: income ? null : walletId,
+      recipient: income ? null : billRecipient(),
+    })
   }
 
   // cria a receita fixa com dia e mês da data; se a data já chegou, este mês já entra como recebido
@@ -417,10 +494,12 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const placeLabel = mode === 'income' ? 'Descrição' : mode === 'save' ? 'Onde?' : 'Onde foi?'
   const placePlaceholder = mode === 'income' ? (repeat.on ? 'Salário, aluguel…' : 'Opcional') : mode === 'save' ? 'CDB, Tesouro' : 'Opcional'
 
-  const modeTitle = pending ? (pending.type === 'income' ? 'Receita pendente' : 'Gasto pendente')
-    : mode === 'expense' ? (repeat.on ? 'Nova conta fixa' : 'Novo gasto')
+  const modeTitle = bill ? (bill.type === 'income' ? 'Editar receita fixa' : repeat.on ? 'Editar gasto fixo' : 'Editar gasto')
+    : pending ? (pending.type === 'income' ? 'Receita pendente' : 'Gasto pendente')
+    : mode === 'expense' ? (repeat.on ? 'Novo gasto fixo' : 'Novo gasto')
     : mode === 'income' ? (repeat.on ? 'Nova receita fixa' : 'Nova receita') : 'Guardar'
-  const submitLabel = pending ? 'Confirmar' : 'Adicionar'
+  const submitLabel = pending ? 'Confirmar' : bill ? 'Salvar' : 'Adicionar'
+  const dateLabel = creditLike && installments > 1 ? 'Data da compra' : payLater || (bill && mode === 'expense') ? 'Vencimento' : 'Data'
 
   function askDiscard(t: Transaction) {
     discard.ask({
@@ -451,7 +530,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
           </div>
 
           <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-2 pb-6">
-            <SegmentedControl
+            {!bill && <SegmentedControl
               aria-label="Tipo de registro"
               value={mode}
               onChange={changeMode}
@@ -460,7 +539,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                 { value: 'income', label: 'Receita' },
                 { value: 'save', label: 'Guardar' },
               ]}
-            />
+            />}
 
             {mode === 'save' && (
               <SegmentedControl
@@ -474,7 +553,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
               />
             )}
 
-            {mode === 'expense' && <ReceiptScanButton onRead={onReceipt} onSave={saveReceipt} initialFile={initialReceipt} />}
+            {mode === 'expense' && !bill && <ReceiptScanButton onRead={onReceipt} onSave={saveReceipt} initialFile={initialReceipt} />}
 
             <CurrencyInput
               id="amount"
@@ -485,7 +564,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
             />
 
             <ListGroup>
-              <FormRow label={creditLike && installments > 1 ? 'Data da compra' : 'Data'} htmlFor="date">
+              <FormRow label={dateLabel} htmlFor="date">
                 <DateField id="date" value={date} onChange={v => setDate(v || todayIso())} />
               </FormRow>
               <FormRow label={placeLabel} htmlFor="place">
@@ -504,12 +583,21 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
               )}
             </ListGroup>
 
-            {mode === 'income' && !pending && (
-              <RepeatGroup value={repeat} onChange={setRepeat} start={date.slice(0, 7)} lastLabel="último recebimento" />
+            {mode === 'income' && !pending && (!bill || repeat.on) && (
+              <RepeatGroup value={repeat} onChange={setRepeat} start={bill ? bill.startMonth.slice(0, 7) : date.slice(0, 7)}
+                lastLabel="último recebimento" fixed={!!bill} />
             )}
-            {mode === 'expense' && !unknownCard && installments <= 1 && (
-              <RepeatGroup value={repeat} onChange={setRepeat} start={date.slice(0, 7)}
-                lastLabel={isCredit ? 'último lançamento no cartão' : 'último pagamento'} />
+            {fixedMatch && (
+              <ListGroup footer={payFixed ? `Paga ${fixedMatch.bill.name} deste mês com este valor.` : undefined}>
+                <FormRow label="Pagar gasto fixo">
+                  <Switch checked={payFixed} onCheckedChange={setPayFixed} />
+                </FormRow>
+              </ListGroup>
+            )}
+            {mode === 'expense' && !payingFixed && !unknownCard && installments <= 1 && (!bill || repeat.on) && (
+              <RepeatGroup value={repeat} onChange={setRepeat} start={bill ? bill.startMonth.slice(0, 7) : date.slice(0, 7)}
+                lastLabel={isCredit ? 'último lançamento no cartão' : 'último pagamento'} fixed={!!bill}
+                later={canLater ? { on: later, onChange: setLater } : undefined} />
             )}
 
             {mode === 'expense' && receipt && (
@@ -527,11 +615,11 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                     onChange={v => { if (v === UNKNOWN_CARD) setCardUnknown(true); else if (v) pickWallet(v) }}
                     options={[
                       ...wallets.filter(w => mode !== 'save' || w.type !== 'credit').map(walletOption),
-                      ...(mode === 'expense' && holders.length > 0 ? [{ value: UNKNOWN_CARD, label: 'Não lembro o cartão', icon: 'credit-card' }] : []),
+                      ...(mode === 'expense' && !bill && holders.length > 0 ? [{ value: UNKNOWN_CARD, label: 'Não lembro o cartão', icon: 'credit-card' }] : []),
                     ]} />
                 )}
                 {unknownCard && <HolderPicker holders={holders} value={holder} onChange={setHolderId} me={me} />}
-                {isPix && !repeatExpense && (
+                {isPix && (
                   <SenderRows id="qa-recipient" label="Destinatário" value={sender} onChange={setSender} people={cardPeople.people} me={me} />
                 )}
                 {pixPeople.length > 1 && <PayerRow id="qa-payer" value={payerId} onChange={pickPayer} people={pixPeople} me={me} />}
@@ -546,7 +634,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                     amountIsInstallment={amountIsInstallment} onAmountIsInstallmentChange={setAmountIsInstallment}
                     purchaseDate={date} amount={amount} />
                 )}
-                {mode === 'expense' && splitWith.length > 1 && (
+                {mode === 'expense' && !bill && splitWith.length > 1 && (
                   <SplitRows value={split} onChange={setSplit} people={splitWith} me={me} items={items} total={amount} />
                 )}
                 {pixPeople.length > 1 && (
@@ -556,10 +644,10 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
               </ListGroup>
             )}
 
-            {isCredit && !unknownCard && !splitting && <PurchaseOwnerField people={access.people} me={access.me} value={owner} onChange={setOwner} />}
+            {isCredit && !bill && !unknownCard && !splitting && <PurchaseOwnerField people={access.people} me={access.me} value={owner} onChange={setOwner} />}
 
             {/* compra dividida por item: cada item mostra de quem é */}
-            {mode === 'expense' && (
+            {mode === 'expense' && !bill && !payLater && !repeatExpense && (
               <ItemsEditor items={items} onChange={setItems} total={amount}
                 owners={dividing.length > 1 && splitMode(split, items) === 'item'
                   ? { options: itemOwnerOptions(split, dividing, me), fallback: splitPeople(split, dividing, me)[0] ?? me } : undefined} />
@@ -568,7 +656,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
             {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
 
             <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>
-              {submitting ? <LoadingDots tone="current" label="Adicionando" /> : submitLabel}
+              {submitting ? <LoadingDots tone="current" label={bill ? 'Salvando' : 'Adicionando'} /> : submitLabel}
             </Button>
           </div>
         </form>

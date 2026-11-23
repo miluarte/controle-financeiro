@@ -15,7 +15,7 @@ const OPEN_EVENT = 'troco:swipe-open'
 interface SwipeActionsProps {
   onDelete: () => void
   label?: string
-  // ação extra ao lado da lixeira (ex.: fixar como conta fixa)
+  // ação extra ao lado da lixeira (ex.: fixar como gasto fixo)
   extra?: SwipeExtra
   children: React.ReactNode
 }
