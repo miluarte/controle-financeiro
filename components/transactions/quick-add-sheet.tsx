@@ -626,7 +626,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                 {isPix && (
                   <SenderRows id="qa-recipient" label="Destinatário" value={sender} onChange={setSender} people={cardPeople.people} me={me} />
                 )}
-                {payerPeople.length > 1 && <PayerRow id="qa-payer" value={payerId} onChange={pickPayer} people={pixPeople} me={me} />}
+                {payerPeople.length > 1 && <PayerRow id="qa-payer" value={payerId} onChange={pickPayer} people={payerPeople} me={me} />}
                 {creditLike && (
                   <FormRow label="Parcelas" htmlFor="installments">
                     <NumberField id="installments" min={1} max={48} value={installments}
