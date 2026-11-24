@@ -69,11 +69,12 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
   const closed = ref < openRef
   const shared = wallet.shareScope !== 'none'
 
-  // limite usado: faturas ainda não pagas, da aberta em diante (inclui parcelas futuras)
+  // limite usado: faturas ainda não pagas, da aberta em diante (inclui parcelas futuras),
+  // sem os gastos fixos com data futura, que o banco só desconta do limite quando cobra
   const used = totals
     .filter(t => t.walletId === wallet.id && t.invoiceRef.slice(0, 7) >= openRef)
     .filter(t => !paid.some(p => p.walletId === wallet.id && p.refMonth === t.invoiceRef && p.paidAt))
-    .reduce((s, t) => s + t.total - t.prepaid, 0)
+    .reduce((s, t) => s + t.total - t.prepaid - t.scheduled, 0)
   const catById = new Map(categories.map(c => [c.id, c]))
   const due = invoiceDueDate(wallet, ref)
 
