@@ -1,0 +1,42 @@
+/* ======================================================================
+   Troco: estilos de texto.
+   Cada estilo junta tamanho, altura de linha e espaçamento entre letras,
+   montados dos primitivos de primitives.css (--font-size-*, --line-height-*,
+   --letter-spacing-*). Vira classe do Tailwind com o nome do estilo:
+   text-large-title, text-title1..3, text-headline, text-body, text-callout,
+   text-subheadline, text-footnote, text-caption1/2.
+
+   Componentes usam sempre a classe do estilo, nunca text-sm, leading-5 ou
+   um tamanho solto. O peso vem das classes de peso do Tailwind
+   (font-medium, font-semibold, font-bold).
+   ====================================================================== */
+
+@theme inline {
+  --font-sans: var(--font-family-system);
+  --font-mono: var(--font-family-system-mono);
+  --font-heading: var(--font-sans);
+
+  --text-large-title: var(--font-size-34);
+  --text-large-title--line-height: var(--line-height-41);
+  --text-large-title--letter-spacing: var(--letter-spacing-large);
+  --text-title1: var(--font-size-28);
+  --text-title1--line-height: var(--line-height-34);
+  --text-title2: var(--font-size-22);
+  --text-title2--line-height: var(--line-height-28);
+  --text-title3: var(--font-size-20);
+  --text-title3--line-height: var(--line-height-25);
+  --text-headline: var(--font-size-17);
+  --text-headline--line-height: var(--line-height-22);
+  --text-body: var(--font-size-17);
+  --text-body--line-height: var(--line-height-22);
+  --text-callout: var(--font-size-16);
+  --text-callout--line-height: var(--line-height-21);
+  --text-subheadline: var(--font-size-15);
+  --text-subheadline--line-height: var(--line-height-20);
+  --text-footnote: var(--font-size-13);
+  --text-footnote--line-height: var(--line-height-18);
+  --text-caption1: var(--font-size-12);
+  --text-caption1--line-height: var(--line-height-16);
+  --text-caption2: var(--font-size-11);
+  --text-caption2--line-height: var(--line-height-13);
+}

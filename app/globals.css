@@ -1,5 +1,7 @@
 @import "tailwindcss" theme(static);
-@import "./theme.css";
+@import "./tokens/primitives.css";
+@import "./tokens/semantic.css";
+@import "./tokens/typography.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -14,8 +16,6 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Helvetica Neue", sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
   --color-tint: var(--tint);
   --color-separator: var(--separator);
   --color-fill: var(--fill);
@@ -25,38 +25,69 @@
   --color-glass: var(--glass);
   --color-glass-lens: var(--glass-lens);
   --color-scrim: var(--scrim);
-  --radius-glass: 1.75rem;
 
-  /* Escala tipográfica do iOS (Dynamic Type, tamanho padrão) */
-  --text-large-title: 2.125rem;
-  --text-large-title--line-height: 2.5625rem;
-  --text-large-title--letter-spacing: 0.0234em;
-  --text-title1: 1.75rem;
-  --text-title1--line-height: 2.125rem;
-  --text-title2: 1.375rem;
-  --text-title2--line-height: 1.75rem;
-  --text-title3: 1.25rem;
-  --text-title3--line-height: 1.5625rem;
-  --text-headline: 1.0625rem;
-  --text-headline--line-height: 1.375rem;
-  --text-body: 1.0625rem;
-  --text-body--line-height: 1.375rem;
-  --text-callout: 1rem;
-  --text-callout--line-height: 1.3125rem;
-  --text-subheadline: 0.9375rem;
-  --text-subheadline--line-height: 1.25rem;
-  --text-footnote: 0.8125rem;
-  --text-footnote--line-height: 1.125rem;
-  --text-caption1: 0.75rem;
-  --text-caption1--line-height: 1rem;
-  --text-caption2: 0.6875rem;
-  --text-caption2--line-height: 0.8125rem;
+  /* Categorias: bg-category-red-surface, text-category-red-content… (token-icon.tsx) */
+  --color-category-red-surface: var(--category-red-surface);
+  --color-category-red-content: var(--category-red-content);
+  --color-category-red-solid: var(--category-red-solid);
+  --color-category-rose-surface: var(--category-rose-surface);
+  --color-category-rose-content: var(--category-rose-content);
+  --color-category-rose-solid: var(--category-rose-solid);
+  --color-category-pink-surface: var(--category-pink-surface);
+  --color-category-pink-content: var(--category-pink-content);
+  --color-category-pink-solid: var(--category-pink-solid);
+  --color-category-fuchsia-surface: var(--category-fuchsia-surface);
+  --color-category-fuchsia-content: var(--category-fuchsia-content);
+  --color-category-fuchsia-solid: var(--category-fuchsia-solid);
+  --color-category-purple-surface: var(--category-purple-surface);
+  --color-category-purple-content: var(--category-purple-content);
+  --color-category-purple-solid: var(--category-purple-solid);
+  --color-category-violet-surface: var(--category-violet-surface);
+  --color-category-violet-content: var(--category-violet-content);
+  --color-category-violet-solid: var(--category-violet-solid);
+  --color-category-indigo-surface: var(--category-indigo-surface);
+  --color-category-indigo-content: var(--category-indigo-content);
+  --color-category-indigo-solid: var(--category-indigo-solid);
+  --color-category-blue-surface: var(--category-blue-surface);
+  --color-category-blue-content: var(--category-blue-content);
+  --color-category-blue-solid: var(--category-blue-solid);
+  --color-category-sky-surface: var(--category-sky-surface);
+  --color-category-sky-content: var(--category-sky-content);
+  --color-category-sky-solid: var(--category-sky-solid);
+  --color-category-cyan-surface: var(--category-cyan-surface);
+  --color-category-cyan-content: var(--category-cyan-content);
+  --color-category-cyan-solid: var(--category-cyan-solid);
+  --color-category-teal-surface: var(--category-teal-surface);
+  --color-category-teal-content: var(--category-teal-content);
+  --color-category-teal-solid: var(--category-teal-solid);
+  --color-category-emerald-surface: var(--category-emerald-surface);
+  --color-category-emerald-content: var(--category-emerald-content);
+  --color-category-emerald-solid: var(--category-emerald-solid);
+  --color-category-green-surface: var(--category-green-surface);
+  --color-category-green-content: var(--category-green-content);
+  --color-category-green-solid: var(--category-green-solid);
+  --color-category-lime-surface: var(--category-lime-surface);
+  --color-category-lime-content: var(--category-lime-content);
+  --color-category-lime-solid: var(--category-lime-solid);
+  --color-category-yellow-surface: var(--category-yellow-surface);
+  --color-category-yellow-content: var(--category-yellow-content);
+  --color-category-yellow-solid: var(--category-yellow-solid);
+  --color-category-amber-surface: var(--category-amber-surface);
+  --color-category-amber-content: var(--category-amber-content);
+  --color-category-amber-solid: var(--category-amber-solid);
+  --color-category-orange-surface: var(--category-orange-surface);
+  --color-category-orange-content: var(--category-orange-content);
+  --color-category-orange-solid: var(--category-orange-solid);
+  --color-category-gray-surface: var(--category-gray-surface);
+  --color-category-gray-content: var(--category-gray-content);
+  --color-category-gray-solid: var(--category-gray-solid);
+  --color-category-on-solid: var(--category-on-solid);
+  --radius-glass: var(--radius-28);
 
   /* Alturas padrão de controles do iOS */
-  --spacing-row: 2.75rem;
-  --spacing-tabbar: 3.875rem;
+  --spacing-row: calc(var(--spacing) * 11);       /* 44pt */
+  --spacing-tabbar: calc(var(--spacing) * 15.5);  /* 62pt */
   --spacing-app: var(--app-height);
-  --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -103,7 +134,7 @@
   --app-height: 100dvh;
 
   /* Nomes usados pelos componentes (shadcn/ui e os do app), apontando para as variáveis
-     semânticas de app/theme.css. Claro e escuro são resolvidos lá. Não colocar cor aqui. */
+     semânticas de app/tokens/semantic.css. Claro e escuro são resolvidos lá. Não colocar cor aqui. */
   --background: var(--surface-page);
   --foreground: var(--text-primary);
   --card: var(--surface-raised);
@@ -139,7 +170,7 @@
   --chart-3: var(--data-3);
   --chart-4: var(--data-4);
   --chart-5: var(--data-5);
-  --radius: 0.625rem;
+  --radius: var(--radius-10);
   --sidebar: var(--surface-page);
   --sidebar-foreground: var(--text-primary);
   --sidebar-primary: var(--action-primary);
@@ -151,7 +182,7 @@
 }
 
 /* Materiais Liquid Glass: vidro bem transparente, com pouco desfoque (--glass-blur),
-   borda clara com brilho no topo e sombra suave. Valores em app/theme.css. */
+   borda clara com brilho no topo e sombra suave. Valores em app/tokens/semantic.css. */
 @utility glass {
   background-color: var(--glass);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
