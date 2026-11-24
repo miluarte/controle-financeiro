@@ -18,12 +18,16 @@ import { feedback } from '@/lib/feedback'
 
 // 5.7.8 passo 1: o membro informa que pagou ao titular (valor, data e de onde saiu).
 export function SettlementSheet({
-  open, onOpenChange, card, debts,
-}: { open: boolean; onOpenChange: (o: boolean) => void; card: Wallet; debts: CardDebt[] }) {
+  open, onOpenChange, card, debts, initialAmount,
+}: {
+  open: boolean; onOpenChange: (o: boolean) => void; card: Wallet; debts: CardDebt[]
+  // valor sugerido (ex.: a parcela de uma compra); sem ele, o que falta na fatura
+  initialAmount?: number
+}) {
   const [saving, setSaving] = useState(false)
   return (
     <ModalSheet open={open} onOpenChange={onOpenChange} title="Informar acerto" formId="settlement" actionLabel="Informar" actionDisabled={saving}>
-      {open && <Form card={card} debts={debts} onSaving={setSaving} onDone={() => onOpenChange(false)} />}
+      {open && <Form card={card} debts={debts} initialAmount={initialAmount} onSaving={setSaving} onDone={() => onOpenChange(false)} />}
     </ModalSheet>
   )
 }
@@ -31,15 +35,15 @@ export function SettlementSheet({
 // o que ainda falta informar: o aberto menos o que já foi informado e aguarda o titular
 const toReport = (d: CardDebt) => Math.max(d.open - d.reported, 0)
 
-function Form({ card, debts, onSaving, onDone }: {
-  card: Wallet; debts: CardDebt[]; onSaving: (v: boolean) => void; onDone: () => void
+function Form({ card, debts, initialAmount, onSaving, onDone }: {
+  card: Wallet; debts: CardDebt[]; initialAmount?: number; onSaving: (v: boolean) => void; onDone: () => void
 }) {
   const { wallets } = useWallets()
   const { profile } = useProfile()
   const refresh = useRefresh()
   const mine = wallets.filter(w => !w.ownerName && w.type !== 'credit')
   const [ref, setRef] = useState(debts[0]?.invoiceRef ?? '')
-  const [amount, setAmount] = useState(debts[0] ? toReport(debts[0]) : 0)
+  const [amount, setAmount] = useState(debts[0] ? Math.min(initialAmount ?? Infinity, toReport(debts[0])) : 0)
   const [date, setDate] = useState(todayIso())
   const [walletId, setWalletId] = useState<string | null>(mine.find(w => w.id === profile?.defaultWalletId)?.id ?? mine[0]?.id ?? null)
   const [error, setError] = useState<string | null>(null)

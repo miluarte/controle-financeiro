@@ -19,6 +19,7 @@ import { receiptUrl, type ReceiptItem } from '@/lib/receipt'
 import { DateField } from '@/components/shared/date-field'
 import { ItemsEditor } from './items-editor'
 import { PrepayGroup } from './prepay-group'
+import { SettlePurchaseGroup } from '@/components/cards/settle-purchase-group'
 import { useTransactionDelete } from './use-transaction-delete'
 import { usePinAction } from './use-pin-action'
 import { Switch } from '@/components/ui/switch'
@@ -87,6 +88,7 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
     userId === t.owner ? t.amount
       : userId === null && typeof t.sourceData?.split_total === 'number' ? (t.sourceData.split_total as number)
       : Math.round(total / n)
+  const familyCard = wallets.find(w => w.id === t.walletId && w.type === 'credit' && !!w.ownerName)
   const catType = t.type === 'income' ? 'income' : 'expense'
   const showCategory = t.type === 'expense' || t.type === 'income'
   const showWallet = t.type !== 'income'
@@ -208,6 +210,11 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
 
       {t.type === 'expense' && t.invoiceRef && wallets.some(w => w.id === t.walletId && w.type === 'credit' && !w.ownerName) && (
         <PrepayGroup t={t} onDone={onDone} />
+      )}
+
+      {/* compra minha no cartão de outra pessoa da família: informar o acerto daqui */}
+      {t.type === 'expense' && t.invoiceRef && t.owner === me && familyCard && (
+        <SettlePurchaseGroup t={t} card={familyCard} />
       )}
 
       {t.receiptPath && (

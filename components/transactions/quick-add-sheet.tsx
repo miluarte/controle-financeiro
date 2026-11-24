@@ -23,6 +23,7 @@ import type { BillOccurrence, Transaction } from '@/lib/types'
 import { formatCurrency, todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { InstallmentProgress } from './installment-progress'
+import { firstOpenInstallment, installmentDate } from '@/lib/installments'
 import { ItemsEditor } from './items-editor'
 import { SheetCloseButton } from '@/components/ios/sheet-close-button'
 import { LoadingDots } from '@/components/shared/loading-dots'
@@ -106,7 +107,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const [place, setPlace] = useState(pending?.place ?? pending?.description ?? bill?.name ?? '')
   const [installments, setInstallments] = useState(() => pendingNumber(pending, 'installments', 1))
   // compra parcelada que já estava andando antes do app: parcela atual e valor da parcela
-  const [currentInstallment, setCurrentInstallment] = useState(() => pendingNumber(pending, 'current_installment', 1))
+  // sem escolha da pessoa, a parcela atual é calculada pela data (as já pagas ficam de fora)
+  const [pickedInstallment, setCurrentInstallment] = useState<number | null>(() =>
+    typeof pending?.sourceData?.current_installment === 'number' ? pendingNumber(pending, 'current_installment', 1) : null)
   const [amountIsInstallment, setAmountIsInstallment] = useState(pending?.sourceData?.amount_is_installment === true)
   // "Não lembro o cartão": fica pendente com o titular, até alguém escolher o cartão
   const [cardUnknown, setCardUnknown] = useState(!!pending?.holderId)
@@ -161,7 +164,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     setCategoryId(null)
     setPlace('')
     setInstallments(1)
-    setCurrentInstallment(1)
+    setCurrentInstallment(null)
     setAmountIsInstallment(false)
     setCardUnknown(false)
     setHolderId(null)
@@ -196,10 +199,13 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const isCredit = mode === 'expense' && wallet?.type === 'credit'
   // gasto no Pix: para quem foi (Destinatário)
   const isPix = mode === 'expense' && wallet?.type === 'pix' && !cardUnknown
-  // parcelas valem no crédito e também quando o cartão ainda não foi escolhido
-  // carteira do tipo Outro (ex.: linha de crédito) também parcela: cada parcela é um gasto no seu mês, sem fatura
-  const installable = mode === 'expense' && wallet?.type === 'other'
+  // parcelas valem no crédito e também quando o cartão ainda não foi escolhido;
+  // nas outras formas de pagamento (Pix, boleto, débito, linha de crédito), cada parcela é um gasto no seu mês, sem fatura
+  const installable = mode === 'expense' && !!wallet && wallet.type !== 'credit' && !repeat.on && !later
   const creditLike = !bill && (isCredit || unknownCard || installable)
+  // compra que já estava andando: entram só as parcelas que ainda não foram pagas
+  const currentInstallment = Math.min(
+    pickedInstallment ?? firstOpenInstallment(date, installments, todayIso(), isCredit ? wallet : null), installments)
   // gasto fixo em aberto no mês da data com o mesmo nome: o registro paga esse mês, sem criar outro
   const { occurrences: monthBills } = useBills(date.slice(0, 7))
   const placeKey = normPlace(place.trim())
@@ -218,7 +224,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   // outra pessoa já pagou: o que você deve vai para Repassar, sem "Pagar depois"
   const otherPaid = payerPeople.length > 1 && payerId !== me
   // "Pagar depois": gasto único, fora do cartão de crédito, que entra em Contas
-  const canLater = mode === 'expense' && !bill && !pending && !isCredit && !unknownCard && !installable && !otherPaid
+  const canLater = mode === 'expense' && !bill && !pending && !isCredit && !unknownCard && installments <= 1 && !otherPaid
   const payLater = canLater && later && !repeat.on
   const needsCategory = mode !== 'save'
   const needsWallet = mode !== 'income'
@@ -291,7 +297,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         const group = await transactionsApi.createInstallments({
           walletId: walletId!, categoryId, installments, firstDate: date, place: placeValue,
           total: amountIsInstallment ? amount * installments : amount,
-          start: Math.min(currentInstallment, installments),
+          start: currentInstallment,
           ...(pending ? { source: pending.source } : {}),
         })
         if (items.length) await transactionsApi.setGroupItems(group, plainItems)
@@ -418,7 +424,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         ...(items.length ? { items } : {}),
         card_unknown: true,
         installments,
-        current_installment: Math.min(currentInstallment, installments),
+        current_installment: currentInstallment,
         amount_is_installment: amountIsInstallment,
       },
     })
@@ -438,8 +444,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   // em Pix/débito/dinheiro, é conta a pagar com essa forma de pagamento (e o destinatário, no Pix).
   // Se a data já chegou, este mês já entra lançado.
   async function createRecurringExpense(name: string | null) {
-    const start = date.slice(0, 7)
-    const last = repeatLastMonth(repeat, start)
+    const { start, last, payDate } = seriesFromToday()
     const billId = await billsApi.create({
       type: 'expense', name: name ?? categories.find(c => c.id === categoryId)?.name ?? 'Gasto fixo',
       amount, dueDay: Number(date.slice(8, 10)), dueNextMonth: false, categoryId, recurring: true,
@@ -448,7 +453,18 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     })
     // o cartão é lançado sozinho ao gerar o mês; nas outras carteiras, paga a ocorrência se a data já chegou
     const occurrence = (await billsApi.getMonth(start)).find(o => o.billId === billId)
-    if (!isCredit && occurrence && date <= todayIso() && walletId) await billsApi.pay(occurrence.id, walletId, date)
+    if (!isCredit && occurrence && payDate <= todayIso() && walletId) await billsApi.pay(occurrence.id, walletId, payDate)
+  }
+
+  // série com data no passado começa no mês atual: os meses anteriores já foram pagos e ficam de fora.
+  // O fim ("Nº de vezes") continua contado a partir da data digitada.
+  function seriesFromToday() {
+    const first = date.slice(0, 7)
+    const last = repeatLastMonth(repeat, first)
+    const current = todayIso().slice(0, 7)
+    const start = first < current ? current : first
+    if (last && last < start) throw new Error('Essa série já terminou.')
+    return { start, last, payDate: start === first ? date : installmentDate(`${start}-${date.slice(8, 10)}`, 1) }
   }
 
   // gasto único a pagar no vencimento: conta que não repete, no mês da data
@@ -480,17 +496,16 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
 
   // cria a receita fixa com dia e mês da data; se a data já chegou, este mês já entra como recebido
   async function createRecurringIncome(name: string | null) {
-    const start = date.slice(0, 7)
-    const last = repeatLastMonth(repeat, start)
+    const { start, last, payDate } = seriesFromToday()
     const billId = await billsApi.create({
       type: 'income', name: name ?? categories.find(c => c.id === categoryId)?.name ?? 'Receita',
       amount, dueDay: Number(date.slice(8, 10)), dueNextMonth: false, categoryId, recurring: true,
       startMonth: `${start}-01`, installmentCurrent: null, installmentsTotal: null,
       endMonth: last ? `${last}-01` : null,
     })
-    if (date <= todayIso()) {
+    if (payDate <= todayIso()) {
       const occurrence = (await billsApi.getMonth(start)).find(o => o.billId === billId)
-      if (occurrence) await billsApi.pay(occurrence.id, null, date)
+      if (occurrence) await billsApi.pay(occurrence.id, null, payDate)
     }
   }
 
