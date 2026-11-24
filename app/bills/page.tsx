@@ -41,9 +41,8 @@ export default function BillsPage() {
     const w = usable.find(x => x.id === id)
     return w ? (w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name) : 'cartão'
   }
-  // o resumo soma tudo o que a lista de contas mostra, inclusive as fixas no cartão
-  const onCardTotal = onCard.reduce((s, o) => s + o.amount, 0)
-  const total = bills.reduce((s, o) => s + o.amount, 0) + onCardTotal
+  // o resumo soma só as contas a pagar; as fixas no cartão já entram na fatura
+  const total = bills.reduce((s, o) => s + o.amount, 0)
   const paid = bills.reduce((s, o) => s + (o.paidAt ? o.amount : 0), 0)
 
   return (
@@ -54,7 +53,7 @@ export default function BillsPage() {
         actions={<MonthSelector />}
       />
       <div className="space-y-7 px-4 pt-2">
-        <BillsMonthCard total={total} paid={paid} onCard={onCardTotal} count={bills.length + onCard.length} />
+        <BillsMonthCard total={total} paid={paid} />
 
         {loading ? (
           <LoadingBlock />
