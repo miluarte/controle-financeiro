@@ -5,6 +5,7 @@ import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { BalanceCard } from '@/components/home/balance-card'
 import { FirstSteps } from '@/components/home/first-steps'
 import { RecentTransactions } from '@/components/home/recent-transactions'
+import { ToPayList } from '@/components/home/to-pay-list'
 import { PendingBanner } from '@/components/pending/pending-banner'
 import { NotificationsButton } from '@/components/layout/notifications-button'
 import { ProfileButton } from '@/components/layout/profile-button'
@@ -28,6 +29,7 @@ export default function HomePage() {
         <Suspense><PendingBanner /></Suspense>
         <BalanceCard month={month} />
         <FirstSteps />
+        <ToPayList month={month} />
         <RecentTransactions month={month} />
       </div>
     </>
