@@ -139,6 +139,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const [payer, setPayer] = useState('')
   // receita: quem enviou (opcional; alguém da família ou outro nome)
   const [sender, setSender] = useState<Sender | null>(() => bill?.recipient ?? senderOf(pending?.sourceData))
+  // no Novo gasto, as opções menos usadas (repetir, dividir, itens…) ficam atrás de "Ver mais"
+  const [more, setMore] = useState(false)
 
   function onReceipt(result: ReceiptResult, image: Blob) {
     setReceipt({ result, image })
@@ -164,6 +166,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     setCategoryId(null)
     setPlace('')
     setInstallments(1)
+    setMore(false)
     setCurrentInstallment(null)
     setAmountIsInstallment(false)
     setCardUnknown(false)
@@ -256,6 +259,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const dividing = splitting ? splitWith : sharedPix && split.on ? pixPeople : []
   // itens guardam o dono só na compra dividida
   const plainItems = items.map(it => ({ name: it.name, amount: it.amount }))
+  const usingExtras = repeat.on || later || !!sender || (payer !== '' && payer !== me) || split.on || owner !== '' || items.length > 0
+  const showExtras = mode !== 'expense' || !!bill || !!pending || more || usingExtras
   const canSubmit = amount > 0 && (!requireCategory || !!categoryId) && (!requireWallet || hasWallet) && !splitResult?.error && !submitting
 
   function pickWallet(id: string) {
@@ -613,7 +618,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                 </FormRow>
               </ListGroup>
             )}
-            {mode === 'expense' && !payingFixed && !unknownCard && installments <= 1 && (!bill || repeat.on) && (
+            {mode === 'expense' && showExtras && !payingFixed && !unknownCard && installments <= 1 && (!bill || repeat.on) && (
               <RepeatGroup value={repeat} onChange={setRepeat} start={bill ? bill.startMonth.slice(0, 7) : date.slice(0, 7)}
                 lastLabel={isCredit ? 'último lançamento no cartão' : 'último pagamento'} fixed={!!bill}
                 later={canLater ? { on: later, onChange: setLater } : undefined} />
@@ -638,10 +643,10 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                     ]} />
                 )}
                 {unknownCard && <HolderPicker holders={holders} value={holder} onChange={setHolderId} me={me} />}
-                {isPix && (
+                {isPix && showExtras && (
                   <SenderRows id="qa-recipient" label="Destinatário" value={sender} onChange={setSender} people={cardPeople.people} me={me} />
                 )}
-                {payerPeople.length > 1 && <PayerRow id="qa-payer" value={payerId} onChange={pickPayer} people={pixPeople} me={me} />}
+                {payerPeople.length > 1 && showExtras && <PayerRow id="qa-payer" value={payerId} onChange={pickPayer} people={pixPeople} me={me} />}
                 {creditLike && (
                   <FormRow label="Parcelas" htmlFor="installments">
                     <NumberField id="installments" min={1} max={48} value={installments}
@@ -653,23 +658,29 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                     amountIsInstallment={amountIsInstallment} onAmountIsInstallmentChange={setAmountIsInstallment}
                     purchaseDate={date} amount={amount} />
                 )}
-                {mode === 'expense' && !bill && splitWith.length > 1 && (
+                {mode === 'expense' && showExtras && !bill && splitWith.length > 1 && (
                   <SplitRows value={split} onChange={setSplit} people={splitWith} me={me} items={items} total={amount} />
                 )}
-                {pixPeople.length > 1 && (
+                {pixPeople.length > 1 && showExtras && (
                   <SplitRows value={split} onChange={setSplit} people={pixPeople} me={me} items={items} total={amount}
                     meOptional={payerId !== me} />
                 )}
               </ListGroup>
             )}
 
-            {isCredit && !bill && !unknownCard && !splitting && <PurchaseOwnerField people={access.people} me={access.me} value={owner} onChange={setOwner} />}
+            {isCredit && showExtras && !bill && !unknownCard && !splitting && <PurchaseOwnerField people={access.people} me={access.me} value={owner} onChange={setOwner} />}
 
             {/* compra dividida por item: cada item mostra de quem é */}
-            {mode === 'expense' && !bill && !payLater && !repeatExpense && (
+            {mode === 'expense' && showExtras && !bill && !payLater && !repeatExpense && (
               <ItemsEditor items={items} onChange={setItems} total={amount}
                 owners={dividing.length > 1 && splitMode(split, items) === 'item'
                   ? { options: itemOwnerOptions(split, dividing, me), fallback: splitPeople(split, dividing, me)[0] ?? me } : undefined} />
+            )}
+
+            {!showExtras && (
+              <Button type="button" variant="plain" className="w-full" onClick={() => setMore(true)}>
+                Ver mais
+              </Button>
             )}
 
             {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
