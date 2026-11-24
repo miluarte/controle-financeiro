@@ -6,6 +6,22 @@
    Para mudar o visual do app, mude aqui. Componentes nunca usam cor direta.
    ====================================================================== */
 
+/* Rosa do Troco (#E80070, a cor principal). A paleta do Tailwind não tem esse tom,
+   então ele ganha uma escala própria, usada só pelas variáveis abaixo. */
+@theme {
+  --color-rosa-50: #fff0f6;
+  --color-rosa-100: #ffd9e9;
+  --color-rosa-200: #ffb0d1;
+  --color-rosa-300: #ff7ab0;
+  --color-rosa-400: #ff3d8e;
+  --color-rosa-500: #e80070;
+  --color-rosa-600: #c2005d;
+  --color-rosa-700: #99004a;
+  --color-rosa-800: #700036;
+  --color-rosa-900: #4a0024;
+  --color-rosa-950: #2b0015;
+}
+
 :root {
   /* Superfícies */
   --surface-page: var(--color-zinc-50);          /* fundo das telas */
@@ -13,19 +29,22 @@
   --surface-sunken: var(--color-zinc-100);       /* chips, campos, trilhos de controle */
   --surface-strong: var(--color-zinc-200);       /* botões neutros, trilho de chave desligada */
   --surface-selected: var(--color-white);        /* item escolhido no controle segmentado */
+  --surface-brand: var(--color-rosa-500);        /* faixa do cabeçalho do Início */
 
   /* Texto */
   --text-primary: var(--color-zinc-950);
   --text-secondary: var(--color-zinc-500);
   --text-on-action: var(--color-white);          /* texto sobre a ação principal */
   --text-on-danger: var(--color-white);          /* texto e ícone sobre vermelho (ex.: lixeira ao deslizar) */
+  --text-on-brand: var(--color-white);           /* texto e ícone sobre a faixa rosa */
+  --brand-fill: color-mix(in oklab, var(--color-white) 20%, transparent); /* botão sobre a faixa rosa */
 
   /* Linhas */
   --line-subtle: var(--color-zinc-200);          /* divisores e bordas */
-  --focus-ring: color-mix(in oklab, var(--color-zinc-950) 30%, transparent);
+  --focus-ring: color-mix(in oklab, var(--color-rosa-500) 35%, transparent);
 
   /* Ações */
-  --action-primary: var(--color-zinc-950);       /* cor principal: botões, abas e seleção */
+  --action-primary: var(--color-rosa-500);       /* cor principal: botões, abas e seleção */
 
   /* Estados */
   --status-danger: var(--color-red-500);
@@ -48,7 +67,7 @@
   --glass-highlight: color-mix(in oklab, var(--color-white) 95%, transparent);
   --glass-shade: color-mix(in oklab, var(--color-black) 4%, transparent);
   --glass-shadow: color-mix(in oklab, var(--color-black) 12%, transparent);
-  --glass-lens: color-mix(in oklab, var(--color-zinc-950) 7%, transparent);
+  --glass-lens: color-mix(in oklab, var(--color-rosa-500) 12%, transparent);
   --glass-blur: 6px;
   --glass-blur-strong: 14px;
 }
@@ -62,10 +81,10 @@
     --surface-selected: var(--color-zinc-600);
     --text-primary: var(--color-white);
     --text-secondary: var(--color-zinc-400);
-    --text-on-action: var(--color-zinc-950);
+    --text-on-action: var(--color-white);
     --line-subtle: var(--color-zinc-800);
-    --focus-ring: color-mix(in oklab, var(--color-white) 35%, transparent);
-    --action-primary: var(--color-white);
+    --focus-ring: color-mix(in oklab, var(--color-rosa-400) 45%, transparent);
+    --action-primary: var(--color-rosa-500);
     --status-danger: var(--color-red-400);
     --status-success: var(--color-green-400);
     --status-warning: var(--color-amber-400);
@@ -82,7 +101,7 @@
     --glass-highlight: color-mix(in oklab, var(--color-white) 22%, transparent);
     --glass-shade: color-mix(in oklab, var(--color-black) 25%, transparent);
     --glass-shadow: color-mix(in oklab, var(--color-black) 50%, transparent);
-    --glass-lens: color-mix(in oklab, var(--color-white) 14%, transparent);
+    --glass-lens: color-mix(in oklab, var(--color-rosa-400) 22%, transparent);
   }
 }
 
@@ -94,10 +113,10 @@
   --surface-selected: var(--color-zinc-600);
   --text-primary: var(--color-white);
   --text-secondary: var(--color-zinc-400);
-  --text-on-action: var(--color-zinc-950);
+  --text-on-action: var(--color-white);
   --line-subtle: var(--color-zinc-800);
-  --focus-ring: color-mix(in oklab, var(--color-white) 35%, transparent);
-  --action-primary: var(--color-white);
+  --focus-ring: color-mix(in oklab, var(--color-rosa-400) 45%, transparent);
+  --action-primary: var(--color-rosa-500);
   --status-danger: var(--color-red-400);
   --status-success: var(--color-green-400);
   --status-warning: var(--color-amber-400);
@@ -114,5 +133,5 @@
   --glass-highlight: color-mix(in oklab, var(--color-white) 22%, transparent);
   --glass-shade: color-mix(in oklab, var(--color-black) 25%, transparent);
   --glass-shadow: color-mix(in oklab, var(--color-black) 50%, transparent);
-  --glass-lens: color-mix(in oklab, var(--color-white) 14%, transparent);
+  --glass-lens: color-mix(in oklab, var(--color-rosa-400) 22%, transparent);
 }

@@ -17,6 +17,9 @@
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Helvetica Neue", sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
   --color-tint: var(--tint);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-fill: var(--brand-fill-color);
   --color-separator: var(--separator);
   --color-fill: var(--fill);
   --color-grouped: var(--grouped);
@@ -123,6 +126,9 @@
   --success: var(--status-success);
   --warning: var(--status-warning);
   --tint: var(--action-primary);
+  --brand: var(--surface-brand);
+  --brand-foreground: var(--text-on-brand);
+  --brand-fill-color: var(--brand-fill);
   --separator: var(--line-subtle);
   --fill: var(--surface-sunken);
   --grouped: var(--surface-raised);
