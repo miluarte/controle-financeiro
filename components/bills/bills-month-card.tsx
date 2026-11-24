@@ -1,8 +1,7 @@
 import { ProgressRing } from '@/components/shared/progress-ring'
 import { formatCurrency } from '@/lib/utils'
 
-// CON-1: total das contas a pagar do mês, quanto já foi pago, quanto falta e o anel de percentual pago.
-// Gastos fixos no cartão ficam de fora: entram na fatura, na aba Cartões.
+// CON-1: total das contas do mês (inclusive as fixas no cartão), quanto já foi pago, quanto falta e o anel de percentual pago.
 export function BillsMonthCard({ total, paid }: { total: number; paid: number }) {
   const rows = [
     { label: 'Total', value: formatCurrency(total), tone: '' },
