@@ -5,6 +5,7 @@ import { useProfile } from '@/hooks/use-profile'
 import { OnboardingFlow } from '@/components/onboarding/onboarding-flow'
 import { AppLock } from './app-lock'
 import { AuthForm } from './auth-form'
+import { NewPasswordForm } from './new-password-form'
 import { LoadingBlock } from '@/components/shared/loading-dots'
 
 function Loading() {
@@ -14,11 +15,13 @@ function Loading() {
 // Sem sessão, mostra a tela de login. Conta nova passa pelo onboarding antes do app.
 // Os dados de cada usuário são isolados no banco (RLS); isto é só a porta de entrada da interface.
 export function AuthGate({ children }: { children: React.ReactNode }) {
-  const { session, loading } = useSession()
+  const { session, loading, recovery } = useSession()
   const { profile, loading: profileLoading } = useProfile(!!session)
 
   if (loading) return <Loading />
   if (!session) return <AuthForm />
+  // veio do link do e-mail: escolhe a nova senha antes de entrar
+  if (recovery) return <NewPasswordForm />
   if (profileLoading) return <Loading />
   // se o perfil não carregar (sem rede), segue para o app em vez de travar
   if (profile && !profile.onboardingCompletedAt) return <OnboardingFlow />
