@@ -37,6 +37,7 @@ export function checkNewPassword(password: string, confirm: string): string | nu
 export function authErrorPt(message: string): string {
   if (/should be different from the old password/i.test(message)) return 'A nova senha precisa ser diferente da atual.'
   if (/weak|at least/i.test(message)) return 'Senha fraca. Use uma senha maior, com letras e números.'
+  if (/email rate limit/i.test(message)) return 'O envio de e-mails está no limite. Tente de novo mais tarde.'
   if (/only request this after|rate limit/i.test(message)) return 'Muitas tentativas. Espere um minuto e tente de novo.'
   if (/session missing|expired|invalid/i.test(message)) return 'O link expirou. Peça um novo.'
   return message
