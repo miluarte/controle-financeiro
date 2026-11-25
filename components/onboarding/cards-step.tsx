@@ -15,6 +15,7 @@ import { useInstitutions, useOwnWallets } from '@/hooks/use-data'
 import { useRefresh } from '@/hooks/use-refresh'
 import { walletsApi } from '@/lib/api/wallets'
 import { OnboardingStep, StepIcon } from './onboarding-step'
+import { walletLabel } from '@/lib/utils'
 
 // Crédito e Débito são chips que podem ser marcados juntos (os dois cria as duas carteiras).
 const KINDS = [{ value: 'credit', label: 'Crédito' }, { value: 'debit', label: 'Débito' }] as const
@@ -58,7 +59,7 @@ export function CardsStep() {
         <ListGroup header="Cadastrados">
           {cards.map(c => (
             <ListRow key={c.id} leading={<CardPreview name="" finish={c.finish} size="sm" className="w-11" />}
-              title={`${c.name}${c.last4 ? ` •${c.last4}` : ''}`}
+              title={walletLabel(c)}
               subtitle={c.type === 'credit' ? `Crédito · fecha dia ${c.closingDay} · vence dia ${c.dueDay}` : 'Débito'} />
           ))}
         </ListGroup>

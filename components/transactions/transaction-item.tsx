@@ -7,7 +7,7 @@ import type { SwipeExtra } from '@/components/ios/swipe-actions'
 import { TokenIcon } from '@/components/shared/token-icon'
 import { useCardPeople } from '@/hooks/use-card-people'
 import type { Category, Transaction, Wallet } from '@/lib/types'
-import { cn, formatCurrency } from '@/lib/utils'
+import { cn, formatCurrency, walletLabel } from '@/lib/utils'
 
 export const TYPE_LABEL: Record<Transaction['type'], string> = {
   expense: 'Gasto',
@@ -35,7 +35,7 @@ interface TransactionItemProps {
 
 export function TransactionItem({ transaction: t, category, wallet, onClick, onDelete, note, swipeExtra, pinned }: TransactionItemProps) {
   const title = t.place || t.description || category?.name || TYPE_LABEL[t.type]
-  const walletName = wallet?.name ?? t.walletNameSnapshot
+  const walletName = (wallet ? walletLabel(wallet) : null) ?? t.walletNameSnapshot
   const installment = t.installmentN && t.installmentsTotal ? `${t.installmentN} de ${t.installmentsTotal}` : null
   // subtítulo: só a forma de pagamento e a parcela (categoria fica no ícone; itens e detalhes, ao abrir)
   // receita: quem enviou; gasto no Pix: para quem foi (source_data.sender)

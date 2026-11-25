@@ -16,7 +16,7 @@ import { useProfile } from '@/hooks/use-profile'
 import { useWallets } from '@/hooks/use-wallets'
 import { openInvoiceRef } from '@/lib/invoice'
 import type { OwnWallet } from '@/lib/types'
-import { addMonths, currentMonth, formatCurrency, monthName, todayIso } from '@/lib/utils'
+import { addMonths, currentMonth, formatCurrency, monthName, todayIso, walletLabel } from '@/lib/utils'
 import { walletsApi } from '@/lib/api/wallets'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
 
@@ -63,7 +63,7 @@ export default function WalletsPage() {
               return (
                 <ListRow key={w.id} onClick={() => router.push(`/cards/${w.id}`)} onDelete={() => askDelete(w)}
                   leading={<CardPreview name="" finish={w.finish} size="sm" className="w-11" />}
-                  title={<>{w.name}{w.last4 && <span className="text-muted-foreground"> •{w.last4}</span>}{w.shareScope !== 'none' && <span className="text-muted-foreground"> · compartilhado</span>}</>}
+                  title={<>{walletLabel(w)}{w.shareScope !== 'none' && <span className="text-muted-foreground"> · compartilhado</span>}</>}
                   subtitle={`Fatura de ${monthName(ref, 'short')} ${formatCurrency(current)} · próxima ${formatCurrency(next)}`
                     + (w.spendingLimit ? ` · limite ${formatCurrency(w.spendingLimit)}` : '')}
                   chevron />
@@ -78,7 +78,7 @@ export default function WalletsPage() {
             return (
               <ListRow key={w.id} onClick={() => open(w)} onDelete={() => askDelete(w)}
                 leading={<CardPreview name="" finish={w.finish} size="sm" className="w-11" />}
-                title={<>{w.name}{w.last4 && <span className="text-muted-foreground"> •{w.last4}</span>}{w.type === 'debit' && <span className="text-muted-foreground"> · débito</span>}{profile?.defaultWalletId === w.id && <span className="text-muted-foreground"> · padrão</span>}</>}
+                title={<>{walletLabel(w)}{w.type === 'debit' && <span className="text-muted-foreground"> · débito</span>}{profile?.defaultWalletId === w.id && <span className="text-muted-foreground"> · padrão</span>}</>}
                 subtitle={spent ? `${formatCurrency(spent)} em ${monthName(month, 'short')}` : `Sem gastos · ${monthName(month, 'short')}`}
                 chevron />
             )
@@ -90,7 +90,7 @@ export default function WalletsPage() {
             {shared.map(w => (
               <ListRow key={w.id} onClick={() => router.push(`/cards/${w.id}`)} chevron
                 leading={<CardPreview name="" finish={w.finish} size="sm" className="w-11" />}
-                title={`${w.name}, de ${w.ownerName}`}
+                title={`${walletLabel(w)}, de ${w.ownerName}`}
                 subtitle={`Fecha dia ${w.closingDay} · vence dia ${w.dueDay}`} />
             ))}
           </ListGroup>
@@ -101,7 +101,7 @@ export default function WalletsPage() {
             {archived.map(w => (
               <ListRow key={w.id} onClick={() => open(w)} onDelete={() => askDelete(w)}
                 leading={<CardPreview name="" finish={w.finish} size="sm" className="w-11 opacity-50" />}
-                title={<span className="text-muted-foreground">{w.name}</span>} chevron />
+                title={<span className="text-muted-foreground">{walletLabel(w)}</span>} chevron />
             ))}
           </ListGroup>
         )}

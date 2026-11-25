@@ -20,6 +20,7 @@ import type { Transaction } from '@/lib/types'
 import { LoadingBlock } from '@/components/shared/loading-dots'
 import { matchesFilters, NO_FILTER, TransactionFilters } from '@/components/transactions/transaction-filters'
 import { senderOf } from '@/components/transactions/sender-field'
+import { walletLabel } from '@/lib/utils'
 
 function normalize(s: string) {
   return s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
@@ -47,7 +48,7 @@ function TransactionsContent() {
   const visible = useMemo(() => {
     const q = normalize(query.trim())
     const catName = new Map(categories.map(c => [c.id, c.name]))
-    const walletName = new Map(wallets.map(w => [w.id, w.name]))
+    const walletName = new Map(wallets.map(w => [w.id, walletLabel(w)]))
     return transactions.filter(t => {
       if (!matchesFilters(t, extra)) return false
       if (!q) return true

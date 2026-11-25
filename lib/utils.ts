@@ -111,3 +111,8 @@ export function parseCents(text: string): number | null {
 export function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
+
+// Nome do cartão com o final ("Nubank 0514"), para diferenciar cartões do mesmo banco.
+export function walletLabel(w: { name: string; last4?: string | null }): string {
+  return w.last4 && !w.name.endsWith(w.last4) ? `${w.name} ${w.last4}` : w.name
+}

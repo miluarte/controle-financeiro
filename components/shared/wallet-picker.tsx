@@ -3,9 +3,10 @@
 import { PickerRow } from './picker-row'
 import { WALLET_TYPE_ICON } from '@/lib/constants'
 import type { Wallet } from '@/lib/types'
+import { walletLabel } from '@/lib/utils'
 
 export const walletOption = (w: Wallet) => ({
-  value: w.id, label: w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name, icon: WALLET_TYPE_ICON[w.type] ?? 'wallet',
+  value: w.id, label: w.ownerName ? `${walletLabel(w)}, de ${w.ownerName}` : walletLabel(w), icon: WALLET_TYPE_ICON[w.type] ?? 'wallet',
 })
 
 // Escolha de carteira numa linha (seletor nativo), usada em pagamentos, importação e acertos.

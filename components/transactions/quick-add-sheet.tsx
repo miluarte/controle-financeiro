@@ -41,6 +41,8 @@ import { PickerRow } from '@/components/shared/picker-row'
 import { walletOption } from '@/components/shared/wallet-picker'
 import { useCardPeople } from '@/hooks/use-card-people'
 import { SPLIT_ALL, splitParts } from '@/lib/split'
+import { discountAmount, discountData, discountDefault, discountError, discountParts, withDiscount } from '@/lib/discount'
+import { DiscountGroup } from './discount-group'
 import { SenderRows, senderData, senderOf, type Sender } from './sender-field'
 import { PayerRow } from './payer-field'
 import { sharedApi } from '@/lib/api/shared'
@@ -141,6 +143,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const [sender, setSender] = useState<Sender | null>(() => bill?.recipient ?? senderOf(pending?.sourceData))
   // no Novo gasto, as opções menos usadas (repetir, dividir, itens…) ficam atrás de "Ver mais"
   const [more, setMore] = useState(false)
+  // desconto na compra: o valor digitado é sem desconto; o lançamento sai com o desconto abatido
+  const [discount, setDiscount] = useState(discountDefault)
 
   function onReceipt(result: ReceiptResult, image: Blob) {
     setReceipt({ result, image })
@@ -184,6 +188,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     setSplit(splitDefault())
     setPayer('')
     setSender(null)
+    setDiscount(discountDefault())
   }
 
   function changeMode(next: Mode) {
@@ -244,24 +249,37 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     : wallet?.ownerId && wallet.ownerId !== me ? cardPeople.people.filter(p => p.userId === me || p.userId === wallet.ownerId)
     : access.people
   const splitting = split.on && splitWith.length > 1
+  // desconto: só no gasto avulso (fora de gasto fixo e de Contas), sobre o total da compra
+  const canDiscount = mode === 'expense' && !bill && !payingFixed && !repeatExpense && !payLater
+  const perInstallment = creditLike && installments > 1 && amountIsInstallment
+  const grossTotal = perInstallment ? amount * installments : amount
+  const discountOn = canDiscount && discount.on
+  const discountValue = discountOn ? discountAmount(discount, grossTotal) : 0
+  const netTotal = grossTotal - discountValue
+  // valor digitado (compra ou parcela) com o desconto abatido, na proporção
+  const net = withDiscount(amount, grossTotal, netTotal)
+  const discountSd = discountOn ? (d => (d ? { discount: d } : {}))(discountData(discount, grossTotal)) : {}
+  const discountErr = discountOn ? discountError(discount, grossTotal) : null
   // Pix dividido: com a família toda; pago por você e para pagar depois, não divide
   const pixPeople = payLater ? [] : payerPeople
   const sharedPix = pixPeople.length > 1 && (split.on || payerId !== me)
   const pixIds = sharedPix && split.on ? splitPeople(split, pixPeople, me) : [me]
-  const splitResult = splitting
+  // partes calculadas sobre o valor sem desconto e levadas ao valor com desconto (rateio proporcional)
+  const grossSplit = splitting
     ? splitParts({ mode: splitMode(split, items), total: amount, people: splitPeople(split, splitWith, me), items, values: split.values })
     : sharedPix
       ? (pixIds.length === 1
         ? { parts: [{ userId: pixIds[0], amount }], error: pixIds[0] === payerId ? 'Escolha quem divide o gasto.' : null }
         : splitParts({ mode: splitMode(split, items), total: amount, people: pixIds, items, values: split.values }))
       : null
+  const splitResult = grossSplit && { ...grossSplit, parts: discountParts(grossSplit.parts, net) }
   // pessoas cuja divisão aparece no grupo (cartão ou Pix)
   const dividing = splitting ? splitWith : sharedPix && split.on ? pixPeople : []
   // itens guardam o dono só na compra dividida
   const plainItems = items.map(it => ({ name: it.name, amount: it.amount }))
-  const usingExtras = repeat.on || later || !!sender || (payer !== '' && payer !== me) || split.on || owner !== '' || items.length > 0
+  const usingExtras = repeat.on || later || !!sender || (payer !== '' && payer !== me) || split.on || owner !== '' || items.length > 0 || discount.on
   const showExtras = mode !== 'expense' || !!bill || !!pending || more || usingExtras
-  const canSubmit = amount > 0 && (!requireCategory || !!categoryId) && (!requireWallet || hasWallet) && !splitResult?.error && !submitting
+  const canSubmit = amount > 0 && net > 0 && !discountErr && (!requireCategory || !!categoryId) && (!requireWallet || hasWallet) && !splitResult?.error && !submitting
 
   function pickWallet(id: string) {
     setCardUnknown(false)
@@ -301,11 +319,12 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
       } else if ((isCredit || installable) && installments > 1) {
         const group = await transactionsApi.createInstallments({
           walletId: walletId!, categoryId, installments, firstDate: date, place: placeValue,
-          total: amountIsInstallment ? amount * installments : amount,
+          total: netTotal,
           start: currentInstallment,
           ...(pending ? { source: pending.source } : {}),
         })
         if (items.length) await transactionsApi.setGroupItems(group, plainItems)
+        if (discountSd.discount) await transactionsApi.mergeGroupData(group, discountSd)
         if (receipt) {
           const path = await takeReceipt()
           if (path) await transactionsApi.setGroupReceipt(group, path)
@@ -326,15 +345,15 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         const created = await transactionsApi.create({
           ...(fromPhoto ? {
             source: 'photo',
-            sourceData: { reader: receipt.result.source, items: plainItems, ...(receipt.result.chave ? { chave: receipt.result.chave } : {}), ...withSender },
+            sourceData: { reader: receipt.result.source, items: plainItems, ...(receipt.result.chave ? { chave: receipt.result.chave } : {}), ...withSender, ...discountSd },
             receiptPath,
           } : pending ? {
             source: pending.source,
-            sourceData: { ...(pending.sourceData ?? {}), ...(mode === 'expense' && items.length ? { items: plainItems } : {}), ...withSender },
-          } : mode === 'expense' && items.length ? { sourceData: { items: plainItems, ...withSender } }
-            : sender && (mode === 'income' || isPix) ? { sourceData: withSender } : {}),
+            sourceData: { ...(pending.sourceData ?? {}), ...(mode === 'expense' && items.length ? { items: plainItems } : {}), ...withSender, ...discountSd },
+          } : mode === 'expense' && items.length ? { sourceData: { items: plainItems, ...withSender, ...discountSd } }
+            : (sender && (mode === 'income' || isPix)) || discountSd.discount ? { sourceData: { ...withSender, ...discountSd } } : {}),
           type: mode === 'save' ? (saveDirection === 'apply' ? 'save_apply' : 'save_redeem') : mode,
-          amount,
+          amount: net,
           date,
           categoryId: mode === 'save' ? null : categoryId,
           walletId: needsWallet ? walletId : null,
@@ -351,6 +370,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         entry_pattern: pending ? 'pending_confirmation' : repeat.on ? 'recurring' : payLater ? 'pay_later' : installments > 1 ? 'installment' : 'one_time',
         has_receipt: Boolean(receipt),
         has_items: items.length > 0,
+        has_discount: discountValue > 0,
         is_split: splitting || sharedPix,
         card_unknown: unknownCard,
       })
@@ -401,7 +421,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     const fromPhoto = receipt
     const receiptPath = fromPhoto ? await takeReceipt() : null
     await sharedApi.create({
-      payerId, walletId: payerId === me ? walletId : null, amount, date, place: placeValue, categoryId,
+      payerId, walletId: payerId === me ? walletId : null, amount: net, date, place: placeValue, categoryId,
       parts: splitResult.parts,
       source: fromPhoto ? 'photo' : pending?.source ?? 'manual',
       receiptPath,
@@ -410,6 +430,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         ...(fromPhoto ? { reader: receipt.result.source, ...(receipt.result.chave ? { chave: receipt.result.chave } : {}) } : {}),
         ...(items.length ? { items: items.map(it => ({ name: it.name, amount: it.amount, owner: byItem ? it.owner ?? pixIds[0] : SPLIT_ALL })) } : {}),
         ...senderData(sender),
+        ...discountSd,
       },
     })
   }
@@ -419,7 +440,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     const fromPhoto = receipt
     const receiptPath = fromPhoto ? await takeReceipt() : null
     await transactionsApi.create({
-      type: 'expense', amount, date, categoryId, walletId: null, place: placeValue, description: null,
+      type: 'expense', amount: net, date, categoryId, walletId: null, place: placeValue, description: null,
       status: 'pending', holderId: holder,
       source: fromPhoto ? 'photo' : pending?.source ?? 'manual',
       receiptPath,
@@ -427,6 +448,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         ...(pending?.sourceData ?? {}),
         ...(fromPhoto ? { reader: receipt.result.source, ...(receipt.result.chave ? { chave: receipt.result.chave } : {}) } : {}),
         ...(items.length ? { items } : {}),
+        ...discountSd,
         card_unknown: true,
         installments,
         current_installment: currentInstallment,
@@ -607,6 +629,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
               )}
             </ListGroup>
 
+            {canDiscount && showExtras && <DiscountGroup value={discount} onChange={setDiscount} gross={grossTotal} />}
+
             {mode === 'income' && !pending && (!bill || repeat.on) && (
               <RepeatGroup value={repeat} onChange={setRepeat} start={bill ? bill.startMonth.slice(0, 7) : date.slice(0, 7)}
                 lastLabel="último recebimento" fixed={!!bill} />
@@ -630,8 +654,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
 
             {(needsCategory || needsWallet) && (
               <ListGroup footer={unknownCard ? holderFooter(holders, holder, me)
-                : splitting || (sharedPix && split.on) ? splitSummary(split, dividing, me, items, amount)
-                : sharedPix ? `Você deve ${formatCurrency(amount)} a ${cardPeople.nameOf(payerId)}.` : undefined}>
+                : splitting || (sharedPix && split.on) ? splitSummary(split, dividing, me, items, amount, net)
+                : sharedPix ? `Você deve ${formatCurrency(net)} a ${cardPeople.nameOf(payerId)}.` : undefined}>
                 {needsCategory && <CategoryField id="qa-category" categories={visibleCategories} value={categoryId} onChange={setCategoryId} />}
                 {needsWallet && (
                   <PickerRow id="qa-wallet" label={walletQuestion}
@@ -656,7 +680,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
                 {creditLike && installments > 1 && (
                   <InstallmentProgress installments={installments} current={currentInstallment} onCurrentChange={setCurrentInstallment}
                     amountIsInstallment={amountIsInstallment} onAmountIsInstallmentChange={setAmountIsInstallment}
-                    purchaseDate={date} amount={amount} />
+                    purchaseDate={date} amount={net} />
                 )}
                 {mode === 'expense' && showExtras && !bill && splitWith.length > 1 && (
                   <SplitRows value={split} onChange={setSplit} people={splitWith} me={me} items={items} total={amount} />
