@@ -4,7 +4,7 @@ import { senderOf } from './sender-field'
 import { PinBoldIcon } from '@solar-icons/react'
 import { ListRow } from '@/components/ios/list-row'
 import type { SwipeExtra } from '@/components/ios/swipe-actions'
-import { TokenIcon } from '@/components/shared/token-icon'
+import { CategoryIcon } from '@/components/shared/category-icon'
 import { useCardPeople } from '@/hooks/use-card-people'
 import type { Category, Transaction, Wallet } from '@/lib/types'
 import { cn, formatCurrency, walletLabel } from '@/lib/utils'
@@ -52,10 +52,7 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
       onDelete={onDelete}
       swipeExtra={swipeExtra}
       leading={
-        <TokenIcon
-          icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')}
-          color={category?.color ?? 'gray'}
-        />
+        <CategoryIcon icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')} />
       }
       title={pinned ? (
         <span className="flex min-w-0 items-center gap-1.5">

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { ProgressBar, toneFor } from '@/components/shared/progress-bar'
-import { TokenIcon } from '@/components/shared/token-icon'
+import { CategoryIcon } from '@/components/shared/category-icon'
 import { useCategories } from '@/hooks/use-categories'
 import { useCategorySpending } from '@/hooks/use-data'
 import type { CategorySpending } from '@/lib/types'
@@ -30,7 +30,7 @@ export function CategoryBreakdown({ month }: { month: string }) {
       <ListRow
         key={r.categoryId}
         onClick={() => setEditing(r)}
-        leading={<TokenIcon icon={c?.icon ?? 'ellipsis'} color={c?.color ?? 'gray'} />}
+        leading={<CategoryIcon icon={c?.icon ?? 'ellipsis'} />}
         title={r.name}
         subtitle={
           r.goal ? (
