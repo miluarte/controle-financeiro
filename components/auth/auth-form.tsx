@@ -10,6 +10,7 @@ import { SegmentedControl } from '@/components/ios/segmented-control'
 import { AppLogo } from '@/components/shared/app-logo'
 import { GoogleSignInButton } from './google-sign-in-button'
 import { authErrorPt } from './new-password-rows'
+import { FormError } from '@/components/shared/form-error'
 
 // Login com Google desligado por enquanto; o botão volta trocando para true.
 const GOOGLE_LOGIN = false
@@ -132,7 +133,7 @@ export function AuthForm() {
           )}
         </ListGroup>
 
-        {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+        <FormError message={error} />
         {info && <p className="px-4 text-footnote text-muted-foreground">{info}</p>}
 
         <Button type="submit" size="lg" className="w-full" disabled={submitting}>

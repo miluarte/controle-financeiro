@@ -33,6 +33,8 @@ import { capitalize, cn, formatCurrency, monthName } from '@/lib/utils'
 import posthog from 'posthog-js'
 import { discountData, discountError, discountOf, discountValueOf, discountAmount } from '@/lib/discount'
 import { DiscountGroup, DiscountSummary } from './discount-group'
+import { Money } from '@/components/shared/money'
+import { FormError } from '@/components/shared/form-error'
 
 // TRA-6: abrir, editar e excluir um lançamento.
 // onAssign: titular de cartão compartilhado troca de quem é a compra (linha "De quem é").
@@ -224,11 +226,11 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
           <ListRow title="Quem pagou" trailing={<span className="text-body text-foreground">{t.paidBy ? nameOf(t.paidBy) : 'Você'}</span>} />
           {sharedParts.map(p => (
             <ListRow key={p.user_id} title={nameOf(p.user_id)}
-              trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(Number(p.amount))}</span>} />
+              trailing={<Money cents={Number(p.amount)} size="rowRegular" />} />
           ))}
           {typeof t.sourceData?.shared_total === 'number' && (
             <ListRow title="Total do Pix"
-              trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(t.sourceData.shared_total as number)}</span>} />
+              trailing={<Money cents={t.sourceData.shared_total as number} />} />
           )}
         </ListGroup>
       )}
@@ -269,11 +271,11 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
           <ListGroup header="Divisão">
             <ListRow title="Total da compra"
               subtitle={n > 1 ? parcelsText(null, splitTotal) : undefined}
-              trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(splitTotal)}</span>} />
+              trailing={<Money cents={splitTotal} />} />
             {split.map(p => (
               <ListRow key={p.user_id} title={nameOf(p.user_id)}
                 subtitle={n > 1 ? parcelsText(p.user_id, p.amount) : undefined}
-                trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(p.amount)}</span>} />
+                trailing={<Money cents={p.amount} size="rowRegular" />} />
             ))}
           </ListGroup>
           {/* mês a mês: quanto cada pessoa paga em cada parcela (a parcela desta tela em destaque) */}
@@ -283,7 +285,7 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
                 <ListRow key={m.n ?? 0}
                   title={<span className={cn(m.n === t.installmentN && 'font-semibold')}>{`${m.n} de ${n} · ${capitalize(monthName(m.date.slice(0, 7), 'short'))} ${m.date.slice(0, 4)}`}</span>}
                   subtitle={m.parts.map(p => `${nameOf(p.user_id)} ${formatCurrency(Number(p.amount))}`).join(' · ')}
-                  trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(m.parts.reduce((sum, p) => sum + Number(p.amount), 0))}</span>} />
+                  trailing={<Money cents={m.parts.reduce((sum, p) => sum + Number(p.amount), 0)} size="rowRegular" />} />
               ))}
             </ListGroup>
           )}
@@ -305,7 +307,7 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
         </ListGroup>
       )}
 
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
 
     </form>
   )

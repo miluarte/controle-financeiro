@@ -1,24 +1,25 @@
+import { Panel } from '@/components/ios/panel'
+import { Stat } from '@/components/ios/stat'
+import { Money } from '@/components/shared/money'
 import { ProgressRing } from '@/components/shared/progress-ring'
-import { formatCurrency } from '@/lib/utils'
 
 // CON-1: total das contas do mês (inclusive as fixas no cartão), quanto já foi pago, quanto falta e o anel de percentual pago.
 export function BillsMonthCard({ total, paid }: { total: number; paid: number }) {
   const rows = [
-    { label: 'Total', value: formatCurrency(total), tone: '' },
-    { label: 'Pago', value: formatCurrency(paid), tone: 'text-success' },
-    { label: 'Falta', value: formatCurrency(total - paid), tone: '' },
+    { label: 'Total', value: total, tone: 'default' as const },
+    { label: 'Pago', value: paid, tone: 'success' as const },
+    { label: 'Falta', value: total - paid, tone: 'default' as const },
   ]
   return (
-    <section className="flex items-center gap-4 rounded-3xl bg-grouped p-4">
+    <Panel className="flex items-center gap-4">
       <ProgressRing value={total ? paid / total : 0} />
       <dl className="flex-1 space-y-1">
         {rows.map(r => (
-          <div key={r.label} className="flex items-baseline justify-between gap-2">
-            <dt className="text-subheadline text-muted-foreground">{r.label}</dt>
-            <dd className={`text-subheadline font-semibold tabular-nums ${r.tone}`}>{r.value}</dd>
-          </div>
+          <Stat key={r.label} layout="inline" label={r.label}>
+            <Money as="dd" size="inherit" className="shrink-0 text-subheadline font-semibold" tone={r.tone} cents={r.value} />
+          </Stat>
         ))}
       </dl>
-    </section>
+    </Panel>
   )
 }

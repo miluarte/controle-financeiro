@@ -21,6 +21,7 @@ import { LoadingDots } from '@/components/shared/loading-dots'
 import { useCategorySuggest } from '@/hooks/use-category-suggest'
 import { feedback } from '@/lib/feedback'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
+import { Money } from '@/components/shared/money'
 
 // Conferir a fatura com o PDF do banco: o que falta no app, o que sobra e o que bate.
 export function ReconcileSheet({ open, onOpenChange, wallet, invoiceRef, dueDate }: {
@@ -149,8 +150,8 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
       {result && (
         <>
           <ListGroup>
-            {bankTotal != null && <ListRow title="Fatura do banco" trailing={<span className="tabular-nums">{formatCurrency(bankTotal)}</span>} />}
-            <ListRow title="No app" trailing={<span className="tabular-nums">{formatCurrency(appTotal)}</span>} />
+            {bankTotal != null && <ListRow title="Fatura do banco" trailing={<Money cents={bankTotal} size="inherit" tone="inherit" />} />}
+            <ListRow title="No app" trailing={<Money cents={appTotal} size="inherit" tone="inherit" />} />
             {rateSaved != null && (
               <ListRow title="Juros do rotativo" subtitle="Salvo no cartão"
                 trailing={<span className="tabular-nums">{rateSaved.toLocaleString('pt-BR')}% a.m.</span>} />
@@ -175,7 +176,7 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
                   ) : label(i)}
                   trailing={
                     <span className="flex items-center gap-2">
-                      <span className="tabular-nums">{formatCurrency(i.amount)}</span>
+                      <Money cents={i.amount} size="inherit" tone="inherit" />
                       <Button variant="plain" size="nav" disabled={!!busy} onClick={() => run(`m${k}`, () => add(i), 'Compra adicionada')}>Adicionar</Button>
                     </span>} />
               ))}
@@ -197,7 +198,7 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
                   subtitle={`${formatDate(t.date).slice(0, 5)}${t.installmentN ? ` · parcela ${t.installmentN} de ${t.installmentsTotal}` : ''}${shared ? ` · ${nameOf(t.owner)}` : ''}`}
                   trailing={
                     <span className="flex items-center gap-2">
-                      <span className="tabular-nums">{formatCurrency(t.amount)}</span>
+                      <Money cents={t.amount} size="inherit" tone="inherit" />
                       <Button variant="plain-destructive" size="nav" disabled={!!busy}
                         onClick={() => confirmDel.ask({ title: 'Excluir compra?', remove: async () => { await transactionsApi.remove(t.id); await compare(items) } })}>
                         Excluir
@@ -216,7 +217,7 @@ export function Reconcile({ wallet, invoiceRef, dueDate, initialFile }: {
                     <SelectField value={tx.owner} options={peopleOptions} className="h-auto text-subheadline"
                       onChange={v => { if (v && v !== tx.owner) run(tx.id, () => reassign(tx.id, v), 'Salvo') }} />
                   </span>}
-                trailing={<span className="tabular-nums">{formatCurrency(tx.amount)}</span>} />
+                trailing={<Money cents={tx.amount} size="inherit" tone="inherit" />} />
             )) : (
               <ListRow title="Conferidas" trailing={<span className="tabular-nums text-success">{result.matched.length}</span>} />
             )}

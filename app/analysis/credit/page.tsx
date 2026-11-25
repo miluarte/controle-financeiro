@@ -13,7 +13,8 @@ import { SelectField } from '@/components/shared/select-field'
 import { useInstitutionRates, useInstitutions } from '@/hooks/use-data'
 import { BY_DAYS, PRODUCT_LABEL, priceLoan, revolvingDebt } from '@/lib/finance'
 import type { CreditProduct } from '@/lib/types'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
+import { Money } from '@/components/shared/money'
 
 const PRODUCTS = Object.keys(PRODUCT_LABEL) as CreditProduct[]
 
@@ -76,11 +77,11 @@ export default function CreditSimulatorPage() {
         {result && (
           <ListGroup header="Resultado" footer={byDays ? 'Juros compostos por dia + IOF.' : 'Tabela Price + IOF (0,38% + 0,0082% ao dia).'}>
             {result.installment != null && (
-              <ListRow title={`${term}x de`} trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(result.installment)}</span>} />
+              <ListRow title={`${term}x de`} trailing={<Money cents={result.installment} />} />
             )}
-            <ListRow title="Juros" trailing={<span className="tabular-nums">{formatCurrency(result.interest)}</span>} />
-            <ListRow title="IOF" trailing={<span className="tabular-nums">{formatCurrency(result.iof)}</span>} />
-            <ListRow title="Total pago" trailing={<span className="text-body font-semibold tabular-nums text-destructive">{formatCurrency(result.total)}</span>} />
+            <ListRow title="Juros" trailing={<Money cents={result.interest} size="inherit" tone="inherit" />} />
+            <ListRow title="IOF" trailing={<Money cents={result.iof} size="inherit" tone="inherit" />} />
+            <ListRow title="Total pago" trailing={<Money cents={result.total} tone="danger" />} />
           </ListGroup>
         )}
       </div>

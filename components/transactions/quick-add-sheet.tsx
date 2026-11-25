@@ -57,6 +57,7 @@ import { PrepayGroup } from './prepay-group'
 import { SplitParcelGroups, useSplitParcel } from './split-parcel-group'
 import { receiptUrl } from '@/lib/receipt'
 import type { SplitValue } from './split-group'
+import { FormError } from '@/components/shared/form-error'
 
 const UNKNOWN_CARD = '__sem-cartao'
 
@@ -822,7 +823,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
               </Button>
             )}
 
-            {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+            <FormError message={error} />
 
             <Button type="submit" size="lg" className="w-full" disabled={!canSubmit}>
               {submitting ? <LoadingDots tone="current" label={bill ? 'Salvando' : 'Adicionando'} /> : submitLabel}

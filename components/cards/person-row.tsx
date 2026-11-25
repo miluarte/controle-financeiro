@@ -3,8 +3,9 @@
 import { MemberAvatar } from '@/components/family/member-avatar'
 import { ListRow } from '@/components/ios/list-row'
 import type { PersonGroup } from '@/hooks/use-card-invoices'
-import { cn, formatCurrency, formatDate, walletLabel } from '@/lib/utils'
+import { formatDate, walletLabel } from '@/lib/utils'
 import { InvoiceStatus, PixStatus } from './invoice-status'
+import { Money } from '@/components/shared/money'
 
 // Uma pessoa na aba Cartões: soma das faturas de todos os cartões dela (ou meus, no caso de quem me deve)
 // e dos Pix divididos com ela.
@@ -38,9 +39,7 @@ export function PersonRow({ group: g, kind, onClick }: { group: PersonGroup; kin
       title={g.name}
       subtitle={subtitle}
       trailing={
-        <span className={cn('text-body font-semibold tabular-nums', kind === 'receive' && g.open > 0 ? 'text-success' : 'text-foreground')}>
-          {formatCurrency(g.open > 0 ? g.open : g.total)}
-        </span>
+        <Money cents={g.open > 0 ? g.open : g.total} tone={kind === 'receive' && g.open > 0 ? 'success' : 'default'} />
       }
       chevron
     />

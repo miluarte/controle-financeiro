@@ -26,6 +26,9 @@ import { InvoiceNavigator } from './invoice-navigator'
 import { ShareCardGroup } from './share-card-group'
 import { personStatementPdf, shareOrDownload } from '@/lib/person-statement-pdf'
 import { useTransactionDelete } from '@/components/transactions/use-transaction-delete'
+import { Money } from '@/components/shared/money'
+import { EmptyState } from '@/components/shared/empty-state'
+import { Panel } from '@/components/ios/panel'
 
 // CAR-5 e VIS-3: visão do titular. Fatura total, fatia de cada pessoa, limite, compras e compartilhamento.
 // initialRef (AAAA-MM): fatura que abre primeiro (ex.: a que vence no mês, vinda da aba Cartões).
@@ -98,9 +101,9 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
       <InvoiceNavigator value={ref} onChange={setRef}
         caption={`${paidAt ? `Paga em ${formatDate(paidAt)}` : closed ? 'Fechada' : ref === openRef ? 'Aberta' : 'Futura'} · vence ${formatDate(due)}`} />
 
-      <section className="space-y-3 rounded-3xl bg-grouped p-4">
+      <Panel className="space-y-3">
         <div className="text-center">
-          <p className="text-large-title font-bold tabular-nums">{formatCurrency(total)}</p>
+          <Money as="p" size="display" cents={total} />
           <p className="text-footnote text-muted-foreground">{list.length} {list.length === 1 ? 'compra' : 'compras'}</p>
         </div>
         {shared && byPerson.size > 0 && (
@@ -119,7 +122,7 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
                       </span>
                     ) : null}
                   </span>
-                  <span className="shrink-0 text-subheadline font-semibold tabular-nums">{formatCurrency(v)}</span>
+                  <Money cents={v} size="inherit" className="shrink-0 text-subheadline font-semibold" />
                   <Button variant="plain" size="nav" aria-label={`Fatura de ${nameOf(id)} em PDF`} onClick={() => exportFor(id)}>Exportar</Button>
                 </li>
               )
@@ -142,7 +145,7 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
             Conferir com o PDF da fatura
           </Button>
         )}
-      </section>
+      </Panel>
       <ReconcileSheet open={checking} onOpenChange={setChecking} wallet={wallet} invoiceRef={ref} dueDate={due} />
 
       {reported.length > 0 && (
@@ -157,18 +160,18 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
       )}
 
       {wallet.spendingLimit ? (
-        <section className="space-y-2 rounded-3xl bg-grouped p-4">
+        <Panel className="space-y-2">
           <div className="flex justify-between text-subheadline">
             <span className="text-muted-foreground">Limite usado</span>
             <span className="font-semibold tabular-nums">{formatCurrency(used)} de {formatCurrency(wallet.spendingLimit)}</span>
           </div>
           <ProgressBar value={used / wallet.spendingLimit} tone={toneFor(used / wallet.spendingLimit)} />
           <p className="text-footnote text-muted-foreground">Disponível: {formatCurrency(wallet.spendingLimit - used)}</p>
-        </section>
+        </Panel>
       ) : null}
 
       <ListGroup header="Compras">
-        {list.length === 0 && <li className="p-4 text-center text-subheadline text-muted-foreground">Nenhuma compra nesta fatura.</li>}
+        {list.length === 0 && <EmptyState>Nenhuma compra nesta fatura.</EmptyState>}
         {rows.map(({ main, parts }) => parts.length > 1 ? (
           <TransactionItem key={main.id} transaction={{ ...main, amount: parts.reduce((s, p) => s + p.amount, 0) }}
             category={main.categoryId ? catById.get(main.categoryId) : undefined}

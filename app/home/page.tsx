@@ -6,6 +6,7 @@ import { FirstSteps } from '@/components/home/first-steps'
 import { HomeHero } from '@/components/home/home-hero'
 import { RecentTransactions } from '@/components/home/recent-transactions'
 import { PendingBanner } from '@/components/pending/pending-banner'
+import { Screen } from '@/components/ios/screen'
 import { currentMonth } from '@/lib/utils'
 
 // Início: faixa colorida com saudação e saldo do mês atual, depois a atividade recente.
@@ -13,7 +14,7 @@ import { currentMonth } from '@/lib/utils'
 export default function HomePage() {
   const month = currentMonth()
   return (
-    <div className="-mb-shell-bottom min-h-app bg-grouped pb-shell-bottom lg:mb-0 lg:min-h-0 lg:rounded-3xl lg:pb-6">
+    <Screen variant="grouped">
       <HomeHero>
         <BalanceCard month={month} />
       </HomeHero>
@@ -22,6 +23,6 @@ export default function HomePage() {
         <FirstSteps />
         <RecentTransactions month={month} />
       </div>
-    </div>
+    </Screen>
   )
 }

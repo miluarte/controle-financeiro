@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { LoadingDots } from '@/components/shared/loading-dots'
 import { readReceipt, type ReceiptResult } from '@/lib/receipt'
 import posthog from 'posthog-js'
+import { FormError } from '@/components/shared/form-error'
 
 // 5.4 passos 1 e 2: abre a câmera ou a galeria, lê a nota e guarda a foto (onSave), no fim do progresso
 // "Nota salva". O gasto só é registrado ao confirmar o formulário. Tocar de novo lê outra nota no lugar.
@@ -101,7 +102,7 @@ export function ReceiptScanButton({ onRead, onSave, initialFile = null }: {
           <CameraLinearIcon className="size-5" />Ler nota fiscal
         </Button>
       )}
-      {error && <p className="px-4 text-center text-footnote text-destructive">{error}</p>}
+      <FormError align="center" message={error} />
       <input ref={gallery} type="file" accept="image/*" className="sr-only"
         onChange={e => handleFile(e.target.files?.[0])} />
     </div>

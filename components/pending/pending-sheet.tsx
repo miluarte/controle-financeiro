@@ -5,13 +5,14 @@ import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { ModalSheet } from '@/components/ios/modal-sheet'
 import type { Transaction } from '@/lib/types'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
 import { QuickAddSheet } from '@/components/transactions/quick-add-sheet'
 import { transactionsApi } from '@/lib/api/transactions'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
 import { useCardPeople } from '@/hooks/use-card-people'
 import { ChooseCardSheet } from './choose-card-sheet'
 import { senderOf } from '@/components/transactions/sender-field'
+import { Money } from '@/components/shared/money'
 
 const SOURCE_LABEL: Record<string, string> = { apple_pay: 'Apple Pay', back_tap: 'Toque duplo', notification: 'SMS do banco', pix: 'Pix' }
 
@@ -64,7 +65,7 @@ export function PendingSheet({ open, pending, onOpenChange }: {
                   : () => del.ask({ title: t.type === 'income' ? 'Descartar receita?' : 'Descartar gasto?', label: 'Descartar', remove: () => transactionsApi.remove(t.id) })}
                 title={t.place || t.description || 'Sem local'}
                 subtitle={subtitle(t)}
-                trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(t.amount)}</span>} />
+                trailing={<Money cents={t.amount} />} />
             ))}
           </ListGroup>
         </ModalSheet>

@@ -10,8 +10,9 @@ import { ListGroup } from '@/components/ios/list-group'
 import { useGoals, useHistory } from '@/hooks/use-data'
 import { averageSavings, planGoals } from '@/lib/advanced'
 import type { Goal } from '@/lib/types'
-import { formatCurrency } from '@/lib/utils'
 import { LoadingBlock } from '@/components/shared/loading-dots'
+import { Panel } from '@/components/ios/panel'
+import { Money } from '@/components/shared/money'
 
 // Objetivos com simulação: quando cada um fica pronto com a poupança média real.
 export default function GoalsPage() {
@@ -29,13 +30,13 @@ export default function GoalsPage() {
       <LargeTitleHeader back title="Objetivos"
         actions={<GlassButton aria-label="Novo objetivo" onClick={() => openGoal(null)}><AddLinearIcon /></GlassButton>} />
       <div className="space-y-7 px-4 pt-2">
-        <section className="rounded-3xl bg-grouped p-4">
+        <Panel>
           <p className="text-subheadline text-muted-foreground">Você guarda em média</p>
-          <p className="text-title1 font-bold tabular-nums">{formatCurrency(average)}/mês</p>
+          <Money as="p" size="title" cents={average} suffix="/mês" />
           <p className="text-footnote text-muted-foreground">
             {months ? `Últimos ${months} ${months === 1 ? 'mês' : 'meses'} completos` : 'Sem meses completos ainda'}
           </p>
-        </section>
+        </Panel>
 
         {loading ? (
           <LoadingBlock />

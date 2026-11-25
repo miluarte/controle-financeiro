@@ -16,6 +16,8 @@ import { familyApi } from '@/lib/api/family'
 import { transactionsApi } from '@/lib/api/transactions'
 import type { CardDebt, Wallet } from '@/lib/types'
 import { formatCurrency, formatDate, monthLabel, walletLabel } from '@/lib/utils'
+import { Money } from '@/components/shared/money'
+import { EmptyState } from '@/components/shared/empty-state'
 
 export interface SharedInvoice { wallet: Wallet; debt: CardDebt }
 
@@ -54,7 +56,7 @@ function Body({ inv, owner, onPay }: { inv: SharedInvoice; owner: string; onPay:
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <p className="text-large-title font-bold tabular-nums">{formatCurrency(paid ? debt.total : debt.open)}</p>
+        <Money as="p" size="display" cents={paid ? debt.total : debt.open} />
         <p className="text-subheadline text-muted-foreground">
           {paid ? `Paga a ${owner}` : `Você deve a ${owner}`} · vence {formatDate(debt.dueDate)}
         </p>
@@ -86,7 +88,7 @@ function Body({ inv, owner, onPay }: { inv: SharedInvoice; owner: string; onPay:
 
       <ListGroup header={`${paid ? 'Compras pagas' : 'Suas compras'} · ${list.length}`}
         footer={`Fatura de ${monthLabel(ref)}.`}>
-        {list.length === 0 && <li className="p-4 text-center text-subheadline text-muted-foreground">Nenhuma compra sua nesta fatura.</li>}
+        {list.length === 0 && <EmptyState>Nenhuma compra sua nesta fatura.</EmptyState>}
         {list.map(t => (
           <TransactionItem key={t.id} transaction={t} category={t.categoryId ? catById.get(t.categoryId) : undefined} />
         ))}

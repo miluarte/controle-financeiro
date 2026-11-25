@@ -4,6 +4,8 @@ import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { SearchField } from '@/components/ios/search-field'
+import { Screen } from '@/components/ios/screen'
+import { Note } from '@/components/shared/note'
 import { MonthSelector } from '@/components/shared/month-selector'
 import { TransactionDayList } from '@/components/transactions/transaction-day-list'
 import { DuplicatesSheet } from '@/components/transactions/duplicates-sheet'
@@ -72,19 +74,19 @@ function TransactionsContent() {
   }, [transactions, query, categories, wallets, extra])
 
   return (
-    <>
+    <Screen variant="grouped">
       <LargeTitleHeader title="Transações" actions={<MonthSelector />} />
       <div className="space-y-5 px-4 pt-2">
         <SearchField autoFocus={params.get('busca') === '1'} placeholder="Buscar local, item, categoria" value={query} onChange={e => setQuery(e.target.value)} />
-        {searching && <p className="-mt-3 px-4 text-footnote text-muted-foreground">Em todos os meses</p>}
+        {searching && <Note align="start" className="-mt-3">Em todos os meses</Note>}
         <TransactionFilters value={extra} onChange={setExtra} categories={categories} wallets={wallets} />
         {duplicates.length > 0 && (
-          <ListGroup>
+          <ListGroup variant="filled">
             <ListRow chevron onClick={() => setShowDuplicates(true)}
               title={`${duplicates.length} ${duplicates.length === 1 ? 'compra parece repetida' : 'compras parecem repetidas'}`} />
           </ListGroup>
         )}
-        <TransactionsSummary transactions={visible} />
+        <TransactionsSummary transactions={visible} tone="filled" />
         {loading ? (
           <LoadingBlock />
         ) : (
@@ -94,6 +96,6 @@ function TransactionsContent() {
       </div>
       <TransactionEditor transaction={editing} onClose={() => setEditing(null)} />
       <DuplicatesSheet open={showDuplicates} pairs={duplicates} onOpenChange={setShowDuplicates} />
-    </>
+    </Screen>
   )
 }

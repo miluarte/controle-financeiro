@@ -18,6 +18,7 @@ import type { Vehicle, VehicleMaintenance, VehicleTrip } from '@/lib/types'
 import { formatCurrency, formatDate, todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { feedback } from '@/lib/feedback'
+import { FormError } from '@/components/shared/form-error'
 
 interface VehicleSheetProps {
   open: boolean
@@ -134,7 +135,7 @@ function VehicleForm({ vehicle, trips, maintenance, onDone }: {
         </>
       )}
 
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
     </form>
   )
 }

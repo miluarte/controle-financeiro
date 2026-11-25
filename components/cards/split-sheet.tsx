@@ -15,6 +15,9 @@ import type { FamilyMember, Transaction } from '@/lib/types'
 import { equalParts } from '@/lib/split'
 import { formatCurrency } from '@/lib/utils'
 import { feedback } from '@/lib/feedback'
+import { Money } from '@/components/shared/money'
+import { FormError } from '@/components/shared/form-error'
+import { Note } from '@/components/shared/note'
 
 type Mode = 'equal' | 'value' | 'percent'
 
@@ -70,9 +73,9 @@ function Form({ t, people, me, onDone }: { t: Transaction; people: FamilyMember[
 
   return (
     <form id="split" onSubmit={save} className="space-y-6">
-      <p className="text-center text-subheadline text-muted-foreground">
+      <Note size="subheadline">
         {t.place || t.description || 'Compra'} · {formatCurrency(t.amount)}
-      </p>
+      </Note>
 
       <ListGroup header="Entre quem">
         <li className="flex flex-wrap gap-2 p-3">
@@ -91,7 +94,7 @@ function Form({ t, people, me, onDone }: { t: Transaction; people: FamilyMember[
         {chosen.map((p, i) => (
           <FormRow key={p.userId} label={label(p)} htmlFor={`split-${p.userId}`}>
             {mode === 'equal' ? (
-              <span className="text-body tabular-nums text-muted-foreground">{formatCurrency(amounts[i])}</span>
+              <Money cents={amounts[i]} size="rowRegular" tone="muted" />
             ) : mode === 'value' ? (
               <CurrencyInput id={`split-${p.userId}`} variant="bare" value={values[p.userId] ?? 0}
                 onChange={v => setValues(s => ({ ...s, [p.userId]: v }))} className="text-right" />
@@ -106,7 +109,7 @@ function Form({ t, people, me, onDone }: { t: Transaction; people: FamilyMember[
         ))}
       </ListGroup>
 
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
     </form>
   )
 }

@@ -12,6 +12,8 @@ import { useReplanData } from '@/hooks/use-replan-data'
 import { UNLOCK_EXPENSES } from '@/lib/replan'
 import { formatCurrency } from '@/lib/utils'
 import { LoadingBlock } from '@/components/shared/loading-dots'
+import { Money } from '@/components/shared/money'
+import { Panel } from '@/components/ios/panel'
 
 const CLASS_LABEL = { essential: 'Essencial', desire: 'Desejo' } as const
 
@@ -29,11 +31,11 @@ export default function YourCategoriesPage() {
         {loading ? <LoadingBlock /> : <p className="px-4 text-subheadline text-muted-foreground">{subtitle}</p>}
 
         {!loading && !unlocked && (
-          <section className="space-y-3 rounded-3xl bg-grouped p-4">
+          <Panel className="space-y-3">
             <p className="text-headline">Sugestões de ajuste liberam com {UNLOCK_EXPENSES} gastos</p>
             <ProgressBar value={p.expenseCount / UNLOCK_EXPENSES} />
             <p className="text-footnote text-muted-foreground">{p.expenseCount} de {UNLOCK_EXPENSES}. Quanto mais gastos registrados, melhores as sugestões.</p>
-          </section>
+          </Panel>
         )}
 
         {!loading && unlocked && (
@@ -43,7 +45,7 @@ export default function YourCategoriesPage() {
                 leading={<CategoryIcon icon={r.category.icon} />}
                 title={r.category.name}
                 subtitle={[r.category.class ? CLASS_LABEL[r.category.class] : null, r.currentGoal ? `meta ${formatCurrency(r.currentGoal)}` : 'sem meta'].filter(Boolean).join(' · ')}
-                trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(r.average)}</span>} />
+                trailing={<Money cents={r.average} />} />
             ))}
           </ListGroup>
         )}

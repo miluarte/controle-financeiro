@@ -7,8 +7,8 @@ import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { usePending } from '@/hooks/use-data'
 import { useSession } from '@/hooks/use-session'
-import { formatCurrency } from '@/lib/utils'
 import { PendingSheet } from './pending-sheet'
+import { Money } from '@/components/shared/money'
 
 // Home: gastos das automações esperando confirmação. Abre sozinho pelo aviso (?pendentes=1).
 export function PendingBanner() {
@@ -31,7 +31,7 @@ export function PendingBanner() {
         <ListRow chevron onClick={() => setOpen(true)}
           leading={<InboxLinearIcon className="size-6 text-tint" />}
           title={`${pending.length} para confirmar`}
-          trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(total)}</span>} />
+          trailing={<Money cents={total} />} />
       </ListGroup>
       <PendingSheet open={open} pending={pending} onOpenChange={setOpen} />
     </>

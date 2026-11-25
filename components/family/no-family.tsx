@@ -8,6 +8,7 @@ import { ListGroup } from '@/components/ios/list-group'
 import { useRefresh } from '@/hooks/use-refresh'
 import { familyApi } from '@/lib/api/family'
 import { feedback } from '@/lib/feedback'
+import { FormError } from '@/components/shared/form-error'
 
 // FAM-1 e FAM-4: criar uma família ou entrar com código.
 export function NoFamily() {
@@ -49,7 +50,7 @@ export function NoFamily() {
         <Button type="submit" variant="secondary" size="lg" className="w-full" disabled={busy || code.trim().length !== 8}>Pedir para entrar</Button>
       </form>
 
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
     </div>
   )
 }

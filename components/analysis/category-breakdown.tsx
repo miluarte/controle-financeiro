@@ -10,6 +10,8 @@ import { useCategorySpending } from '@/hooks/use-data'
 import type { CategorySpending } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import { GoalSheet } from './goal-sheet'
+import { Money } from '@/components/shared/money'
+import { EmptyState } from '@/components/shared/empty-state'
 
 // ANA-6: gastos por categoria com percentual e meta. ANA-5: categorias sem gasto, recolhidas.
 export function CategoryBreakdown({ month }: { month: string }) {
@@ -40,7 +42,7 @@ export function CategoryBreakdown({ month }: { month: string }) {
             </span>
           ) : r.total > 0 ? `${share}% dos gastos · sem meta` : 'Sem meta'
         }
-        trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(r.total)}</span>}
+        trailing={<Money cents={r.total} />}
       />
     )
   }
@@ -49,7 +51,7 @@ export function CategoryBreakdown({ month }: { month: string }) {
     <div className="space-y-5">
       <ListGroup header="Por categoria" >
         {spent.length ? spent.map(row) : (
-          <li className="p-4 text-center text-subheadline text-muted-foreground">Nenhum gasto neste mês.</li>
+          <EmptyState>Nenhum gasto neste mês.</EmptyState>
         )}
       </ListGroup>
       {empty.length > 0 && (

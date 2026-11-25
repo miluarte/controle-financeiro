@@ -5,9 +5,10 @@ import { PinBoldIcon } from '@solar-icons/react'
 import { ListRow } from '@/components/ios/list-row'
 import type { SwipeExtra } from '@/components/ios/swipe-actions'
 import { CategoryIcon } from '@/components/shared/category-icon'
+import { Money } from '@/components/shared/money'
 import { useCardPeople } from '@/hooks/use-card-people'
 import type { Category, Transaction, Wallet } from '@/lib/types'
-import { cn, formatCurrency, walletLabel } from '@/lib/utils'
+import { walletLabel } from '@/lib/utils'
 
 export const TYPE_LABEL: Record<Transaction['type'], string> = {
   expense: 'Gasto',
@@ -31,11 +32,9 @@ interface TransactionItemProps {
   // fixar/desafixar no deslizar; pinned mostra o alfinete ao lado do nome
   swipeExtra?: SwipeExtra
   pinned?: boolean
-  // plain: lista sem card (Início), linha com 16px em cima e embaixo e separador de ponta a ponta
-  layout?: 'inset' | 'plain'
 }
 
-export function TransactionItem({ transaction: t, category, wallet, onClick, onDelete, note, swipeExtra, pinned, layout }: TransactionItemProps) {
+export function TransactionItem({ transaction: t, category, wallet, onClick, onDelete, note, swipeExtra, pinned }: TransactionItemProps) {
   const title = t.place || t.description || category?.name || TYPE_LABEL[t.type]
   const walletName = (wallet ? walletLabel(wallet) : null) ?? t.walletNameSnapshot
   const installment = t.installmentN && t.installmentsTotal ? `${t.installmentN} de ${t.installmentsTotal}` : null
@@ -53,7 +52,8 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
       onClick={onClick}
       onDelete={onDelete}
       swipeExtra={swipeExtra}
-      layout={layout}
+      // mesma aparência em todas as listas: 16px em cima e embaixo, separador de ponta a ponta
+      layout="plain"
       // título e valor em subheadline negrito, subtítulo em subheadline regular
       className="text-subheadline"
       leading={
@@ -67,9 +67,7 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
       ) : <span className="font-bold">{title}</span>}
       subtitle={subtitle}
       trailing={
-        <span className={cn('text-subheadline font-bold tabular-nums', inflow ? 'text-success' : 'text-foreground')}>
-          {inflow && '+'}{formatCurrency(t.amount)}
-        </span>
+        <Money cents={t.amount} size="item" tone={inflow ? 'success' : 'default'} sign={inflow ? '+' : undefined} />
       }
     />
   )

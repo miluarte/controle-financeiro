@@ -7,6 +7,7 @@ import { nextBusinessDay } from '@/lib/business-days'
 import { daysBetween, lateCost, lateRules } from '@/lib/late-fee'
 import type { OwnWallet } from '@/lib/types'
 import { formatCurrency, todayIso } from '@/lib/utils'
+import { Money } from '@/components/shared/money'
 
 // Quanto a fatura em aberto custaria com atraso, pelas regras da instituição do cartão.
 export function LateCostGroup({ wallet, total, dueDate }: { wallet: OwnWallet; total: number; dueDate: string }) {
@@ -34,7 +35,7 @@ export function LateCostGroup({ wallet, total, dueDate }: { wallet: OwnWallet; t
           <ListRow key={d}
             title={late > 0 ? 'Pagando hoje' : `${d} dias`}
             subtitle={`+${formatCurrency(c.total - total)} de juros e encargos`}
-            trailing={<span className="text-body font-semibold tabular-nums text-destructive">{formatCurrency(c.total)}</span>} />
+            trailing={<Money cents={c.total} tone="danger" />} />
         )
       })}
     </ListGroup>

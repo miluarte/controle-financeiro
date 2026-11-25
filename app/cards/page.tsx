@@ -13,7 +13,8 @@ import { TokenIcon } from '@/components/shared/token-icon'
 import { useCardInvoices } from '@/hooks/use-card-invoices'
 import { useMonth } from '@/hooks/use-month'
 import { nextBusinessDay } from '@/lib/business-days'
-import { cn, formatCurrency, formatDate, walletLabel } from '@/lib/utils'
+import { formatCurrency, formatDate, walletLabel } from '@/lib/utils'
+import { Money } from '@/components/shared/money'
 
 // Faturas do mês: meus cartões (um por linha) e cartões compartilhados (uma linha por pessoa).
 export default function CardsPage() {
@@ -61,9 +62,7 @@ export default function CardsPage() {
                         </span>
                       )}
                       trailing={
-                        <span className={cn('text-body font-semibold tabular-nums', none ? 'text-muted-foreground' : 'text-foreground')}>
-                          {formatCurrency(left)}
-                        </span>
+                        <Money cents={left} tone={none ? 'muted' : 'default'} />
                       }
                       chevron
                     />
