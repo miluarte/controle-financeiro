@@ -100,7 +100,7 @@ export default function WalletsPage() {
           <ListGroup header="Arquivadas">
             {archived.map(w => (
               <ListRow key={w.id} onClick={() => open(w)} onDelete={() => askDelete(w)}
-                leading={<CardPreview name="" finish={w.finish} size="sm" className="w-11 opacity-50" />}
+                leading={<CardPreview name="" finish={w.finish} size="sm" className="w-11 opacity-(--alpha-half)" />}
                 title={<span className="text-muted-foreground">{walletLabel(w)}</span>} chevron />
             ))}
           </ListGroup>

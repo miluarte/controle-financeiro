@@ -27,7 +27,7 @@ export function RecentTransactions({ month, limit = 6 }: { month: string; limit?
     <section className="space-y-2">
       <div className="flex items-baseline justify-between">
         <h2 className="text-title3 font-semibold">Últimas transações</h2>
-        <Link href="/transactions" className="text-body text-tint active:opacity-50">Ver todas</Link>
+        <Link href="/transactions" className="text-body text-tint active:opacity-(--alpha-half)">Ver todas</Link>
       </div>
       {loading ? (
         <LoadingBlock />

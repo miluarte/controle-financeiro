@@ -16,6 +16,14 @@ export const ICON_TOKENS = [
   'ellipsis',
 ] as const
 
+// Cores usadas fora do CSS (meta theme-color e manifest), que não leem variáveis CSS.
+// Espelham app/tokens/semantic.css: --surface-page (zinc-50 / zinc-950) e --action-primary (zinc-950).
+export const SYSTEM_COLORS = {
+  pageLight: '#fafafa',
+  pageDark: '#09090b',
+  actionPrimary: '#09090b',
+} as const
+
 export type ColorToken = typeof COLOR_TOKENS[number]
 export type IconToken = typeof ICON_TOKENS[number]
 

@@ -43,7 +43,7 @@ export function NoFamily() {
         <ListGroup header="Entrar com código" footer="O admin precisa aprovar.">
           <FormRow label="Código" htmlFor="fam-code">
             <Input id="fam-code" variant="bare" value={code} maxLength={8} autoCapitalize="characters"
-              onChange={e => setCode(e.target.value.toUpperCase())} placeholder="ABCD2345" className="text-right font-mono tracking-widest" />
+              onChange={e => setCode(e.target.value.toUpperCase())} placeholder="ABCD2345" className="text-right font-mono tracking-code" />
           </FormRow>
         </ListGroup>
         <Button type="submit" variant="secondary" size="lg" className="w-full" disabled={busy || code.trim().length !== 8}>Pedir para entrar</Button>

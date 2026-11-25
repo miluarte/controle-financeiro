@@ -36,7 +36,7 @@ export function BalanceCard({ month }: { month: string }) {
         <button
           type="button"
           onClick={toggle}
-          className="flex size-11 shrink-0 items-center justify-center text-muted-foreground active:opacity-50"
+          className="flex size-11 shrink-0 items-center justify-center text-muted-foreground active:opacity-(--alpha-half)"
           aria-label={hidden ? 'Mostrar valores' : 'Ocultar valores'}
         >
           {hidden ? <EyeClosedLinearIcon className="size-6" /> : <EyeLinearIcon className="size-6" />}

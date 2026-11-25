@@ -4,6 +4,7 @@ import './globals.css'
 import { AppShell } from '@/components/layout/app-shell'
 import { Providers } from './providers'
 import { AuthGate } from '@/components/auth/auth-gate'
+import { SYSTEM_COLORS } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Troco',
@@ -35,8 +36,8 @@ export const viewport: Viewport = {
   userScalable: false,
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f9fafb' },
-    { media: '(prefers-color-scheme: dark)', color: '#030712' },
+    { media: '(prefers-color-scheme: light)', color: SYSTEM_COLORS.pageLight },
+    { media: '(prefers-color-scheme: dark)', color: SYSTEM_COLORS.pageDark },
   ],
 }
 

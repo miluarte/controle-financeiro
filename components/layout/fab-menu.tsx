@@ -55,12 +55,12 @@ export function FabMenu({ items }: { items: FabMenuItem[] }) {
 
       {open && rect && createPortal(
         <div className="fixed inset-0 z-50" role="menu">
-          <div className="absolute inset-0 bg-scrim backdrop-blur-sm animate-in fade-in" onClick={() => setOpen(false)} />
+          <div className="absolute inset-0 bg-scrim backdrop-blur-glass animate-in fade-in" onClick={() => setOpen(false)} />
           <div className="absolute flex flex-col items-end gap-2"
-            style={{ right: window.innerWidth - rect.right, bottom: window.innerHeight - rect.top + 8 }}>
+            style={{ right: window.innerWidth - rect.right, bottom: `calc(${window.innerHeight - rect.top}px + var(--spacing) * 2)` }}>
             {items.map((item, i) => {
               const style = { animationDelay: `${(items.length - 1 - i) * 30}ms` }
-              const className = cn(buttonVariants({ size: 'lg' }), 'shadow-lg animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards [&_svg]:size-6')
+              const className = cn(buttonVariants({ size: 'lg' }), 'shadow-floating animate-in fade-in slide-in-from-bottom-2 fill-mode-backwards [&_svg]:size-6')
               return item.onFile ? (
                 <label key={item.key} role="menuitem" style={style} className={className}>
                   <item.icon />{item.label}

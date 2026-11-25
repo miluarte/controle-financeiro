@@ -26,7 +26,7 @@ export function SideNav() {
               className={cn(
                 href === SETTINGS_ITEM.href && 'mt-auto',
                 'flex h-row items-center gap-3 rounded-full px-4 text-body transition-colors',
-                active ? 'bg-fill font-semibold text-tint' : 'text-foreground/80 hover:bg-fill',
+                active ? 'bg-fill font-semibold text-tint' : 'text-foreground/(--alpha-strong) hover:bg-fill',
               )}>
               <IconComponent className="size-5" />{label}
             </Link>

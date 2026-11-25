@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { SYSTEM_COLORS } from '@/lib/constants'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -8,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: '/',
     display: 'standalone',
     orientation: 'portrait',
-    background_color: '#ffffff',
-    theme_color: '#171717',
+    background_color: SYSTEM_COLORS.pageLight,
+    theme_color: SYSTEM_COLORS.actionPrimary,
     icons: [
       {
         src: '/icons/icon-192.png',

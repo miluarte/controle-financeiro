@@ -42,7 +42,7 @@ export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="pointer-events-none absolute lg:hidden inset-x-0 bottom-0 z-40 flex justify-center gap-3 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+    <nav className="pointer-events-none absolute lg:hidden inset-x-0 bottom-0 z-40 flex justify-center gap-3 px-4 pb-safe-bar">
       <div className="glass pointer-events-auto flex h-tabbar max-w-sm flex-1 items-stretch gap-1 rounded-full p-1">
         {NAV_ITEMS.map(({ href, label, icon: Icon, activeIcon: ActiveIcon, also }) => {
           const active = isNavActive(pathname, href, also)
@@ -54,7 +54,7 @@ export function BottomNav() {
               aria-current={active ? 'page' : undefined}
               className={cn(
                 'flex flex-1 flex-col items-center justify-center gap-0.5 rounded-full transition-colors active:scale-95',
-                active ? 'bg-glass-lens text-tint' : 'text-foreground/70',
+                active ? 'bg-glass-lens text-tint' : 'text-foreground/(--alpha-muted)',
               )}
             >
               <IconComponent className="size-6" />

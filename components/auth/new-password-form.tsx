@@ -35,7 +35,7 @@ export function NewPasswordForm() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col justify-center px-4 lg:mx-auto lg:w-full lg:max-w-sm pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+    <div className="flex min-h-dvh flex-col justify-center px-4 lg:mx-auto lg:w-full lg:max-w-sm pt-safe-top pb-safe-bottom">
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
         <AppLogo size="lg" />
         <h1 className="text-title1 font-bold">Nova senha</h1>
