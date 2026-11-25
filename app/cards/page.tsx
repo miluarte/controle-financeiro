@@ -13,7 +13,7 @@ import { TokenIcon } from '@/components/shared/token-icon'
 import { useCardInvoices } from '@/hooks/use-card-invoices'
 import { useMonth } from '@/hooks/use-month'
 import { nextBusinessDay } from '@/lib/business-days'
-import { cn, formatCurrency, formatDate } from '@/lib/utils'
+import { cn, formatCurrency, formatDate, walletLabel } from '@/lib/utils'
 
 // Faturas do mês: meus cartões (um por linha) e cartões compartilhados (uma linha por pessoa).
 export default function CardsPage() {
@@ -50,7 +50,7 @@ export default function CardsPage() {
                       key={i.wallet.id}
                       onClick={() => router.push(`/cards/${i.wallet.id}?fatura=${i.inv.ref}`)}
                       leading={<TokenIcon icon="credit-card" color="gray" />}
-                      title={i.wallet.name}
+                      title={walletLabel(i.wallet)}
                       subtitle={none ? 'Sem compras nesta fatura' : (
                         <span className="flex min-w-0 items-center gap-1.5">
                           <span className="truncate">
