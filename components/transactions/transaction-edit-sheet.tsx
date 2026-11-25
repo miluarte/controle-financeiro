@@ -78,24 +78,45 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
   // compra dividida (split_purchase): divisão da compra inteira por pessoa
   const { nameOf, people, me } = useCardPeople()
   const [sender, setSender] = useState<Sender | null>(() => senderOf(t.sourceData))
-  const split = Array.isArray(t.sourceData?.split_parts) ? (t.sourceData.split_parts as { user_id: string; amount: number }[]) : null
-  const splitTotal = split ? split.reduce((sum, p) => sum + Number(p.amount), 0) : 0
+  const splitSaved = Array.isArray(t.sourceData?.split_parts) ? (t.sourceData.split_parts as { user_id: string; amount: number }[]) : null
   const n = t.installmentsTotal ?? 1
-  // divisão de cada parcela (split_schedule), mês a mês
-  const schedule = Array.isArray(t.sourceData?.split_schedule)
-    ? (t.sourceData.split_schedule as { n: number | null; date: string; parts: { user_id: string; amount: number }[] }[])
-    : null
   // parcela desta compra dividida: valor de cada pessoa, editável (ex.: corrigir um centavo)
   const root = typeof t.sourceData?.split_of === 'string' ? t.sourceData.split_of : t.id
-  const { data: parcelParts } = useSWR(split ? ['split-parts', root] : null, () => transactionsApi.splitParts(root))
+  const { data: parcelParts } = useSWR(splitSaved ? ['split-parts', root] : null, () => transactionsApi.splitParts(root))
   // só os valores alterados; os demais vêm do banco
   const [partAmounts, setPartAmounts] = useState<Record<string, number>>({})
   const parcelTotal = parcelParts ? parcelParts.reduce((sum, p) => sum + (partAmounts[p.id] ?? p.amount), 0) : null
+  // diferença por pessoa do que foi alterado e ainda não salvo; a Divisão já mostra o valor novo
+  const delta: Record<string, number> = {}
+  for (const p of parcelParts ?? []) delta[p.owner] = (delta[p.owner] ?? 0) + (partAmounts[p.id] ?? p.amount) - p.amount
+  const withDelta = (parts: { user_id: string; amount: number }[]) =>
+    parts.map(p => ({ ...p, amount: Number(p.amount) + (delta[p.user_id] ?? 0) }))
+  const split = splitSaved ? withDelta(splitSaved) : null
+  const splitTotal = split ? split.reduce((sum, p) => sum + p.amount, 0) : 0
+  // divisão de cada parcela (split_schedule), mês a mês
+  const schedule = Array.isArray(t.sourceData?.split_schedule)
+    ? (t.sourceData.split_schedule as { n: number | null; date: string; parts: { user_id: string; amount: number }[] }[])
+        .map(m => (m.n === t.installmentN ? { ...m, parts: withDelta(m.parts) } : m))
+    : null
   // parcela: a desta compra é exata (sua parte e o total da parcela antes de dividir); a de outra pessoa, aproximada
   const parcelOf = (userId: string | null, total: number) =>
     userId === t.owner ? t.amount
       : userId === null && typeof t.sourceData?.split_total === 'number' ? (t.sourceData.split_total as number)
       : Math.round(total / n)
+  // "3x de R$ 30,00" ou, com parcelas diferentes, "1x de R$ 31,40 + 2x de R$ 30,00" (pela divisão mês a mês)
+  const parcelsText = (userId: string | null, total: number) => {
+    const values = schedule && schedule.length === n
+      ? schedule.map(m => m.parts.filter(p => userId === null || p.user_id === userId).reduce((sum, p) => sum + Number(p.amount), 0))
+      : null
+    if (!values) return `${n}x de ${formatCurrency(parcelOf(userId, total))}`
+    const runs: { v: number; k: number }[] = []
+    for (const v of values) {
+      const last = runs[runs.length - 1]
+      if (last && last.v === v) last.k++
+      else runs.push({ v, k: 1 })
+    }
+    return runs.map(r => `${r.k}x de ${formatCurrency(r.v)}`).join(' + ')
+  }
   // compra de outra pessoa no meu cartão: a carteira fica no cartão e a categoria sai das categorias dela
   const mine = t.owner === me
   const { data: ownerCategories } = useSWR(me && !mine ? ['member-categories', t.owner] : null, () => categoriesApi.ofMember(t.owner))
@@ -220,11 +241,11 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
           {/* total da compra e de cada pessoa; na parcelada, também a parcela de cada um */}
           <ListGroup header="Divisão">
             <ListRow title="Total da compra"
-              subtitle={n > 1 ? `${n}x de ${formatCurrency(parcelOf(null, splitTotal))}` : undefined}
+              subtitle={n > 1 ? parcelsText(null, splitTotal) : undefined}
               trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(splitTotal)}</span>} />
             {split.map(p => (
               <ListRow key={p.user_id} title={nameOf(p.user_id)}
-                subtitle={n > 1 ? `${n}x de ${formatCurrency(parcelOf(p.user_id, p.amount))}` : undefined}
+                subtitle={n > 1 ? parcelsText(p.user_id, p.amount) : undefined}
                 trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(p.amount)}</span>} />
             ))}
           </ListGroup>
