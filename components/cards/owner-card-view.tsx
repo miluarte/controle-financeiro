@@ -163,13 +163,13 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
         </section>
       ) : null}
 
-      <ListGroup header="Compras" footer={shared && !paidAt ? 'Toque para dizer de quem é.' : undefined}>
+      <ListGroup header="Compras">
         {list.length === 0 && <li className="p-4 text-center text-subheadline text-muted-foreground">Nenhuma compra nesta fatura.</li>}
         {list.map(t => (
           <TransactionItem key={t.id} transaction={t}
             category={t.categoryId ? catById.get(t.categoryId) : undefined}
             note={shared ? `de ${nameOf(t.owner)}` : undefined}
-            onClick={() => (shared && !paidAt ? setAssigning(t) : t.owner === me ? setEditing(t) : undefined)}
+            onClick={() => setEditing(t)}
             onDelete={() => delTx.ask(t)} />
         ))}
       </ListGroup>
@@ -182,7 +182,8 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
         onSplit={t => { setAssigning(null); setSplitting(t) }} />
       <SplitSheet transaction={splitting} people={people} me={me} onClose={() => setSplitting(null)} />
       <ConfirmSettlementSheet settlement={confirming} debtorName={confirming ? nameOf(confirming.debtorId) : ''} onClose={() => setConfirming(null)} />
-      <TransactionEditSheet transaction={editing} onClose={() => setEditing(null)} />
+      <TransactionEditSheet transaction={editing} onClose={() => setEditing(null)}
+        onAssign={shared && !paidAt ? tx => { setEditing(null); setAssigning(tx) } : undefined} />
     </div>
   )
 }

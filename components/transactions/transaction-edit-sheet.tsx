@@ -31,9 +31,10 @@ import { capitalize, cn, formatCurrency, monthName } from '@/lib/utils'
 import posthog from 'posthog-js'
 
 // TRA-6: abrir, editar e excluir um lançamento.
+// onAssign: titular de cartão compartilhado troca de quem é a compra (linha "De quem é").
 export function TransactionEditSheet({
-  transaction, onClose,
-}: { transaction: Transaction | null; onClose: () => void }) {
+  transaction, onClose, onAssign,
+}: { transaction: Transaction | null; onClose: () => void; onAssign?: (t: Transaction) => void }) {
   const del = useTransactionDelete(onClose)
   const t = transaction
 
@@ -47,14 +48,14 @@ export function TransactionEditSheet({
         actionLabel="Salvar"
         onDelete={() => t && del.ask(t)}
       >
-        {t && <EditForm key={t.id} t={t} onDone={onClose} />}
+        {t && <EditForm key={t.id} t={t} onDone={onClose} onAssign={onAssign} />}
       </ModalSheet>
       {del.sheet}
     </>
   )
 }
 
-function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
+function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void; onAssign?: (t: Transaction) => void }) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
   const refresh = useRefresh()
@@ -87,9 +88,11 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
     userId === t.owner ? t.amount
       : userId === null && typeof t.sourceData?.split_total === 'number' ? (t.sourceData.split_total as number)
       : Math.round(total / n)
+  // compra de outra pessoa no meu cartão: categoria é de cada um e a carteira fica no cartão
+  const mine = t.owner === me
   const catType = t.type === 'income' ? 'income' : 'expense'
-  const showCategory = t.type === 'expense' || t.type === 'income'
-  const showWallet = t.type !== 'income'
+  const showCategory = (t.type === 'expense' || t.type === 'income') && mine
+  const showWallet = t.type !== 'income' && mine
   // gasto no Pix: para quem foi (Destinatário); receita: quem enviou (Remetente)
   const isPix = t.type === 'expense' && wallets.find(w => w.id === walletId)?.type === 'pix'
   const withSender = (data: Record<string, unknown> | null) => ({
@@ -135,6 +138,13 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
         </FormRow>
         {(t.type === 'income' || isPix) && editable && (
           <SenderRows id="edit-sender" label={t.type === 'income' ? 'Remetente' : 'Destinatário'} value={sender} onChange={setSender} people={people} me={me} />
+        )}
+        {!split && !mine && !onAssign && (
+          <ListRow title="De quem é" trailing={<span className="text-body text-foreground">{nameOf(t.owner)}</span>} />
+        )}
+        {!split && onAssign && (
+          <ListRow title="De quem é" chevron onClick={() => onAssign(t)}
+            trailing={<span className="text-body text-foreground">{nameOf(t.owner)}</span>} />
         )}
       </ListGroup>
 
