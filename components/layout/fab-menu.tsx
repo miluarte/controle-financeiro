@@ -44,7 +44,7 @@ export function FabMenu({ items }: { items: FabMenuItem[] }) {
     item.onSelect()
   }
 
-  const circle = cn(glassButtonVariants(), 'size-tabbar [&_svg]:size-7')
+  const circle = cn(glassButtonVariants({ material: 'solid' }), 'size-tabbar [&_svg]:size-7')
 
   return (
     <>
@@ -79,7 +79,7 @@ export function FabMenu({ items }: { items: FabMenuItem[] }) {
             })}
           </div>
           <button type="button" aria-label="Fechar" onClick={() => setOpen(false)}
-            className={cn(circle, 'absolute glass-strong text-foreground animate-in spin-in-90')}
+            className={cn(circle, 'absolute text-foreground animate-in spin-in-90')}
             style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }}>
             <CloseLinearIcon />
           </button>

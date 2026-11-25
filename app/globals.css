@@ -215,6 +215,7 @@
   --fill: var(--surface-sunken);
   --grouped: var(--surface-raised);
   --bar: var(--glass-surface-strong);
+  --bar-solid: var(--surface-raised);
   --segment: var(--surface-selected);
   --glass: var(--glass-surface);
   --glass-strong: var(--glass-surface-strong);
@@ -254,6 +255,14 @@
   backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
   border: var(--glass-border-width) solid var(--glass-border);
   box-shadow: var(--glass-elevation-strong);
+}
+
+/* Barra de abas e botão +: mesma forma do vidro, com fundo sólido e sem desfoque,
+   para a lista que passa por trás não ficar borrada. */
+@utility bar-solid {
+  background-color: var(--bar-solid);
+  border: var(--glass-border-width) solid var(--glass-border);
+  box-shadow: var(--glass-elevation);
 }
 
 /* Carregando: três pontos que sobem e clareiam em sequência (LoadingDots) */
