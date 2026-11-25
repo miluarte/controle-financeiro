@@ -15,6 +15,8 @@ import { TransactionsSummary } from '@/components/transactions/transactions-summ
 import { useCategories } from '@/hooks/use-categories'
 import { useMonth } from '@/hooks/use-month'
 import { useMonthTransactions } from '@/hooks/use-month-transactions'
+import { useAllMyTransactions } from '@/hooks/use-data'
+import { useSession } from '@/hooks/use-session'
 import { useWallets } from '@/hooks/use-wallets'
 import type { Transaction } from '@/lib/types'
 import { LoadingBlock } from '@/components/shared/loading-dots'
@@ -36,14 +38,24 @@ function TransactionsContent() {
   const { month, setMonth } = useMonth()
   const linkMonth = params.get('mes')
   useEffect(() => { if (linkMonth) setMonth(linkMonth) }, [linkMonth, setMonth])
-  const { transactions, loading } = useMonthTransactions(month)
+  const { transactions: monthList, loading: monthLoading } = useMonthTransactions(month)
   const { categories } = useCategories()
   const { wallets } = useWallets()
   const [query, setQuery] = useState('')
+  // com texto na busca, procura em todos os lançamentos (todos os meses); sem texto, só no mês escolhido
+  const searching = query.trim().length > 0
+  const { session } = useSession()
+  const all = useAllMyTransactions(searching ? session?.user.id : undefined)
+  const allSorted = useMemo(
+    () => [...all.transactions].sort((a, b) => b.date.localeCompare(a.date) || (b.createdAt ?? '').localeCompare(a.createdAt ?? '')),
+    [all.transactions],
+  )
+  const transactions = searching ? allSorted : monthList
+  const loading = searching ? all.loading : monthLoading
   const [extra, setExtra] = useState(() => ({ ...NO_FILTER, walletIds: params.get('pagamento')?.split(',').filter(Boolean) ?? [] }))
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [showDuplicates, setShowDuplicates] = useState(false)
-  const duplicates = useMemo(() => findDuplicates(transactions), [transactions])
+  const duplicates = useMemo(() => findDuplicates(monthList), [monthList])
 
   const visible = useMemo(() => {
     const q = normalize(query.trim())
@@ -64,6 +76,7 @@ function TransactionsContent() {
       <LargeTitleHeader title="Transações" actions={<MonthSelector />} />
       <div className="space-y-5 px-4 pt-2">
         <SearchField autoFocus={params.get('busca') === '1'} placeholder="Buscar local, item, categoria" value={query} onChange={e => setQuery(e.target.value)} />
+        {searching && <p className="-mt-3 px-4 text-footnote text-muted-foreground">Em todos os meses</p>}
         <TransactionFilters value={extra} onChange={setExtra} categories={categories} wallets={wallets} />
         {duplicates.length > 0 && (
           <ListGroup>
@@ -75,7 +88,8 @@ function TransactionsContent() {
         {loading ? (
           <LoadingBlock />
         ) : (
-          <TransactionDayList transactions={visible} onSelect={setEditing} />
+          <TransactionDayList transactions={visible} onSelect={setEditing}
+            emptyText={searching ? 'Nada encontrado em nenhum mês' : undefined} />
         )}
       </div>
       <TransactionEditor transaction={editing} onClose={() => setEditing(null)} />
