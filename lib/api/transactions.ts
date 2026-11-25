@@ -48,6 +48,13 @@ export const transactionsApi = {
     return all
   },
 
+  // Lançamentos pelos ids (ex.: as cobranças dos gastos fixos no cartão).
+  getByIds: async (ids: string[]) => {
+    if (!ids.length) return []
+    const rows = unwrap(await supabase.from('transactions').select('*').in('id', ids))
+    return rows.map(toTransaction)
+  },
+
   // Compras de um cartão numa fatura (todas que eu posso ver).
   getByInvoice: async (walletId: string, invoiceRef: string) => {
     const rows = unwrap(
