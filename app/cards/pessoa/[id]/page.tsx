@@ -16,7 +16,7 @@ import { TokenIcon } from '@/components/shared/token-icon'
 import { useCardInvoices, type PersonInvoice } from '@/hooks/use-card-invoices'
 import { useMonth } from '@/hooks/use-month'
 import type { Settlement, SharedDebt, Wallet } from '@/lib/types'
-import { cn, formatCurrency, formatDate, monthName } from '@/lib/utils'
+import { cn, formatCurrency, formatDate, monthName, walletLabel } from '@/lib/utils'
 
 // Uma pessoa da família: o que eu repasso nos cartões dela e o que ela me deve nos meus, fatura por fatura,
 // e os Pix divididos entre nós (quem pagou e quem deve).
@@ -38,7 +38,7 @@ export default function PersonCardsPage() {
       key={`${i.wallet.id}-${i.debt.invoiceRef}`}
       onClick={onClick}
       leading={<TokenIcon icon="credit-card" color="gray" />}
-      title={i.wallet.name}
+      title={walletLabel(i.wallet)}
       subtitle={
         <span className="flex min-w-0 items-center gap-1.5">
           <span className="truncate">
