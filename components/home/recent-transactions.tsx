@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { TransactionDayList } from '@/components/transactions/transaction-day-list'
-import { TransactionEditSheet } from '@/components/transactions/transaction-edit-sheet'
+import { TransactionEditor } from '@/components/transactions/transaction-editor'
 import { useMonthTransactions } from '@/hooks/use-month-transactions'
 import type { Transaction } from '@/lib/types'
 import { todayIso } from '@/lib/utils'
@@ -34,7 +34,7 @@ export function RecentTransactions({ month, limit = 6 }: { month: string; limit?
       ) : (
         <TransactionDayList transactions={latest(transactions, limit)} onSelect={setEditing} />
       )}
-      <TransactionEditSheet transaction={editing} onClose={() => setEditing(null)} />
+      <TransactionEditor transaction={editing} onClose={() => setEditing(null)} />
     </section>
   )
 }
