@@ -10,6 +10,7 @@ import { CardPreview } from '@/components/wallets/card-preview'
 import { WalletFormSheet } from '@/components/wallets/wallet-form-sheet'
 import { useOwnWallets } from '@/hooks/use-data'
 import { useWallets } from '@/hooks/use-wallets'
+import { walletLabel } from '@/lib/utils'
 
 // Detalhe do cartão: visão do titular ou do membro com quem o cartão foi compartilhado.
 // ?fatura=AAAA-MM abre nessa fatura.
@@ -29,7 +30,7 @@ function CardContent() {
 
   return (
     <>
-      <LargeTitleHeader back title={wallet ? (shared ? `${wallet.name}, de ${wallet.ownerName}` : wallet.name) : 'Cartão'}
+      <LargeTitleHeader back title={wallet ? (shared ? `${walletLabel(wallet)}, de ${wallet.ownerName}` : walletLabel(wallet)) : 'Cartão'}
         actions={mine ? <GlassButton size="capsule" onClick={() => setEditing(true)}>Editar</GlassButton> : undefined} />
       <div className="space-y-7 px-4 pt-2">
         {wallet && (

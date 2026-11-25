@@ -48,6 +48,13 @@ export const transactionsApi = {
     return all
   },
 
+  // Lançamentos pelos ids (ex.: as cobranças dos gastos fixos no cartão).
+  getByIds: async (ids: string[]) => {
+    if (!ids.length) return []
+    const rows = unwrap(await supabase.from('transactions').select('*').in('id', ids))
+    return rows.map(toTransaction)
+  },
+
   // Compras de um cartão numa fatura (todas que eu posso ver).
   getByInvoice: async (walletId: string, invoiceRef: string) => {
     const rows = unwrap(
@@ -102,6 +109,13 @@ export const transactionsApi = {
       supabase.from('transactions').update({ source_data: { ...(r.source_data ?? {}), items } }).eq('id', r.id)))
   },
 
+  // dados extras (ex.: desconto) em todas as parcelas da compra, sem tirar o que já está lá
+  mergeGroupData: async (groupId: string, patch: Record<string, unknown>) => {
+    const rows = unwrap(await supabase.from('transactions').select('id, source_data').eq('installment_group_id', groupId))
+    await Promise.all(rows.map(r =>
+      supabase.from('transactions').update({ source_data: { ...(r.source_data ?? {}), ...patch } }).eq('id', r.id)))
+  },
+
   // foto da nota em todas as parcelas da compra
   setGroupReceipt: async (groupId: string, path: string) => {
     unwrap(await supabase.from('transactions').update({ receipt_path: path }).eq('installment_group_id', groupId))
@@ -137,6 +151,16 @@ export const transactionsApi = {
     unwrap(await supabase.from('transactions').select('place, category_id').eq('type', 'expense').eq('status', 'confirmed')
       .not('category_id', 'is', null).not('place', 'is', null).order('date', { ascending: false }).limit(2000))
       .map(r => ({ place: r.place as string | null, categoryId: r.category_id as string | null })),
+
+  // partes de uma parcela de compra dividida (a original e as de cada pessoa)
+  splitParts: async (rootId: string) =>
+    unwrap(await supabase.from('transactions').select('*').or(`id.eq.${rootId},source_data->>split_of.eq.${rootId}`)).map(toTransaction),
+
+  // ajusta o valor de uma pessoa na parcela e recalcula a divisão em todas as partes
+  adjustSplitPart: async (id: string, amount: number) => {
+    const { error } = await supabase.rpc('adjust_split_part', { p_transaction: id, p_amount: amount })
+    if (error) throw new Error(error.message)
+  },
 
   idsOfGroup: async (groupId: string) =>
     unwrap(await supabase.from('transactions').select('id').eq('installment_group_id', groupId)).map(r => r.id as string),

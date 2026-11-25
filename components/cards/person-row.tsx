@@ -3,7 +3,7 @@
 import { MemberAvatar } from '@/components/family/member-avatar'
 import { ListRow } from '@/components/ios/list-row'
 import type { PersonGroup } from '@/hooks/use-card-invoices'
-import { cn, formatCurrency, formatDate } from '@/lib/utils'
+import { cn, formatCurrency, formatDate, walletLabel } from '@/lib/utils'
 import { InvoiceStatus, PixStatus } from './invoice-status'
 
 // Uma pessoa na aba Cartões: soma das faturas de todos os cartões dela (ou meus, no caso de quem me deve)
@@ -15,7 +15,7 @@ export function PersonRow({ group: g, kind, onClick }: { group: PersonGroup; kin
     // a fatura que importa agora: a primeira ainda em aberto (ou a última, se tudo foi pago)
     const next = g.invoices.find(i => i.debt.open > 0) ?? g.invoices[g.invoices.length - 1]
     const cards = new Set(g.invoices.map(i => i.wallet.id)).size
-    const what = cards === 1 ? next.wallet.name : `${cards} cartões`
+    const what = cards === 1 ? walletLabel(next.wallet) : `${cards} cartões`
     subtitle = (
       <span className="flex min-w-0 items-center gap-1.5">
         <span className="truncate">{what} · vence {formatDate(next.debt.dueDate).slice(0, 5)}{pix ? ` · ${pix}` : ''}</span>
