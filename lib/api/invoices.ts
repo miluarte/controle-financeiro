@@ -11,6 +11,12 @@ export const invoicesApi = {
     return rows.map(toInvoiceTotal)
   },
 
+  // limite usado do cartão: tudo o que falta pagar, de todas as pessoas (view card_limit_used)
+  limitUsed: async (walletId: string): Promise<number> => {
+    const row = unwrap(await supabase.from('card_limit_used').select('used').eq('wallet_id', walletId).maybeSingle())
+    return Number(row?.used ?? 0)
+  },
+
   paid: async (fromRef: string, toRef: string): Promise<Invoice[]> => {
     const rows = unwrap(
       await supabase.from('invoices').select('wallet_id, ref_month, paid_at')

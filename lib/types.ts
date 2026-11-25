@@ -207,6 +207,8 @@ export interface InvoiceTotal {
   purchases: number
   // compras desta fatura já pagas antes (antecipadas)
   prepaid: number
+  // gastos fixos já lançados com data futura (ainda não cobrados no cartão)
+  scheduled: number
 }
 
 export interface Invoice {
