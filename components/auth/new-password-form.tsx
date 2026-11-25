@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { ListGroup } from '@/components/ios/list-group'
 import { AppLogo } from '@/components/shared/app-logo'
 import { authErrorPt, checkNewPassword, MIN_PASSWORD, NewPasswordRows } from './new-password-rows'
+import { FormError } from '@/components/shared/form-error'
 
 // Aberto pelo link "Redefinir senha" do e-mail: a pessoa já está com sessão e escolhe a nova senha.
 export function NewPasswordForm() {
@@ -46,7 +47,7 @@ export function NewPasswordForm() {
           <NewPasswordRows password={password} confirm={confirm} onPasswordChange={setPassword} onConfirmChange={setConfirm} />
         </ListGroup>
 
-        {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+        <FormError message={error} />
 
         <Button type="submit" size="lg" className="w-full" disabled={saving}>
           {saving ? 'Aguarde…' : 'Salvar'}

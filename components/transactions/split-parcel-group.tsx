@@ -9,6 +9,7 @@ import { CurrencyInput } from '@/components/shared/currency-input'
 import { transactionsApi } from '@/lib/api/transactions'
 import type { Transaction } from '@/lib/types'
 import { capitalize, cn, formatCurrency, monthName } from '@/lib/utils'
+import { Money } from '@/components/shared/money'
 
 type Part = { user_id: string; amount: number }
 type Month = { n: number | null; date: string; parts: Part[] }
@@ -63,7 +64,7 @@ export function SplitParcelGroups({ t, state, nameOf, disabled }: {
             <ListRow key={m.n ?? 0}
               title={<span className={cn(m.n === t.installmentN && 'font-semibold')}>{`${m.n} de ${n} · ${capitalize(monthName(m.date.slice(0, 7), 'short'))} ${m.date.slice(0, 4)}`}</span>}
               subtitle={m.parts.map(p => `${nameOf(p.user_id)} ${formatCurrency(Number(p.amount))}`).join(' · ')}
-              trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(m.parts.reduce((sum, p) => sum + Number(p.amount), 0))}</span>} />
+              trailing={<Money cents={m.parts.reduce((sum, p) => sum + Number(p.amount), 0)} size="rowRegular" />} />
           ))}
         </ListGroup>
       )}

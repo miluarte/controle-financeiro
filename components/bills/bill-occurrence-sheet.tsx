@@ -13,10 +13,13 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { useWallets } from '@/hooks/use-wallets'
 import { billsApi } from '@/lib/api/bills'
 import type { BillOccurrence } from '@/lib/types'
-import { formatCurrency, formatDate, todayIso } from '@/lib/utils'
+import { formatDate, todayIso } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { feedback } from '@/lib/feedback'
 import { useBillDelete } from './use-bill-delete'
+import { Money } from '@/components/shared/money'
+import { FormError } from '@/components/shared/form-error'
+import { Note } from '@/components/shared/note'
 
 // CON-6 e CON-9: pagar, desfazer pagamento, editar só este mês ou a série, encerrar.
 // Receita fixa usa o mesmo fluxo: marcar como recebida gera a receita na carteira escolhida.
@@ -65,15 +68,15 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <p className="text-large-title font-bold tabular-nums">{formatCurrency(o.amount)}</p>
+        <Money as="p" size="display" cents={o.amount} />
         <p className="text-subheadline text-muted-foreground">{income ? 'Receber em' : 'Vence'} {formatDate(o.dueDate)} · {installment}</p>
         {o.bill.recipient && <p className="truncate text-subheadline text-muted-foreground">Para {o.bill.recipient.name}</p>}
       </div>
 
       {o.bill.onCard ? (
-        <p className="px-4 text-center text-footnote text-muted-foreground">
+        <Note>
           {o.paidAt ? `Lançada no cartão em ${formatDate(o.paidAt)}.` : 'Entra sozinha na fatura do cartão.'}
-        </p>
+        </Note>
       ) : o.paidAt ? (
         <ListGroup footer={income
           ? `Recebida em ${formatDate(o.paidAt)}.`
@@ -126,7 +129,7 @@ function Body({ o, onDone, onEdit }: { o: BillOccurrence; onDone: () => void; on
         </>
       )}
 
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
 
       <Button variant="secondary" size="lg" className="w-full" disabled={busy} onClick={onEdit}>
         {income ? 'Editar receita' : 'Editar gasto'}

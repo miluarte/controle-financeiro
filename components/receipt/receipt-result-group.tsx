@@ -2,7 +2,8 @@
 
 import { ListGroup } from '@/components/ios/list-group'
 import type { ReceiptItem } from '@/lib/receipt'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
+import { Money } from '@/components/shared/money'
 
 // 5.4 passos 4 a 6: avisa de onde veio a leitura e mostra os itens. A foto é sempre anexada.
 export function ReceiptResultGroup({
@@ -31,7 +32,7 @@ export function ReceiptResultGroup({
               {items.map((i, k) => (
                 <li key={k} className="flex justify-between gap-2 text-subheadline">
                   <span className="truncate">{i.name}</span>
-                  <span className="shrink-0 tabular-nums text-muted-foreground">{formatCurrency(i.amount)}</span>
+                  <Money cents={i.amount} size="inherit" tone="muted" className="shrink-0" />
                 </li>
               ))}
             </ul>

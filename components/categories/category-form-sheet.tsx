@@ -15,6 +15,7 @@ import { categoriesApi } from '@/lib/api/categories'
 import { ICON_TOKENS } from '@/lib/constants'
 import type { Category } from '@/lib/types'
 import { feedback } from '@/lib/feedback'
+import { FormError } from '@/components/shared/form-error'
 
 // CAT-5 e CAT-6: renomear, ícone, classe, arquivar e excluir. Categorias são sempre cinza e em ordem alfabética.
 export function CategoryFormSheet({
@@ -84,7 +85,7 @@ function Form({ c, onDone }: { c: Category; onDone: () => void }) {
         </li>
       </ListGroup>
 
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
     </form>
   )
 }

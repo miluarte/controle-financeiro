@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { SectionHeader } from '@/components/ios/section-header'
 import { useState } from 'react'
 import { TransactionDayList } from '@/components/transactions/transaction-day-list'
 import { TransactionEditor } from '@/components/transactions/transaction-editor'
@@ -25,14 +25,11 @@ export function RecentTransactions({ month, limit = 6 }: { month: string; limit?
 
   return (
     <section className="space-y-3">
-      <div className="flex items-baseline justify-between">
-        <h2 className="text-title3 font-bold">Atividade</h2>
-        <Link href={`/transactions?mes=${month}`} className="text-body text-tint active:opacity-(--alpha-half)">Ver todas</Link>
-      </div>
+      <SectionHeader title="Atividade" action={{ label: 'Ver todas', href: `/transactions?mes=${month}` }} />
       {loading ? (
         <LoadingBlock />
       ) : (
-        <TransactionDayList variant="plain" transactions={latest(transactions, limit)} onSelect={setEditing} />
+        <TransactionDayList transactions={latest(transactions, limit)} onSelect={setEditing} />
       )}
       <TransactionEditor transaction={editing} onClose={() => setEditing(null)} />
     </section>

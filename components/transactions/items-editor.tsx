@@ -9,6 +9,7 @@ import { CurrencyInput } from '@/components/shared/currency-input'
 import { SelectField } from '@/components/shared/select-field'
 import type { ReceiptItem } from '@/lib/receipt'
 import { cn, formatCurrency } from '@/lib/utils'
+import { Money } from '@/components/shared/money'
 
 // Itens da compra (o que foi comprado). Vêm da nota fiscal ou são digitados; tocar num item edita.
 // Valor do item é opcional. Com owners (compra dividida por item), cada item mostra de quem é no lugar da lixeira.
@@ -60,7 +61,7 @@ export function ItemsEditor({ items, onChange, total, disabled, owners, ownerNam
           <button type="button" disabled={disabled} onClick={() => startEdit(k)}
             className="flex min-w-0 flex-1 items-center justify-between gap-2 py-2 text-left text-body">
             <span className="truncate">{i.name}</span>
-            {i.amount > 0 && <span className="shrink-0 tabular-nums text-muted-foreground">{formatCurrency(i.amount)}</span>}
+            {i.amount > 0 && <Money cents={i.amount} size="inherit" tone="muted" className="shrink-0" />}
           </button>
           {ownerName ? (
             <span className="shrink-0 pl-2 text-subheadline text-muted-foreground">{ownerName(i.owner)}</span>

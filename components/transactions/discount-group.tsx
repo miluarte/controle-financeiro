@@ -9,6 +9,7 @@ import { DecimalField } from '@/components/shared/decimal-field'
 import { Switch } from '@/components/ui/switch'
 import { discountAmount, discountError, discountLabel, type Discount, type DiscountKind, type DiscountValue } from '@/lib/discount'
 import { formatCurrency } from '@/lib/utils'
+import { Money } from '@/components/shared/money'
 
 // "Teve desconto?" no gasto: em porcentagem ou em reais, abatido do valor da compra.
 // gross: total da compra sem desconto (na parcelada, todas as parcelas).
@@ -71,7 +72,7 @@ export function DiscountSummary({ discount, parts, nameOf, installments }: {
         trailing={<span className="text-body tabular-nums text-foreground">{discountLabel(discount, formatCurrency)}</span>} />
       {parts && nameOf && parts.length > 1 && parts.map(p => (
         <ListRow key={p.user_id} title={nameOf(p.user_id)}
-          trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(share(Number(p.amount)))}</span>} />
+          trailing={<Money cents={share(Number(p.amount))} size="rowRegular" />} />
       ))}
     </ListGroup>
   )

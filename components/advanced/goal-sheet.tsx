@@ -14,6 +14,7 @@ import type { Goal } from '@/lib/types'
 import { DateField } from '@/components/shared/date-field'
 import { feedback } from '@/lib/feedback'
 import posthog from 'posthog-js'
+import { FormError } from '@/components/shared/form-error'
 
 // Criar ou editar um objetivo (ex.: comprar uma moto).
 export function GoalSheet({ open, goal, nextPriority, onOpenChange }: {
@@ -76,7 +77,7 @@ function GoalForm({ goal, nextPriority, onDone }: { goal: Goal | null; nextPrior
         </FormRow>
       </ListGroup>
       <p className="px-4 text-footnote text-muted-foreground">Prioridade 1 recebe a poupança primeiro.</p>
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
     </form>
   )
 }

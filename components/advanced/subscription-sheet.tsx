@@ -13,6 +13,7 @@ import type { Subscription } from '@/lib/types'
 import { UseCalendar } from './use-calendar'
 import { feedback } from '@/lib/feedback'
 import posthog from 'posthog-js'
+import { FormError } from '@/components/shared/form-error'
 
 // Criar ou editar uma assinatura e marcar os dias de uso do mês.
 export function SubscriptionSheet({ open, subscription, month, usedDays, onOpenChange }: {
@@ -84,7 +85,7 @@ function SubscriptionForm({ subscription, month, usedDays, onDone }: {
         </ListGroup>
       )}
 
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
     </form>
   )
 }

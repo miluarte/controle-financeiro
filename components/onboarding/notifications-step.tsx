@@ -7,6 +7,8 @@ import { ListGroup } from '@/components/ios/list-group'
 import { useSession } from '@/hooks/use-session'
 import { enablePush, pushState, type PushState } from '@/lib/push'
 import { OnboardingStep, StepIcon } from './onboarding-step'
+import { FormError } from '@/components/shared/form-error'
+import { Note } from '@/components/shared/note'
 
 // Notificações: no iPhone só funcionam com o app na Tela de Início.
 export function NotificationsStep() {
@@ -36,13 +38,13 @@ export function NotificationsStep() {
       ) : state === 'on' ? (
         <p className="text-center text-body text-success">Avisos ativados neste aparelho.</p>
       ) : state === 'denied' ? (
-        <p className="text-center text-subheadline text-muted-foreground">Os avisos estão bloqueados. Libere nos Ajustes do iPhone &gt; Notificações &gt; Troco.</p>
+        <Note size="subheadline">Os avisos estão bloqueados. Libere nos Ajustes do iPhone &gt; Notificações &gt; Troco.</Note>
       ) : state === 'off' ? (
         <Button size="lg" className="w-full" onClick={enable}>Ativar avisos</Button>
       ) : (
-        <p className="text-center text-subheadline text-muted-foreground">Este navegador não recebe avisos. Você pode ativar depois em Ajustes.</p>
+        <Note size="subheadline">Este navegador não recebe avisos. Você pode ativar depois em Ajustes.</Note>
       )}
-      {message && <p className="px-4 text-center text-footnote text-destructive">{message}</p>}
+      <FormError align="center" message={message} />
     </OnboardingStep>
   )
 }

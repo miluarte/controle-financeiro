@@ -16,7 +16,9 @@ import { TokenIcon } from '@/components/shared/token-icon'
 import { useCardInvoices, type PersonInvoice } from '@/hooks/use-card-invoices'
 import { useMonth } from '@/hooks/use-month'
 import type { Settlement, SharedDebt, Wallet } from '@/lib/types'
-import { cn, formatCurrency, formatDate, monthName, walletLabel } from '@/lib/utils'
+import { formatCurrency, formatDate, monthName, walletLabel } from '@/lib/utils'
+import { Money } from '@/components/shared/money'
+import { EmptyState } from '@/components/shared/empty-state'
 
 // Uma pessoa da família: o que eu repasso nos cartões dela e o que ela me deve nos meus, fatura por fatura,
 // e os Pix divididos entre nós (quem pagou e quem deve).
@@ -49,9 +51,7 @@ export default function PersonCardsPage() {
         </span>
       }
       trailing={
-        <span className={cn('text-body font-semibold tabular-nums', kind === 'receive' && i.debt.open > 0 ? 'text-success' : 'text-foreground')}>
-          {formatCurrency(i.debt.open > 0 ? i.debt.open : i.debt.total)}
-        </span>
+        <Money cents={i.debt.open > 0 ? i.debt.open : i.debt.total} tone={kind === 'receive' && i.debt.open > 0 ? 'success' : 'default'} />
       }
       chevron
     />
@@ -73,9 +73,7 @@ export default function PersonCardsPage() {
         </span>
       }
       trailing={
-        <span className={cn('text-body font-semibold tabular-nums', kind === 'receive' && d.open > 0 ? 'text-success' : 'text-foreground')}>
-          {formatCurrency(d.open > 0 ? d.open : d.part)}
-        </span>
+        <Money cents={d.open > 0 ? d.open : d.part} tone={kind === 'receive' && d.open > 0 ? 'success' : 'default'} />
       }
       chevron
     />
@@ -87,7 +85,7 @@ export default function PersonCardsPage() {
       <LargeTitleHeader back title={name} actions={<MonthSelector />} />
       <div className="space-y-7 px-4 pt-2">
         {loading ? <LoadingBlock /> : !toOwe && !toReceive ? (
-          <p className="py-10 text-center text-subheadline text-muted-foreground">Nada com {name} neste mês</p>
+          <EmptyState variant="block">Nada com {name} neste mês</EmptyState>
         ) : (
           <>
             <SummaryCard rows={[

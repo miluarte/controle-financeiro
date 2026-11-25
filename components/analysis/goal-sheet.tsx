@@ -10,6 +10,8 @@ import { analysisApi } from '@/lib/api/analysis'
 import type { CategorySpending } from '@/lib/types'
 import { formatCurrency, monthName } from '@/lib/utils'
 import { feedback } from '@/lib/feedback'
+import { FormError } from '@/components/shared/form-error'
+import { Note } from '@/components/shared/note'
 
 // Meta mensal de uma categoria, vigente a partir do mês escolhido.
 export function GoalSheet({
@@ -38,10 +40,10 @@ function Form({ row, month, onDone }: { row: CategorySpending; month: string; on
   return (
     <form id="goal" onSubmit={e => { e.preventDefault(); save(value) }} className="space-y-4">
       <CurrencyInput id="goal-value" aria-label="Meta mensal" variant="display" value={value} onChange={setValue} />
-      <p className="px-4 text-center text-footnote text-muted-foreground">
+      <Note>
         Meta mensal a partir de {monthName(month)}. Gasto neste mês: {formatCurrency(row.total)}.
-      </p>
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      </Note>
+      <FormError message={error} />
       {row.goal != null && (
         <Button type="button" variant="ghost" size="lg" className="w-full text-destructive" onClick={() => save(null)}>
           Remover meta deste mês

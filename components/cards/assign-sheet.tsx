@@ -11,6 +11,8 @@ import { familyApi } from '@/lib/api/family'
 import type { FamilyMember, Transaction } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
 import { feedback } from '@/lib/feedback'
+import { FormError } from '@/components/shared/form-error'
+import { Note } from '@/components/shared/note'
 
 // ATR-2: "De quem é a compra?" (titular). ATR-4: vale para as parcelas em aberto.
 export function AssignSheet({
@@ -30,10 +32,10 @@ export function AssignSheet({
     <ModalSheet open={!!transaction} onOpenChange={o => { if (!o) onClose() }} title="De quem é a compra?">
       {transaction && (
         <>
-          <p className="text-center text-subheadline text-muted-foreground">
+          <Note size="subheadline">
             {transaction.place || transaction.description || 'Compra'} · {formatCurrency(transaction.amount)}
             {transaction.installmentsTotal ? ` · vale para as parcelas em aberto` : ''}
-          </p>
+          </Note>
           <ListGroup>
             {people.map(p => (
               <ListRow key={p.userId} onClick={() => assign(p.userId)}
@@ -42,7 +44,7 @@ export function AssignSheet({
                 trailing={transaction.owner === p.userId ? '✓' : undefined} />
             ))}
           </ListGroup>
-          {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+          <FormError message={error} />
           {onSplit && !transaction.installmentGroupId && people.length > 1 && (
             <Button type="button" variant="secondary" size="lg" className="w-full" onClick={() => onSplit(transaction)}>
               Dividir entre pessoas

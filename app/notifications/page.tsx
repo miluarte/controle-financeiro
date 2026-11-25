@@ -9,6 +9,7 @@ import { useNotifications } from '@/hooks/use-data'
 import { notificationsApi } from '@/lib/api/notifications'
 import { dayLabel } from '@/lib/utils'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
+import { EmptyState } from '@/components/shared/empty-state'
 
 // Central de notificações: tudo que o app avisou, do mais novo para o mais antigo.
 export default function NotificationsPage() {
@@ -39,7 +40,7 @@ export default function NotificationsPage() {
           </div>
         )}
         {notifications.length === 0 && (
-          <p className="py-10 text-center text-subheadline text-muted-foreground">Nenhuma notificação.</p>
+          <EmptyState variant="block">Nenhuma notificação.</EmptyState>
         )}
         {[...groups.entries()].map(([day, list]) => (
           <ListGroup key={day} header={dayLabel(day)}>

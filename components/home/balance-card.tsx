@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import { ArrowDownLinearIcon, ArrowUpLinearIcon, EyeClosedLinearIcon, EyeLinearIcon } from '@solar-icons/react'
 import { useMonthSummary } from '@/hooks/use-month-summary'
-import { addMonths, cn, formatCurrency, monthName } from '@/lib/utils'
+import { Panel } from '@/components/ios/panel'
+import { Money } from '@/components/shared/money'
+import { addMonths, formatCurrency, monthName } from '@/lib/utils'
 
 const HIDDEN = 'R$ ••••'
 
@@ -24,13 +26,14 @@ export function BalanceCard({ month }: { month: string }) {
   const show = (v: number) => (hidden ? HIDDEN : formatCurrency(v))
 
   return (
-    <section className="rounded-3xl bg-grouped p-5 shadow-floating">
+    <Panel tone="floating" padding="large">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-subheadline text-muted-foreground">Saldo do mês</p>
-          <p className={cn('truncate text-title1 font-bold tabular-nums', !hidden && summary && summary.balance < 0 && 'text-destructive')}>
-            {loading || !summary ? '…' : show(summary.balance)}
-          </p>
+          {loading || !summary
+            ? <p className="text-title1 font-bold">…</p>
+            : <Money as="p" size="title" className="truncate" cents={summary.balance} mask={hidden ? HIDDEN : undefined}
+                tone={!hidden && summary.balance < 0 ? 'danger' : 'default'} />}
         </div>
         <button
           type="button"
@@ -48,21 +51,21 @@ export function BalanceCard({ month }: { month: string }) {
       )}
       {summary && (
         <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-separator pt-4">
-          <Total icon={<ArrowUpLinearIcon />} label="Receitas" value={show(summary.income)} />
-          <Total icon={<ArrowDownLinearIcon />} label="Gastos" value={show(summary.spending)} />
+          <Total icon={<ArrowUpLinearIcon />} label="Receitas" cents={summary.income} hidden={hidden} />
+          <Total icon={<ArrowDownLinearIcon />} label="Gastos" cents={summary.spending} hidden={hidden} />
         </dl>
       )}
-    </section>
+    </Panel>
   )
 }
 
-function Total({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function Total({ icon, label, cents, hidden }: { icon: React.ReactNode; label: string; cents: number; hidden: boolean }) {
   return (
     <div className="flex min-w-0 items-start gap-2">
       <span className="mt-0.5 shrink-0 [&_svg]:size-5">{icon}</span>
       <div className="min-w-0">
         <dt className="truncate text-subheadline text-muted-foreground">{label}</dt>
-        <dd className="truncate text-subheadline font-bold tabular-nums">{value}</dd>
+        <Money as="dd" size="item" className="truncate" cents={cents} mask={hidden ? HIDDEN : undefined} />
       </div>
     </div>
   )

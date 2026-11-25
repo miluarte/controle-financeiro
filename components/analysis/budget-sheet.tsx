@@ -8,6 +8,8 @@ import { useSession } from '@/hooks/use-session'
 import { analysisApi } from '@/lib/api/analysis'
 import { monthName } from '@/lib/utils'
 import { feedback } from '@/lib/feedback'
+import { FormError } from '@/components/shared/form-error'
+import { Note } from '@/components/shared/note'
 
 // Define o orçamento total do mês (teto independente das metas por categoria).
 export function BudgetSheet({
@@ -37,10 +39,10 @@ function Form({ month, current, onDone }: { month: string; current: number | nul
   return (
     <form id="budget" onSubmit={save} className="space-y-4">
       <CurrencyInput id="budget-value" aria-label="Orçamento" variant="display" value={value} onChange={setValue} />
-      <p className="px-4 text-center text-footnote text-muted-foreground">
+      <Note>
         Total para gastar em {monthName(month)}.
-      </p>
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      </Note>
+      <FormError message={error} />
     </form>
   )
 }

@@ -19,6 +19,7 @@ import { formatCurrency, formatDate, walletLabel } from '@/lib/utils'
 import { LoadingBlock } from '@/components/shared/loading-dots'
 import { useBillDelete } from '@/components/bills/use-bill-delete'
 import { QuickAddSheet } from '@/components/transactions/quick-add-sheet'
+import { Money } from '@/components/shared/money'
 
 export default function BillsPage() {
   const { month } = useMonth()
@@ -81,7 +82,7 @@ export default function BillsPage() {
                   leading={<CategoryIcon icon={cat?.icon ?? 'ellipsis'} />}
                   title={o.bill.name}
                   subtitle={<span className="flex min-w-0 items-center gap-1.5"><span className="truncate">Vence {formatDate(o.dueDate).slice(0, 5)}{n}{to}</span> <DueBadge dueDate={o.dueDate} paid={!!o.paidAt} /></span>}
-                  trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(o.amount)}</span>}
+                  trailing={<Money cents={o.amount} />}
                   chevron
                 />
               )
@@ -100,7 +101,7 @@ export default function BillsPage() {
                     leading={<CategoryIcon icon={cat?.icon ?? 'ellipsis'} />}
                     title={o.bill.name}
                     subtitle={`Dia ${formatDate(o.dueDate).slice(0, 5)} · ${cardName(o.bill.walletId)}`}
-                    trailing={<span className="text-body tabular-nums text-muted-foreground">{formatCurrency(o.amount)}</span>}
+                    trailing={<Money cents={o.amount} size="rowRegular" tone="muted" />}
                     chevron
                   />
                 )
@@ -119,7 +120,7 @@ export default function BillsPage() {
                     leading={<CategoryIcon icon={cat?.icon ?? 'ellipsis'} />}
                     title={o.bill.name}
                     subtitle={<span className="flex items-center gap-1.5">Dia {formatDate(o.dueDate).slice(0, 5)} <DueBadge dueDate={o.dueDate} paid={!!o.paidAt} income /></span>}
-                    trailing={<span className="text-body font-semibold tabular-nums text-success">+{formatCurrency(o.amount)}</span>}
+                    trailing={<Money cents={o.amount} tone="success" sign="+" />}
                     chevron
                   />
                 )

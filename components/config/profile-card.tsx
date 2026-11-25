@@ -15,6 +15,7 @@ import { profileApi } from '@/lib/api/profile'
 import { COLOR_TOKENS, type ColorToken } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { feedback } from '@/lib/feedback'
+import { FormError } from '@/components/shared/form-error'
 
 function Avatar({ initial, color, large }: { initial: string; color: string; large?: boolean }) {
   return (
@@ -82,7 +83,7 @@ function ProfileForm({ onDone }: { onDone: () => void }) {
           ))}
         </li>
       </ListGroup>
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
     </form>
   )
 }

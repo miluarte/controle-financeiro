@@ -11,10 +11,11 @@ import { MonthSelector } from '@/components/shared/month-selector'
 import { useSubscriptions } from '@/hooks/use-data'
 import { useMonth } from '@/hooks/use-month'
 import { subscriptionCost } from '@/lib/advanced'
-import { cn, formatCurrency } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import { LoadingBlock } from '@/components/shared/loading-dots'
 import { subscriptionsApi } from '@/lib/api/advanced'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
+import { Money } from '@/components/shared/money'
 
 // Custo por uso de cada assinatura no mês, e quanto sairia pagando avulso.
 export default function SubscriptionsPage() {
@@ -52,9 +53,9 @@ export default function SubscriptionsPage() {
                   title={s.name}
                   subtitle={<>{c.uses} {c.uses === 1 ? 'uso' : 'usos'} · {formatCurrency(s.monthlyAmount)}/mês{note && <><br />{note}</>}</>}
                   trailing={
-                    <span className={cn('text-body font-semibold tabular-nums', c.loss != null && c.loss > 0 ? 'text-destructive' : 'text-foreground')}>
-                      {c.costPerUse != null ? formatCurrency(c.costPerUse) : 'Sem uso'}
-                    </span>
+                    c.costPerUse != null
+                      ? <Money cents={c.costPerUse} tone={c.loss != null && c.loss > 0 ? 'danger' : 'default'} />
+                      : <span className="text-body font-semibold text-foreground">Sem uso</span>
                   } />
               )
             })}

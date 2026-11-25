@@ -17,6 +17,9 @@ import { addMonths, capitalize, formatCurrency, formatDate, monthName, todayIso 
 import { InvoiceNavigator } from './invoice-navigator'
 import { SettlementSheet } from './settlement-sheet'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
+import { Money } from '@/components/shared/money'
+import { EmptyState } from '@/components/shared/empty-state'
+import { Panel } from '@/components/ios/panel'
 
 // VIS-1 e VIS-2: visão do membro. Só as próprias compras e quanto deve ao titular.
 export function MemberCardView({ wallet }: { wallet: Wallet }) {
@@ -45,16 +48,16 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
   return (
     <div className="space-y-7">
       {ask.sheet}
-      <section className="space-y-1 rounded-3xl bg-grouped p-4 text-center">
+      <Panel className="space-y-1 text-center">
         <p className="text-subheadline text-muted-foreground">Você deve a {owner} na fatura de {monthName(openRef)}</p>
-        <p className="text-large-title font-bold tabular-nums">{formatCurrency(at(openRef)?.open ?? 0)}</p>
+        <Money as="p" size="display" cents={at(openRef)?.open ?? 0} />
         {(at(openRef)?.settled ?? 0) > 0 && (
           <p className="text-footnote text-muted-foreground">{formatCurrency(at(openRef)!.settled)} já acertado de {formatCurrency(at(openRef)!.total)}</p>
         )}
         {payable.length > 0 && (
           <Button size="lg" className="mt-3 w-full" onClick={() => setPaying(true)}>Informar acerto</Button>
         )}
-      </section>
+      </Panel>
 
       {waiting.length > 0 && (
         <ListGroup header="Aguardando confirmação" footer={`${owner} recebeu um aviso para confirmar.`}>
@@ -83,7 +86,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
       <InvoiceNavigator value={ref} onChange={setRef} caption={`Suas compras · ${formatCurrency(list.reduce((s, t) => s + t.amount, 0))}`} />
 
       <ListGroup header="Suas compras">
-        {list.length === 0 && <li className="p-4 text-center text-subheadline text-muted-foreground">Nenhuma compra sua nesta fatura.</li>}
+        {list.length === 0 && <EmptyState>Nenhuma compra sua nesta fatura.</EmptyState>}
         {list.map(t => (
           <TransactionItem key={t.id} transaction={t}
             category={t.categoryId ? catById.get(t.categoryId) : undefined}

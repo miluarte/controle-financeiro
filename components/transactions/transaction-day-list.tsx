@@ -2,6 +2,7 @@
 
 import { TransactionItem } from './transaction-item'
 import { ListGroup } from '@/components/ios/list-group'
+import { EmptyState } from '@/components/shared/empty-state'
 import { useCategories } from '@/hooks/use-categories'
 import { useWallets } from '@/hooks/use-wallets'
 import type { Transaction } from '@/lib/types'
@@ -14,17 +15,14 @@ interface TransactionDayListProps {
   emptyTitle?: string
   emptyText?: string
   onSelect?: (t: Transaction) => void
-  // plain: sem card, direto no fundo (Início)
-  variant?: 'inset' | 'plain'
 }
 
-// TRA-1: lista agrupada por dia, um grupo do iOS por dia.
+// TRA-1: lista por dia, direto no fundo da tela (sem card), igual em todas as telas.
 export function TransactionDayList({
   transactions,
   emptyTitle = 'Nenhuma transação',
   emptyText = 'Nenhum gasto registrado neste mês',
   onSelect,
-  variant,
 }: TransactionDayListProps) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
@@ -35,10 +33,7 @@ export function TransactionDayList({
 
   if (transactions.length === 0) {
     return (
-      <div className="px-4 py-10 text-center">
-        <p className="text-headline">{emptyTitle}</p>
-        <p className="text-subheadline text-muted-foreground">{emptyText}</p>
-      </div>
+      <EmptyState variant="block" title={emptyTitle}>{emptyText}</EmptyState>
     )
   }
 
@@ -54,7 +49,7 @@ export function TransactionDayList({
       {del.sheet}
       {pin.sheet}
       {groups.map(g => (
-        <ListGroup key={g.day} header={dayLabel(g.day)} variant={variant}>
+        <ListGroup key={g.day} header={dayLabel(g.day)} variant="plain">
           {g.items.map(t => (
             <TransactionItem
               key={t.id}
@@ -65,7 +60,6 @@ export function TransactionDayList({
               onDelete={() => del.ask(t)}
               swipeExtra={pin.extra(t)}
               pinned={pin.pinned(t)}
-              layout={variant === 'plain' ? 'plain' : 'inset'}
             />
           ))}
         </ListGroup>

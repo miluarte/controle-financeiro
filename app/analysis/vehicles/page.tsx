@@ -15,6 +15,7 @@ import { formatCurrency } from '@/lib/utils'
 import { LoadingBlock } from '@/components/shared/loading-dots'
 import { vehiclesApi } from '@/lib/api/advanced'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
+import { Money } from '@/components/shared/money'
 
 // Custo de deslocamento por veículo no mês. Fica fora do saldo: é estimativa.
 export default function VehiclesPage() {
@@ -51,7 +52,7 @@ export default function VehiclesPage() {
                   onDelete={() => del.ask({ title: `Excluir "${v.name}" e os trajetos?`, remove: () => vehiclesApi.remove(v.id) })}
                   title={v.name}
                   subtitle={<>{c.km.toLocaleString('pt-BR')} km{perKm}<br />{detail}</>}
-                  trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(c.total)}</span>} />
+                  trailing={<Money cents={c.total} />} />
               )
             })}
           </ListGroup>
