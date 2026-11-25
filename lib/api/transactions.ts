@@ -138,6 +138,16 @@ export const transactionsApi = {
       .not('category_id', 'is', null).not('place', 'is', null).order('date', { ascending: false }).limit(2000))
       .map(r => ({ place: r.place as string | null, categoryId: r.category_id as string | null })),
 
+  // partes de uma parcela de compra dividida (a original e as de cada pessoa)
+  splitParts: async (rootId: string) =>
+    unwrap(await supabase.from('transactions').select('*').or(`id.eq.${rootId},source_data->>split_of.eq.${rootId}`)).map(toTransaction),
+
+  // ajusta o valor de uma pessoa na parcela e recalcula a divisão em todas as partes
+  adjustSplitPart: async (id: string, amount: number) => {
+    const { error } = await supabase.rpc('adjust_split_part', { p_transaction: id, p_amount: amount })
+    if (error) throw new Error(error.message)
+  },
+
   idsOfGroup: async (groupId: string) =>
     unwrap(await supabase.from('transactions').select('id').eq('installment_group_id', groupId)).map(r => r.id as string),
 
