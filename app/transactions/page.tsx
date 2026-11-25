@@ -25,10 +25,7 @@ import { LoadingBlock } from '@/components/shared/loading-dots'
 import { matchesFilters, NO_FILTER, TransactionFilters } from '@/components/transactions/transaction-filters'
 import { senderOf } from '@/components/transactions/sender-field'
 import { walletLabel } from '@/lib/utils'
-
-function normalize(s: string) {
-  return s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
-}
+import { matchesQuery } from '@/lib/search'
 
 // ?pagamento=id1,id2&mes=AAAA-MM abre já filtrado (ex.: "Você deve a …" da Home, com o mês das compras).
 export default function TransactionsPage() {
@@ -60,18 +57,15 @@ function TransactionsContent() {
   const duplicates = useMemo(() => findDuplicates(monthList), [monthList])
 
   const visible = useMemo(() => {
-    const q = normalize(query.trim())
     const catName = new Map(categories.map(c => [c.id, c.name]))
     const walletName = new Map(wallets.map(w => [w.id, walletLabel(w)]))
     return transactions.filter(t => {
       if (!matchesFilters(t, extra)) return false
-      if (!q) return true
+      if (!searching) return true
       const itemNames = Array.isArray(t.sourceData?.items) ? (t.sourceData.items as { name: string }[]).map(i => i.name) : []
-      const hay = [t.place, t.description, t.categoryId && catName.get(t.categoryId), t.walletId && walletName.get(t.walletId), ...itemNames, senderOf(t.sourceData)?.name]
-        .filter(Boolean).join(' ')
-      return normalize(hay).includes(q)
+      return matchesQuery(query, [t.place, t.description, t.categoryId && catName.get(t.categoryId), t.walletId && walletName.get(t.walletId), ...itemNames, senderOf(t.sourceData)?.name], t.amount)
     })
-  }, [transactions, query, categories, wallets, extra])
+  }, [transactions, query, searching, categories, wallets, extra])
 
   return (
     <Screen variant="grouped">
