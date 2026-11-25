@@ -32,7 +32,7 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const SETTINGS_ITEM: NavItem = { href: '/config', label: 'Ajustes', icon: SettingsLinearIcon, activeIcon: SettingsBoldIcon }
 
-// Barra de abas Liquid Glass (iOS 26): cápsula de vidro flutuante, só ícones (o nome fica no aria-label),
+// Barra de abas (iOS 26): cápsula flutuante de fundo sólido, sem desfoque (a lista por trás não fica borrada), só ícones (o nome fica no aria-label),
 // aba ativa marcada por uma "lente" rosa, ícone preenchido e na cor principal (rosa). Ao lado, o botão + (AddMenu).
 // Fica presa ao fundo do AppShell (que ocupa a tela toda), sem position fixed. No desktop dá lugar ao SideNav.
 export const isNavActive = (pathname: string, href: string, also?: string[]) =>
@@ -43,7 +43,7 @@ export function BottomNav() {
 
   return (
     <nav className="pointer-events-none absolute lg:hidden inset-x-0 bottom-0 z-40 flex justify-center gap-3 px-4 pb-safe-bar">
-      <div className="glass pointer-events-auto flex h-tabbar max-w-sm flex-1 items-stretch gap-1 rounded-full p-1">
+      <div className="bar-solid pointer-events-auto flex h-tabbar max-w-sm flex-1 items-stretch gap-1 rounded-full p-1">
         {NAV_ITEMS.map(({ href, label, icon: Icon, activeIcon: ActiveIcon, also }) => {
           const active = isNavActive(pathname, href, also)
           const IconComponent = active ? ActiveIcon : Icon
