@@ -14,6 +14,7 @@ import { useCategories } from '@/hooks/use-categories'
 import { useRefresh } from '@/hooks/use-refresh'
 import { useWallets } from '@/hooks/use-wallets'
 import { transactionsApi } from '@/lib/api/transactions'
+import { categoriesApi } from '@/lib/api/categories'
 import type { Transaction } from '@/lib/types'
 import { TYPE_LABEL } from './transaction-item'
 import { receiptUrl, type ReceiptItem } from '@/lib/receipt'
@@ -95,10 +96,11 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
     userId === t.owner ? t.amount
       : userId === null && typeof t.sourceData?.split_total === 'number' ? (t.sourceData.split_total as number)
       : Math.round(total / n)
-  // compra de outra pessoa no meu cartão: categoria é de cada um e a carteira fica no cartão
+  // compra de outra pessoa no meu cartão: a carteira fica no cartão e a categoria sai das categorias dela
   const mine = t.owner === me
+  const { data: ownerCategories } = useSWR(me && !mine ? ['member-categories', t.owner] : null, () => categoriesApi.ofMember(t.owner))
   const catType = t.type === 'income' ? 'income' : 'expense'
-  const showCategory = (t.type === 'expense' || t.type === 'income') && mine
+  const showCategory = (t.type === 'expense' || t.type === 'income') && (mine || !!ownerCategories)
   const showWallet = t.type !== 'income' && mine
   // gasto no Pix: para quem foi (Destinatário); receita: quem enviou (Remetente)
   const isPix = t.type === 'expense' && wallets.find(w => w.id === walletId)?.type === 'pix'
@@ -165,7 +167,7 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
       {((showCategory && editable) || (showWallet && editable && !t.installmentGroupId && !shared)) && (
         <ListGroup>
           {showCategory && editable && (
-            <CategoryField id="edit-category" categories={categories.filter(c => c.type === catType)} value={categoryId}
+            <CategoryField id="edit-category" categories={(mine ? categories : ownerCategories ?? []).filter(c => c.type === catType)} value={categoryId}
               onChange={id => id && setCategoryId(id)} />
           )}
           {showWallet && editable && !t.installmentGroupId && !shared && (
