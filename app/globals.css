@@ -312,6 +312,8 @@
 @media (width < 64rem) {
   html:has([data-screen="grouped"]) { --screen-bg: var(--grouped); }
   html[data-top="hero"] { --screen-top: var(--surface-hero); }
+  /* No Início a faixa cobre também o começo do cabeçalho rosa (invisível): o Safari ignora faixa fina demais. */
+  html[data-top="hero"] [data-status-strip] { min-height: calc(var(--spacing) * 4); }
   html,
   html body,
   html [data-app-shell] {
