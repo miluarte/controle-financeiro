@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react'
 
-// Barra de status do iPhone (meta theme-color) sempre na cor do fundo da tela aberta. A cor vem do fundo
-// do html, que o CSS troca por tela (globals.css: rosa no Início, branco nas telas grouped, cinza nas
+// Barra de status do iPhone (meta theme-color) sempre na cor da faixa do topo (StatusBarStrip), que o
+// CSS troca por tela (--screen-top em globals.css: rosa no Início, branco nas telas grouped, cinza nas
 // outras). Recalcula quando a tela muda (DOM ou atributos do html) e quando o tema claro/escuro muda.
 // Converte qualquer cor do CSS (lab, oklch…) para hex, que toda versão do Safari entende no theme-color.
 function toHex(color: string) {
@@ -23,7 +23,8 @@ export function ThemeColorSync() {
     const apply = () => {
       cancelAnimationFrame(frame)
       frame = requestAnimationFrame(() => {
-        const color = getComputedStyle(html).backgroundColor
+        const strip = document.querySelector('[data-status-strip]')
+        const color = strip ? getComputedStyle(strip).backgroundColor : ''
         if (!color || color === 'rgba(0, 0, 0, 0)') return
         const hex = toHex(color)
         metas().forEach(m => { if (m.content !== hex) m.content = hex })
