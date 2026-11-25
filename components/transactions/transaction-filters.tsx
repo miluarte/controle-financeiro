@@ -9,6 +9,7 @@ import { ChoiceChip } from '@/components/shared/choice-chip'
 import { TokenIcon } from '@/components/shared/token-icon'
 import { WALLET_TYPE_ICON } from '@/lib/constants'
 import type { Category, Transaction, Wallet } from '@/lib/types'
+import { walletLabel } from '@/lib/utils'
 
 // tipos do filtro: gasto, receita e guardado (aplicar e resgatar)
 export const TYPE_FILTERS = [
@@ -53,7 +54,7 @@ export function TransactionFilters({ value, onChange, categories, wallets }: {
   const income = categories.filter(c => c.type === 'income')
   const catOption = (c: Category): Option => ({ id: c.id, label: c.name, icon: c.icon, color: c.color })
   const walletOptions = wallets.map(w => ({
-    id: w.id, label: w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name, icon: WALLET_TYPE_ICON[w.type] ?? 'wallet', color: 'gray',
+    id: w.id, label: w.ownerName ? `${walletLabel(w)}, de ${w.ownerName}` : walletLabel(w), icon: WALLET_TYPE_ICON[w.type] ?? 'wallet', color: 'gray',
   }))
 
   const key = open ?? 'types'

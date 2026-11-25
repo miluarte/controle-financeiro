@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import useSWR from 'swr'
 import { CategoryField } from '@/components/shared/category-field'
 import { WalletPicker } from '@/components/shared/wallet-picker'
 import { Button } from '@/components/ui/button'
@@ -31,9 +32,10 @@ import { capitalize, cn, formatCurrency, monthName } from '@/lib/utils'
 import posthog from 'posthog-js'
 
 // TRA-6: abrir, editar e excluir um lançamento.
+// onAssign: titular de cartão compartilhado troca de quem é a compra (linha "De quem é").
 export function TransactionEditSheet({
-  transaction, onClose,
-}: { transaction: Transaction | null; onClose: () => void }) {
+  transaction, onClose, onAssign,
+}: { transaction: Transaction | null; onClose: () => void; onAssign?: (t: Transaction) => void }) {
   const del = useTransactionDelete(onClose)
   const t = transaction
 
@@ -47,14 +49,14 @@ export function TransactionEditSheet({
         actionLabel="Salvar"
         onDelete={() => t && del.ask(t)}
       >
-        {t && <EditForm key={t.id} t={t} onDone={onClose} />}
+        {t && <EditForm key={t.id} t={t} onDone={onClose} onAssign={onAssign} />}
       </ModalSheet>
       {del.sheet}
     </>
   )
 }
 
-function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
+function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void; onAssign?: (t: Transaction) => void }) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
   const refresh = useRefresh()
@@ -82,14 +84,22 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
   const schedule = Array.isArray(t.sourceData?.split_schedule)
     ? (t.sourceData.split_schedule as { n: number | null; date: string; parts: { user_id: string; amount: number }[] }[])
     : null
+  // parcela desta compra dividida: valor de cada pessoa, editável (ex.: corrigir um centavo)
+  const root = typeof t.sourceData?.split_of === 'string' ? t.sourceData.split_of : t.id
+  const { data: parcelParts } = useSWR(split ? ['split-parts', root] : null, () => transactionsApi.splitParts(root))
+  // só os valores alterados; os demais vêm do banco
+  const [partAmounts, setPartAmounts] = useState<Record<string, number>>({})
+  const parcelTotal = parcelParts ? parcelParts.reduce((sum, p) => sum + (partAmounts[p.id] ?? p.amount), 0) : null
   // parcela: a desta compra é exata (sua parte e o total da parcela antes de dividir); a de outra pessoa, aproximada
   const parcelOf = (userId: string | null, total: number) =>
     userId === t.owner ? t.amount
       : userId === null && typeof t.sourceData?.split_total === 'number' ? (t.sourceData.split_total as number)
       : Math.round(total / n)
+  // compra de outra pessoa no meu cartão: categoria é de cada um e a carteira fica no cartão
+  const mine = t.owner === me
   const catType = t.type === 'income' ? 'income' : 'expense'
-  const showCategory = t.type === 'expense' || t.type === 'income'
-  const showWallet = t.type !== 'income'
+  const showCategory = (t.type === 'expense' || t.type === 'income') && mine
+  const showWallet = t.type !== 'income' && mine
   // gasto no Pix: para quem foi (Destinatário); receita: quem enviou (Remetente)
   const isPix = t.type === 'expense' && wallets.find(w => w.id === walletId)?.type === 'pix'
   const withSender = (data: Record<string, unknown> | null) => ({
@@ -109,6 +119,10 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
         ...(t.type === 'income' && { sourceData: withSender(t.sourceData) }),
       })
       if (t.type === 'expense' && t.installmentGroupId) await transactionsApi.setGroupItems(t.installmentGroupId, items)
+      for (const p of parcelParts ?? []) {
+        const v = partAmounts[p.id]
+        if (v && v !== p.amount) await transactionsApi.adjustSplitPart(p.id, v)
+      }
       await refresh()
       posthog.capture('transaction_updated', {
         transaction_type: t.type,
@@ -123,7 +137,10 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
 
   return (
     <form id="edit-transaction" onSubmit={save} className="space-y-6">
-      <CurrencyInput id="edit-amount" aria-label="Valor" variant="display" value={amount} onChange={setAmount} disabled={!editable || shared} />
+      {/* compra dividida: mostra o valor da parcela inteira (soma das partes); a parte de cada um fica em Divisão */}
+      <CurrencyInput id="edit-amount" aria-label="Valor" variant="display"
+        value={split ? parcelTotal ?? (typeof t.sourceData?.split_total === 'number' ? (t.sourceData.split_total as number) : amount) : amount}
+        onChange={setAmount} disabled={!editable || shared || !!split} />
 
       <ListGroup footer={t.installmentN ? `Parcela ${t.installmentN} de ${t.installmentsTotal}` : undefined}>
         <FormRow label="Data" htmlFor="edit-date">
@@ -135,6 +152,13 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
         </FormRow>
         {(t.type === 'income' || isPix) && editable && (
           <SenderRows id="edit-sender" label={t.type === 'income' ? 'Remetente' : 'Destinatário'} value={sender} onChange={setSender} people={people} me={me} />
+        )}
+        {!split && !mine && !onAssign && (
+          <ListRow title="De quem é" trailing={<span className="text-body text-foreground">{nameOf(t.owner)}</span>} />
+        )}
+        {!split && onAssign && (
+          <ListRow title="De quem é" chevron onClick={() => onAssign(t)}
+            trailing={<span className="text-body text-foreground">{nameOf(t.owner)}</span>} />
         )}
       </ListGroup>
 
@@ -181,6 +205,16 @@ function EditForm({ t, onDone }: { t: Transaction; onDone: () => void }) {
         <>
           <ItemsEditor items={items} onChange={setItems} total={splitTotal} disabled
             ownerName={o => (o === SPLIT_ALL ? 'Dividido' : nameOf(o ?? t.owner))} />
+          {parcelParts && parcelParts.length > 0 && (
+            <ListGroup header={n > 1 && t.installmentN ? `Parcela ${t.installmentN} de ${n}` : 'Valor de cada pessoa'}>
+              {parcelParts.map(p => (
+                <FormRow key={p.id} label={nameOf(p.owner)} htmlFor={`part-${p.id}`}>
+                  <CurrencyInput id={`part-${p.id}`} variant="bare" className="text-right" disabled={!editable}
+                    value={partAmounts[p.id] ?? p.amount} onChange={v => setPartAmounts(a => ({ ...a, [p.id]: v }))} />
+                </FormRow>
+              ))}
+            </ListGroup>
+          )}
           {/* total da compra e de cada pessoa; na parcelada, também a parcela de cada um */}
           <ListGroup header="Divisão">
             <ListRow title="Total da compra"

@@ -1,0 +1,8 @@
+{
+  "confirmation": "Confirme seu e-mail no Troco",
+  "invite": "Convite para o Troco",
+  "magic_link": "Seu acesso ao Troco",
+  "email_change": "Confirme seu novo e-mail no Troco",
+  "recovery": "Crie uma nova senha no Troco",
+  "reauthentication": "{{ .Token }} é seu código do Troco"
+}

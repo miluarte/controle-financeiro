@@ -67,7 +67,7 @@ docs/                modelo de dados
 ## Regras do projeto
 
 - Dinheiro sempre em centavos (inteiro).
-- Cores só por tokens semânticos em `app/theme.css`, sobre a escala `zinc`.
+- Tokens em camadas (`app/tokens/`): primitivos, semânticos e estilos de texto. Componentes usam só os semânticos e os estilos de texto, nunca um primitivo.
 - Ícones só de `@solar-icons/react`: `Linear` no estado normal, `Bold` quando ativo.
 - Pensado para o celular; no desktop, ajustes só com classes `lg:`.
 

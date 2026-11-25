@@ -15,7 +15,7 @@ import { useSettlements } from '@/hooks/use-family'
 import { familyApi } from '@/lib/api/family'
 import { transactionsApi } from '@/lib/api/transactions'
 import type { CardDebt, Wallet } from '@/lib/types'
-import { formatCurrency, formatDate, monthLabel } from '@/lib/utils'
+import { formatCurrency, formatDate, monthLabel, walletLabel } from '@/lib/utils'
 
 export interface SharedInvoice { wallet: Wallet; debt: CardDebt }
 
@@ -27,7 +27,7 @@ export function SharedInvoiceSheet({ invoice, onClose }: { invoice: SharedInvoic
   return (
     <>
       <ModalSheet open={!!invoice && !paying} onOpenChange={o => { if (!o) onClose() }}
-        title={invoice ? `Fatura ${invoice.wallet.name}` : ''}>
+        title={invoice ? `Fatura ${walletLabel(invoice.wallet)}` : ''}>
         {invoice && <Body key={`${invoice.wallet.id}-${invoice.debt.invoiceRef}`} inv={invoice} owner={owner} onPay={() => setPaying(true)} />}
       </ModalSheet>
       {invoice && (

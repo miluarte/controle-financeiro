@@ -15,7 +15,7 @@ import { useBills } from '@/hooks/use-data'
 import { useMonth } from '@/hooks/use-month'
 import { useCardChargePaid } from '@/hooks/use-card-charge-paid'
 import type { BillOccurrence } from '@/lib/types'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, walletLabel } from '@/lib/utils'
 import { LoadingBlock } from '@/components/shared/loading-dots'
 import { useBillDelete } from '@/components/bills/use-bill-delete'
 import { QuickAddSheet } from '@/components/transactions/quick-add-sheet'
@@ -40,7 +40,7 @@ export default function BillsPage() {
   const onCard = occurrences.filter(o => o.bill.type === 'expense' && o.bill.onCard)
   const cardName = (id: string | null) => {
     const w = usable.find(x => x.id === id)
-    return w ? (w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name) : 'cartão'
+    return w ? (w.ownerName ? `${walletLabel(w)}, de ${w.ownerName}` : walletLabel(w)) : 'cartão'
   }
   // o resumo soma as contas e as fixas no cartão; a fixa no cartão conta como paga quando a fatura dela está paga
   const cardChargePaid = useCardChargePaid(month, onCard)
