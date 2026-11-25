@@ -30,6 +30,8 @@ import { SPLIT_ALL } from '@/lib/split'
 import { ListRow } from '@/components/ios/list-row'
 import { capitalize, cn, formatCurrency, monthName } from '@/lib/utils'
 import posthog from 'posthog-js'
+import { discountData, discountError, discountOf, discountValueOf, discountAmount } from '@/lib/discount'
+import { DiscountGroup, DiscountSummary } from './discount-group'
 
 // TRA-6: abrir, editar e excluir um lançamento.
 // onAssign: titular de cartão compartilhado troca de quem é a compra (linha "De quem é").
@@ -61,7 +63,11 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
   const { wallets } = useWallets()
   const refresh = useRefresh()
   const pin = usePinAction()
+  // desconto guardado: na compra simples, o valor editado é o sem desconto
+  const savedDiscount = discountOf(t.sourceData)
+  const [discount, setDiscount] = useState(() => discountValueOf(savedDiscount))
   const [amount, setAmount] = useState(t.amount)
+  const [gross, setGross] = useState(savedDiscount ? savedDiscount.gross : t.amount)
   const [date, setDate] = useState(t.date)
   const [categoryId, setCategoryId] = useState(t.categoryId)
   const [walletId, setWalletId] = useState(t.walletId)
@@ -102,19 +108,32 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
   const showWallet = t.type !== 'income' && mine
   // gasto no Pix: para quem foi (Destinatário); receita: quem enviou (Remetente)
   const isPix = t.type === 'expense' && wallets.find(w => w.id === walletId)?.type === 'pix'
+  // gasto avulso de uma vez só (sem parcelas, divisão ou Pix dividido): desconto editável
+  const discountEditable = editable && t.type === 'expense' && !t.installmentGroupId && !shared && !split
+    && (!savedDiscount || savedDiscount.gross === t.amount + savedDiscount.amount)
+  const discountErr = discountEditable ? discountError(discount, gross) : null
+  const saveAmount = discountEditable ? gross - discountAmount(discount, gross) : amount
   const withSender = (data: Record<string, unknown> | null) => ({
     ...Object.fromEntries(Object.entries(data ?? {}).filter(([k]) => k !== 'sender')),
     ...(t.type === 'income' || isPix ? senderData(sender) : {}),
   })
 
+  // grava ou tira o desconto (só quando ele é editável aqui)
+  function withDiscount(data: Record<string, unknown>) {
+    if (!discountEditable) return data
+    const rest = Object.fromEntries(Object.entries(data).filter(([k]) => k !== 'discount'))
+    const d = discountData(discount, gross)
+    return d ? { ...rest, discount: d } : rest
+  }
+
   async function save(e: React.FormEvent) {
     e.preventDefault()
-    if (!editable || amount <= 0) return
+    if (!editable || saveAmount <= 0 || discountErr) return
     setBusy(true); setError(null)
     try {
       await transactionsApi.update(t.id, {
-        amount, date, categoryId, walletId,
-        ...(t.type === 'expense' && !t.installmentGroupId && { sourceData: { ...withSender(t.sourceData), items } }),
+        amount: saveAmount, date, categoryId, walletId,
+        ...(t.type === 'expense' && !t.installmentGroupId && { sourceData: withDiscount({ ...withSender(t.sourceData), items }) }),
         ...(t.type === 'income' ? { description: text.trim() || null } : { place: text.trim() || null }),
         ...(t.type === 'income' && { sourceData: withSender(t.sourceData) }),
       })
@@ -128,6 +147,7 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
         transaction_type: t.type,
         is_installment: Boolean(t.installmentGroupId),
         has_items: items.length > 0,
+        has_discount: !!discountOf(t.sourceData) || (discountEditable && discount.on),
       })
       onDone(); feedback.done('Salvo')
     } catch (err) {
@@ -139,8 +159,8 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
     <form id="edit-transaction" onSubmit={save} className="space-y-6">
       {/* compra dividida: mostra o valor da parcela inteira (soma das partes); a parte de cada um fica em Divisão */}
       <CurrencyInput id="edit-amount" aria-label="Valor" variant="display"
-        value={split ? parcelTotal ?? (typeof t.sourceData?.split_total === 'number' ? (t.sourceData.split_total as number) : amount) : amount}
-        onChange={setAmount} disabled={!editable || shared || !!split} />
+        value={split ? parcelTotal ?? (typeof t.sourceData?.split_total === 'number' ? (t.sourceData.split_total as number) : amount) : discountEditable ? gross : amount}
+        onChange={discountEditable ? setGross : setAmount} disabled={!editable || shared || !!split} />
 
       <ListGroup footer={t.installmentN ? `Parcela ${t.installmentN} de ${t.installmentsTotal}` : undefined}>
         <FormRow label="Data" htmlFor="edit-date">
@@ -188,6 +208,13 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
               trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(t.sourceData.shared_total as number)}</span>} />
           )}
         </ListGroup>
+      )}
+
+      {discountEditable && <DiscountGroup value={discount} onChange={setDiscount} gross={gross} />}
+      {/* compra parcelada, dividida ou Pix dividido: só mostra o desconto (e a parte de cada pessoa) */}
+      {!discountEditable && savedDiscount && (
+        <DiscountSummary discount={savedDiscount} parts={split ?? (sharedParts.length ? sharedParts : null)} nameOf={nameOf}
+          installments={n} />
       )}
 
       {pin.sheet}
