@@ -1,0 +1,87 @@
+/* ======================================================================
+   Troco: camada 1, primitivos.
+   Valores brutos, sem significado de uso. Nunca usados direto por um
+   componente: só pela camada semântica (semantic.css) e pelos estilos de
+   texto (typography.css).
+
+   O que não é repetido aqui:
+   - Paleta de cores (zinc, red, blue…): é a do Tailwind v4, que já define
+     --color-zinc-50 e afins (`@import "tailwindcss" theme(static)` emite tudo).
+   - Espaçamento: é a escala do Tailwind (calc(var(--spacing) * n)).
+   - Pesos de fonte: os do Tailwind (--font-weight-medium, -semibold, -bold).
+
+   Nomes pelo valor: --font-size-17 = 17pt, --opacity-12 = 12%.
+   ====================================================================== */
+
+:root {
+  /* Famílias */
+  --font-family-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Helvetica Neue", sans-serif;
+  --font-family-system-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Tamanhos de fonte (escala do iOS, Dynamic Type no tamanho padrão) */
+  --font-size-11: 0.6875rem;
+  --font-size-12: 0.75rem;
+  --font-size-13: 0.8125rem;
+  --font-size-15: 0.9375rem;
+  --font-size-16: 1rem;
+  --font-size-17: 1.0625rem;
+  --font-size-20: 1.25rem;
+  --font-size-22: 1.375rem;
+  --font-size-28: 1.75rem;
+  --font-size-34: 2.125rem;
+
+  /* Alturas de linha */
+  --line-height-13: 0.8125rem;
+  --line-height-16: 1rem;
+  --line-height-18: 1.125rem;
+  --line-height-20: 1.25rem;
+  --line-height-21: 1.3125rem;
+  --line-height-22: 1.375rem;
+  --line-height-25: 1.5625rem;
+  --line-height-28: 1.75rem;
+  --line-height-34: 2.125rem;
+  --line-height-41: 2.5625rem;
+
+  /* Espaçamento entre letras (em, acompanha o tamanho) */
+  --letter-spacing-large: 0.0234em;
+
+  /* Opacidades, para color-mix() na camada semântica */
+  --opacity-4: 4%;
+  --opacity-7: 7%;
+  --opacity-12: 12%;
+  --opacity-14: 14%;
+  --opacity-20: 20%;
+  --opacity-22: 22%;
+  --opacity-25: 25%;
+  --opacity-30: 30%;
+  --opacity-35: 35%;
+  --opacity-45: 45%;
+  --opacity-50: 50%;
+  --opacity-70: 70%;
+  --opacity-94: 94%;
+  --opacity-95: 95%;
+
+  /* Desfoque */
+  --blur-6: 6px;
+  --blur-14: 14px;
+
+  /* Raios */
+  --radius-10: 0.625rem;
+  --radius-28: 1.75rem;
+}
+
+/* Rosa do Troco (#E80070, a cor principal). A paleta do Tailwind não tem esse tom,
+   então ele ganha uma escala própria, usada só pela camada semântica. */
+@theme {
+  --color-rosa-50: #fff0f6;
+  --color-rosa-100: #ffd9e9;
+  --color-rosa-200: #ffb0d1;
+  --color-rosa-300: #ff7ab0;
+  --color-rosa-400: #ff3d8e;
+  --color-rosa-500: #e80070;
+  --color-rosa-600: #c2005d;
+  --color-rosa-700: #99004a;
+  --color-rosa-800: #700036;
+  --color-rosa-900: #4a0024;
+  --color-rosa-950: #2b0015;
+}

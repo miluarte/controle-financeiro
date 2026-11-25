@@ -9,6 +9,12 @@ export const SUPABASE_URL =
 export const SUPABASE_PUBLISHABLE_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? 'sb_publishable_YqB4o4diCY3xigGAmcLWGg_yG4abJvL'
 
+// Link do e-mail "Redefinir senha": o Supabase volta com #...type=recovery (ou com o erro, se o link
+// expirou). Lido antes de criar o cliente, porque ele limpa o endereço ao entrar com o link.
+const hash = typeof window === 'undefined' ? '' : window.location.hash
+export const OPENED_FROM_RECOVERY_LINK = /(^|[#&])type=recovery(&|$)/.test(hash)
+export const AUTH_LINK_ERROR = /(^|[#&])error=/.test(hash)
+
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true },
 })
