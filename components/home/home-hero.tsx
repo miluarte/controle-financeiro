@@ -24,7 +24,7 @@ export function HomeHero({ children }: { children: React.ReactNode }) {
       <div className="relative space-y-6 px-4 pt-4">
         <header className="flex items-center gap-3">
           <Link href="/config" aria-label="Ajustes" className="shrink-0 rounded-full active:scale-95">
-            <MemberAvatar name={name.trim() || '?'} color="gray" size="lg" className="bg-on-hero text-hero" />
+            <MemberAvatar name={name.trim() || '?'} color="gray" src={profile?.avatarUrl} size="lg" className="bg-on-hero text-hero" />
           </Link>
           <div className="min-w-0 flex-1 text-on-hero">
             <p className="truncate text-subheadline">{greeting()},</p>

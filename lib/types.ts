@@ -7,6 +7,8 @@ export interface Profile {
   id: string
   name: string
   avatarColor: string
+  // foto de perfil (URL pública no bucket avatars); null = avatar com a inicial
+  avatarUrl: string | null
   currency: string
   theme: Theme
   carryOverBalance: boolean
@@ -253,6 +255,7 @@ export interface FamilyMember {
   userId: string
   name: string
   avatarColor: string
+  avatarUrl?: string | null
   role: 'admin' | 'member'
   status: 'pending' | 'active'
   joinedAt: string | null

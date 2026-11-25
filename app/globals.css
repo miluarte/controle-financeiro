@@ -26,6 +26,7 @@
   --color-glass: var(--glass);
   --color-glass-lens: var(--glass-lens);
   --color-scrim: var(--scrim);
+  --color-crop-mask: var(--crop-mask);
 
   /* Categorias: bg-category-red-surface, text-category-red-content… (token-icon.tsx) */
   --color-category-red-surface: var(--category-red-surface);
