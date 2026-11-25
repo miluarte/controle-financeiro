@@ -24,8 +24,10 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    // conteúdo passa por baixo da barra de status, como app nativo; o AppShell compensa com safe-area
-    statusBarStyle: 'black-translucent',
+    // barra de status opaca, na cor da página (theme-color / fundo). Não usar 'black-translucent':
+    // no iOS 26.1+ o sistema desenha um borrado (efeito de borda do Liquid Glass) por cima do topo do
+    // app instalado e a página não consegue desligar. Mudar isto só vale depois de reinstalar o app.
+    statusBarStyle: 'default',
     title: 'Troco',
   },
   formatDetection: {
