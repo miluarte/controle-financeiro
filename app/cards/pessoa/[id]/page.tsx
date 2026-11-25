@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
 import { ConfirmSettlementSheet } from '@/components/cards/confirm-settlement-sheet'
+import { PersonGeneralSheet } from '@/components/cards/person-general-sheet'
 import { InvoiceStatus, PixStatus } from '@/components/cards/invoice-status'
 import { SharedPixSheet } from '@/components/cards/shared-pix-sheet'
 import { SummaryCard } from '@/components/cards/summary-card'
@@ -21,7 +23,7 @@ import { Money } from '@/components/shared/money'
 import { EmptyState } from '@/components/shared/empty-state'
 
 // Uma pessoa da família: o que eu repasso nos cartões dela e o que ela me deve nos meus, fatura por fatura,
-// e os Pix divididos entre nós (quem pagou e quem deve).
+// e os Pix divididos entre nós (quem pagou e quem deve). "Ver fatura geral" junta tudo numa fatura só.
 export default function PersonCardsPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
@@ -30,6 +32,7 @@ export default function PersonCardsPage() {
   const [openShared, setOpenShared] = useState<SharedInvoice | null>(null)
   const [confirming, setConfirming] = useState<Settlement | null>(null)
   const [openPix, setOpenPix] = useState<SharedDebt | null>(null)
+  const [general, setGeneral] = useState(false)
   const toOwe = owe.find(g => g.id === id)
   const toReceive = receive.find(g => g.id === id)
   const name = toOwe?.name ?? toReceive?.name ?? 'Pessoa'
@@ -92,6 +95,7 @@ export default function PersonCardsPage() {
               ...(toOwe ? [{ label: 'Você repassa', value: toOwe.open }] : []),
               ...(toReceive ? [{ label: 'A receber', value: toReceive.open, tone: 'success' as const }] : []),
             ]} />
+            <Button size="lg" variant="secondary" className="w-full" onClick={() => setGeneral(true)}>Ver fatura geral</Button>
 
             {toOwe && toOwe.invoices.length > 0 && (
               <ListGroup header={`Cartões de ${name}`}>
@@ -121,6 +125,8 @@ export default function PersonCardsPage() {
         )}
       </div>
       <SharedInvoiceSheet invoice={openShared} onClose={() => setOpenShared(null)} />
+      <PersonGeneralSheet open={general} onOpenChange={setGeneral} personId={id} name={name} month={month}
+        owe={toOwe} receive={toReceive} />
       <SharedPixSheet debt={openPix} onClose={() => setOpenPix(null)} />
       <ConfirmSettlementSheet settlement={confirming} debtorName={name} onClose={() => setConfirming(null)} />
     </>
