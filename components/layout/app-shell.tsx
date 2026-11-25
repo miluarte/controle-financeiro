@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { BottomNav } from './bottom-nav'
 import { SideNav } from './side-nav'
+import { StatusBarStrip } from './status-bar-strip'
 
 // A página em si não rola: o app ocupa a área visível (altura em --app-height, medida no <head>
 // do app/layout.tsx) e só o <main> rola. A barra de abas fica presa ao fundo dessa área.
@@ -18,6 +19,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div data-app-shell className="fixed inset-x-0 top-0 flex h-app flex-col overflow-hidden lg:flex-row">
+      <StatusBarStrip />
       <SideNav />
       <main
         ref={scroller}

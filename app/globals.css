@@ -307,5 +307,8 @@
     html[data-top="hero"] [data-app-shell] {
       background-color: var(--surface-hero);
     }
+    /* Faixa da barra de status (StatusBarStrip): no tom do fundo da tela aberta */
+    html:has([data-screen="grouped"]) [data-status-strip] { background-color: var(--grouped); }
+    html[data-top="hero"] [data-status-strip] { background-color: var(--surface-hero); }
   }
 }
