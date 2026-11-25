@@ -68,7 +68,7 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
       subtitle={subtitle}
       trailing={
         <span className={cn('text-subheadline font-bold tabular-nums', inflow ? 'text-success' : 'text-foreground')}>
-          {inflow ? '+' : '−'}{formatCurrency(t.amount)}
+          {inflow && '+'}{formatCurrency(t.amount)}
         </span>
       }
     />
