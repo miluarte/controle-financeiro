@@ -109,6 +109,13 @@ export const transactionsApi = {
       supabase.from('transactions').update({ source_data: { ...(r.source_data ?? {}), items } }).eq('id', r.id)))
   },
 
+  // dados extras (ex.: desconto) em todas as parcelas da compra, sem tirar o que já está lá
+  mergeGroupData: async (groupId: string, patch: Record<string, unknown>) => {
+    const rows = unwrap(await supabase.from('transactions').select('id, source_data').eq('installment_group_id', groupId))
+    await Promise.all(rows.map(r =>
+      supabase.from('transactions').update({ source_data: { ...(r.source_data ?? {}), ...patch } }).eq('id', r.id)))
+  },
+
   // foto da nota em todas as parcelas da compra
   setGroupReceipt: async (groupId: string, path: string) => {
     unwrap(await supabase.from('transactions').update({ receipt_path: path }).eq('installment_group_id', groupId))
