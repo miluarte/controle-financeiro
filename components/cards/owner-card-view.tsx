@@ -15,6 +15,7 @@ import { useInvoices } from '@/hooks/use-data'
 import { useFamily, useFamilyMembers, useSettlements } from '@/hooks/use-family'
 import { useProfile } from '@/hooks/use-profile'
 import { useSession } from '@/hooks/use-session'
+import { invoicesApi } from '@/lib/api/invoices'
 import { transactionsApi } from '@/lib/api/transactions'
 import { invoiceDueDate, openInvoiceRef } from '@/lib/invoice'
 import type { FamilyMember, OwnWallet, Settlement, Transaction } from '@/lib/types'
@@ -78,11 +79,9 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
   const closed = ref < openRef
   const shared = wallet.shareScope !== 'none'
 
-  // limite usado: faturas ainda não pagas, da aberta em diante (inclui parcelas futuras)
-  const used = totals
-    .filter(t => t.walletId === wallet.id && t.invoiceRef.slice(0, 7) >= openRef)
-    .filter(t => !paid.some(p => p.walletId === wallet.id && p.refMonth === t.invoiceRef && p.paidAt))
-    .reduce((s, t) => s + t.total - t.prepaid, 0)
+  // limite usado: tudo o que falta pagar no cartão, de todas as pessoas (fatura fechada e não paga,
+  // aberta e parcelas futuras), calculado no banco pela view card_limit_used
+  const { data: used = 0 } = useSWR(wallet.spendingLimit ? ['limit-used', wallet.id] : null, () => invoicesApi.limitUsed(wallet.id))
   const catById = new Map(categories.map(c => [c.id, c]))
   const due = invoiceDueDate(wallet, ref)
 
