@@ -17,7 +17,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => { scroller.current?.scrollTo(0, 0) }, [pathname])
 
   return (
-    <div className="fixed inset-x-0 top-0 flex h-app flex-col overflow-hidden lg:flex-row">
+    <div data-app-shell className="fixed inset-x-0 top-0 flex h-app flex-col overflow-hidden lg:flex-row">
       <SideNav />
       <main
         ref={scroller}

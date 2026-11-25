@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { MagnifierLinearIcon } from '@solar-icons/react'
 import { heroButtonVariants } from './hero-button'
@@ -14,6 +15,10 @@ import { greeting } from '@/lib/utils'
 export function HomeHero({ children }: { children: React.ReactNode }) {
   const { profile } = useProfile()
   useThemeColor('--surface-hero')
+  useEffect(() => {
+    document.documentElement.dataset.top = 'hero'
+    return () => { delete document.documentElement.dataset.top }
+  }, [])
   const name = profile?.name || ' '
   return (
     <div className="relative">
