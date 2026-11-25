@@ -81,7 +81,7 @@ function Form({ t, people, me, onDone }: { t: Transaction; people: FamilyMember[
         <li className="flex flex-wrap gap-2 p-3">
           {people.map(p => (
             <ChoiceChip key={p.userId} selected={selected.includes(p.userId)} onClick={() => toggle(p.userId)} className="pl-1">
-              <MemberAvatar name={p.name} color={p.avatarColor} size="sm" />{label(p)}
+              <MemberAvatar name={p.name} color={p.avatarColor} src={p.avatarUrl} size="sm" />{label(p)}
             </ChoiceChip>
           ))}
         </li>

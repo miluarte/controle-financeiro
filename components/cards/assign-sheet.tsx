@@ -39,7 +39,7 @@ export function AssignSheet({
           <ListGroup>
             {people.map(p => (
               <ListRow key={p.userId} onClick={() => assign(p.userId)}
-                leading={<MemberAvatar name={p.name} color={p.avatarColor} />}
+                leading={<MemberAvatar name={p.name} color={p.avatarColor} src={p.avatarUrl} />}
                 title={p.userId === me ? 'Você' : p.name}
                 trailing={transaction.owner === p.userId ? '✓' : undefined} />
             ))}

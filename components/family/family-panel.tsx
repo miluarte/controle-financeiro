@@ -83,7 +83,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
         <ListGroup header={`Pedidos de entrada · ${pending.length}`}>
           {pending.map(m => (
             <ListRow key={m.userId}
-              leading={<MemberAvatar name={m.name} color={m.avatarColor} />}
+              leading={<MemberAvatar name={m.name} color={m.avatarColor} src={m.avatarUrl} />}
               title={m.name}
               trailing={
                 <span className="flex gap-2">
@@ -101,7 +101,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
             onClick={isAdmin && m.userId !== me
               ? () => ask.ask({ title: `Remover ${m.name} da família? As compras continuam no histórico.`, label: 'Remover', done: null, remove: () => run(() => familyApi.remove(m.userId), 'Removido') })
               : undefined}
-            leading={<MemberAvatar name={m.name} color={m.avatarColor} />}
+            leading={<MemberAvatar name={m.name} color={m.avatarColor} src={m.avatarUrl} />}
             title={m.userId === me ? `${m.name} (você)` : m.name}
             subtitle={m.isGuest ? 'Sem o app' : undefined}
             trailing={m.role === 'admin' ? <Badge variant="secondary">Admin</Badge> : undefined} />

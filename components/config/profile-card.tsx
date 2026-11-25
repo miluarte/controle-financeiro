@@ -12,20 +12,12 @@ import { useProfile } from '@/hooks/use-profile'
 import { useRefresh } from '@/hooks/use-refresh'
 import { useSession } from '@/hooks/use-session'
 import { profileApi } from '@/lib/api/profile'
-import { COLOR_TOKENS, type ColorToken } from '@/lib/constants'
+import { COLOR_TOKENS } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { feedback } from '@/lib/feedback'
 import { FormError } from '@/components/shared/form-error'
-
-function Avatar({ initial, color, large }: { initial: string; color: string; large?: boolean }) {
-  return (
-    <span className={cn(
-      'flex items-center justify-center rounded-full font-semibold',
-      large ? 'size-20 text-title1' : 'size-14 text-title2',
-      COLOR_CLASSES[color as ColorToken] ?? COLOR_CLASSES.gray,
-    )}>{initial}</span>
-  )
-}
+import { MemberAvatar } from '@/components/family/member-avatar'
+import { ProfilePhotoField, type PhotoChange } from '@/components/profile/profile-photo-field'
 
 // ACE-2: avatar com a inicial, nome e e-mail. Toque abre a edição.
 export function ProfileCard() {
@@ -33,42 +25,58 @@ export function ProfileCard() {
   const { session } = useSession()
   const [editing, setEditing] = useState(false)
   const name = profile?.name || ''
-  const initial = (name || session?.user.email || '?').charAt(0).toUpperCase()
+  const [cropping, setCropping] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   return (
     <>
       <ListGroup>
         <ListRow className="py-1" onClick={() => setEditing(true)} chevron
-          leading={<Avatar initial={initial} color={profile?.avatarColor ?? 'gray'} />}
+          leading={<MemberAvatar name={name || session?.user.email || '?'} color={profile?.avatarColor ?? 'gray'} src={profile?.avatarUrl} size="lg" />}
           title={<span className="text-title3 font-semibold">{name || 'Sem nome'}</span>}
           subtitle={session?.user.email} />
       </ListGroup>
-      <ModalSheet open={editing} onOpenChange={setEditing} title="Perfil" formId="profile" actionLabel="Salvar">
-        {editing && profile && <ProfileForm onDone={() => setEditing(false)} />}
+      <ModalSheet open={editing} onOpenChange={o => { setEditing(o); if (!o) setCropping(false) }}
+        title={cropping ? 'Ajustar foto' : 'Perfil'} formId={cropping ? undefined : 'profile'} actionLabel="Salvar" actionDisabled={saving}>
+        {editing && profile && <ProfileForm onDone={() => setEditing(false)} onCroppingChange={setCropping} onSavingChange={setSaving} />}
       </ModalSheet>
     </>
   )
 }
 
-function ProfileForm({ onDone }: { onDone: () => void }) {
+function ProfileForm({ onDone, onCroppingChange, onSavingChange }: {
+  onDone: () => void
+  onCroppingChange: (cropping: boolean) => void
+  onSavingChange: (saving: boolean) => void
+}) {
   const { profile } = useProfile()
   const refresh = useRefresh()
   const [name, setName] = useState(profile!.name)
   const [color, setColor] = useState(profile!.avatarColor)
+  const [photo, setPhoto] = useState<PhotoChange>(null)
+  const [cropping, setCropping] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  function changeCropping(v: boolean) { setCropping(v); onCroppingChange(v) }
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim()) { setError('Informe seu nome.'); return }
+    onSavingChange(true)
     try {
       await profileApi.update(profile!.id, { name: name.trim(), avatar_color: color })
+      if (photo === 'remove') await profileApi.removePhoto(profile!.id)
+      else if (photo) await profileApi.setPhoto(profile!.id, photo)
       await refresh(); onDone(); feedback.done('Salvo')
     } catch (err) { setError(err instanceof Error ? err.message : 'Não foi possível salvar.') }
+    finally { onSavingChange(false) }
   }
 
   return (
     <form id="profile" onSubmit={save} className="space-y-6">
-      <div className="flex justify-center"><Avatar initial={(name || '?').charAt(0).toUpperCase()} color={color} large /></div>
+      <ProfilePhotoField name={name} color={color} current={profile!.avatarUrl} value={photo} onChange={setPhoto}
+        cropping={cropping} onCroppingChange={changeCropping} />
+      {!cropping && <>
       <ListGroup>
         <FormRow label="Nome" htmlFor="p-name">
           <Input id="p-name" variant="bare" value={name} onChange={e => setName(e.target.value)} className="text-right" />
@@ -83,6 +91,7 @@ function ProfileForm({ onDone }: { onDone: () => void }) {
           ))}
         </li>
       </ListGroup>
+      </>}
       <FormError message={error} />
     </form>
   )

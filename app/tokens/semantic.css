@@ -49,6 +49,7 @@
   --glass-surface: color-mix(in oklab, var(--color-white) var(--opacity-22), transparent);
   --glass-surface-strong: color-mix(in oklab, var(--color-zinc-50) var(--opacity-94), transparent); /* folhas e menus: fundo da tela */
   --scrim: color-mix(in oklab, var(--color-black) var(--opacity-12), transparent); /* escurece o fundo atrás das folhas */
+  --crop-mask: color-mix(in oklab, var(--color-black) var(--opacity-50), transparent); /* fora do círculo ao cortar a foto (igual nos dois modos) */
   --glass-edge: color-mix(in oklab, var(--color-white) var(--opacity-70), transparent);
   --glass-highlight: color-mix(in oklab, var(--color-white) var(--opacity-95), transparent);
   --glass-shade: color-mix(in oklab, var(--color-black) var(--opacity-4), transparent);

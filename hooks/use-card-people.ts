@@ -14,9 +14,9 @@ export function useCardPeople() {
   const members = useFamilyMembers(!!family && status === 'active')
   const me = session?.user.id ?? ''
   const people: FamilyMember[] = useMemo(() => {
-    const self: FamilyMember = { userId: me, name: profile?.name || 'Você', avatarColor: profile?.avatarColor ?? 'gray', role: 'member', status: 'active', joinedAt: null }
+    const self: FamilyMember = { userId: me, name: profile?.name || 'Você', avatarColor: profile?.avatarColor ?? 'gray', avatarUrl: profile?.avatarUrl ?? null, role: 'member', status: 'active', joinedAt: null }
     return [self, ...members.filter(m => m.status === 'active' && m.userId !== me)]
-  }, [members, me, profile?.avatarColor, profile?.name])
+  }, [members, me, profile?.avatarColor, profile?.avatarUrl, profile?.name])
   const nameOf = (id: string) => (id === me ? 'Você' : people.find(p => p.userId === id)?.name ?? 'Membro')
   return { me, people, nameOf }
 }
