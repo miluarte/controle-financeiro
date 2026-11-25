@@ -1,0 +1,251 @@
+/* ======================================================================
+   Troco: camada 2, semânticos. Fonte única de cor do app.
+   Cada variável diz o que a cor faz na tela (superfícies, texto, linhas,
+   ações, estados, dados, vidro, categorias) e aponta para um primitivo:
+   a paleta do Tailwind (var(--color-zinc-50)) e as opacidades, desfoques
+   e raios de primitives.css. Cor com transparência usa
+   color-mix(in oklab, cor var(--opacity-n), transparent), nunca uma
+   porcentagem solta.
+   Claro e escuro são resolvidos aqui. Componentes usam só esta camada
+   (direto ou pelos nomes do shadcn em globals.css), nunca um primitivo.
+   ====================================================================== */
+
+:root {
+  /* Superfícies */
+  --surface-page: var(--color-zinc-50); /* fundo das telas */
+  --surface-raised: var(--color-white); /* listas agrupadas, cards, folhas */
+  --surface-sunken: var(--color-zinc-100); /* chips, campos, trilhos de controle */
+  --surface-strong: var(--color-zinc-200); /* botões neutros, trilho de chave desligada */
+  --surface-selected: var(--color-white); /* item escolhido no controle segmentado */
+
+  /* Texto */
+  --text-primary: var(--color-zinc-950);
+  --text-secondary: var(--color-zinc-500);
+  --text-on-action: var(--color-white); /* texto sobre a ação principal */
+  --text-on-danger: var(--color-white); /* texto e ícone sobre vermelho (ex.: lixeira ao deslizar) */
+
+  /* Linhas */
+  --line-subtle: var(--color-zinc-200); /* divisores e bordas */
+  --focus-ring: color-mix(in oklab, var(--color-zinc-950) var(--opacity-30), transparent);
+
+  /* Ações */
+  --action-primary: var(--color-zinc-950); /* cor principal: botões, abas e seleção */
+
+  /* Estados */
+  --status-danger: var(--color-red-500);
+  --status-success: var(--color-green-500);
+  --status-warning: var(--color-amber-500);
+  --status-info: var(--color-blue-500);
+
+  /* Dados (gráficos) */
+  --data-1: var(--color-blue-500);
+  --data-2: var(--color-green-500);
+  --data-3: var(--color-amber-500);
+  --data-4: var(--color-purple-500);
+  --data-5: var(--color-pink-500);
+
+  /* Vidro (Liquid Glass): bem transparente e pouco desfocado, como no iOS */
+  --glass-surface: color-mix(in oklab, var(--color-white) var(--opacity-22), transparent);
+  --glass-surface-strong: color-mix(in oklab, var(--color-zinc-50) var(--opacity-94), transparent); /* folhas e menus: fundo da tela */
+  --scrim: color-mix(in oklab, var(--color-black) var(--opacity-12), transparent); /* escurece o fundo atrás das folhas */
+  --glass-edge: color-mix(in oklab, var(--color-white) var(--opacity-70), transparent);
+  --glass-highlight: color-mix(in oklab, var(--color-white) var(--opacity-95), transparent);
+  --glass-shade: color-mix(in oklab, var(--color-black) var(--opacity-4), transparent);
+  --glass-shadow: color-mix(in oklab, var(--color-black) var(--opacity-12), transparent);
+  --glass-lens: color-mix(in oklab, var(--color-zinc-950) var(--opacity-7), transparent);
+  --glass-blur: var(--blur-6);
+  --glass-blur-strong: var(--blur-14);
+
+  /* Categorias (COLOR_TOKENS): fundo e ícone do círculo; solid = item escolhido */
+  --category-red-surface: var(--color-red-100);
+  --category-red-content: var(--color-red-600);
+  --category-red-solid: var(--color-red-500);
+  --category-rose-surface: var(--color-rose-100);
+  --category-rose-content: var(--color-rose-600);
+  --category-rose-solid: var(--color-rose-500);
+  --category-pink-surface: var(--color-pink-100);
+  --category-pink-content: var(--color-pink-600);
+  --category-pink-solid: var(--color-pink-500);
+  --category-fuchsia-surface: var(--color-fuchsia-100);
+  --category-fuchsia-content: var(--color-fuchsia-600);
+  --category-fuchsia-solid: var(--color-fuchsia-500);
+  --category-purple-surface: var(--color-purple-100);
+  --category-purple-content: var(--color-purple-600);
+  --category-purple-solid: var(--color-purple-500);
+  --category-violet-surface: var(--color-violet-100);
+  --category-violet-content: var(--color-violet-600);
+  --category-violet-solid: var(--color-violet-500);
+  --category-indigo-surface: var(--color-indigo-100);
+  --category-indigo-content: var(--color-indigo-600);
+  --category-indigo-solid: var(--color-indigo-500);
+  --category-blue-surface: var(--color-blue-100);
+  --category-blue-content: var(--color-blue-600);
+  --category-blue-solid: var(--color-blue-500);
+  --category-sky-surface: var(--color-sky-100);
+  --category-sky-content: var(--color-sky-600);
+  --category-sky-solid: var(--color-sky-600);
+  --category-cyan-surface: var(--color-cyan-100);
+  --category-cyan-content: var(--color-cyan-600);
+  --category-cyan-solid: var(--color-cyan-600);
+  --category-teal-surface: var(--color-teal-100);
+  --category-teal-content: var(--color-teal-600);
+  --category-teal-solid: var(--color-teal-600);
+  --category-emerald-surface: var(--color-emerald-100);
+  --category-emerald-content: var(--color-emerald-600);
+  --category-emerald-solid: var(--color-emerald-600);
+  --category-green-surface: var(--color-green-100);
+  --category-green-content: var(--color-green-600);
+  --category-green-solid: var(--color-green-600);
+  --category-lime-surface: var(--color-lime-100);
+  --category-lime-content: var(--color-lime-600);
+  --category-lime-solid: var(--color-lime-600);
+  --category-yellow-surface: var(--color-yellow-100);
+  --category-yellow-content: var(--color-yellow-600);
+  --category-yellow-solid: var(--color-yellow-500);
+  --category-amber-surface: var(--color-amber-100);
+  --category-amber-content: var(--color-amber-600);
+  --category-amber-solid: var(--color-amber-500);
+  --category-orange-surface: var(--color-orange-100);
+  --category-orange-content: var(--color-orange-600);
+  --category-orange-solid: var(--color-orange-500);
+  --category-gray-surface: var(--color-zinc-100);
+  --category-gray-content: var(--color-zinc-600);
+  --category-gray-solid: var(--color-zinc-500);
+  --category-on-solid: var(--color-white); /* ícone sobre a cor sólida */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --surface-page: var(--color-zinc-950);
+    --surface-raised: var(--color-zinc-900);
+    --surface-sunken: var(--color-zinc-800);
+    --surface-strong: var(--color-zinc-700);
+    --surface-selected: var(--color-zinc-600);
+    --text-primary: var(--color-white);
+    --text-secondary: var(--color-zinc-400);
+    --text-on-action: var(--color-zinc-950);
+    --line-subtle: var(--color-zinc-800);
+    --focus-ring: color-mix(in oklab, var(--color-white) var(--opacity-35), transparent);
+    --action-primary: var(--color-white);
+    --status-danger: var(--color-red-400);
+    --status-success: var(--color-green-400);
+    --status-warning: var(--color-amber-400);
+    --status-info: var(--color-blue-400);
+    --data-1: var(--color-blue-400);
+    --data-2: var(--color-green-400);
+    --data-3: var(--color-amber-400);
+    --data-4: var(--color-purple-400);
+    --data-5: var(--color-pink-400);
+    --glass-surface: color-mix(in oklab, var(--color-zinc-900) var(--opacity-30), transparent);
+    --glass-surface-strong: color-mix(in oklab, var(--color-zinc-900) var(--opacity-94), transparent);
+    --scrim: color-mix(in oklab, var(--color-black) var(--opacity-45), transparent);
+    --glass-edge: color-mix(in oklab, var(--color-white) var(--opacity-14), transparent);
+    --glass-highlight: color-mix(in oklab, var(--color-white) var(--opacity-22), transparent);
+    --glass-shade: color-mix(in oklab, var(--color-black) var(--opacity-25), transparent);
+    --glass-shadow: color-mix(in oklab, var(--color-black) var(--opacity-50), transparent);
+    --glass-lens: color-mix(in oklab, var(--color-white) var(--opacity-14), transparent);
+    --category-red-surface: color-mix(in oklab, var(--color-red-500) var(--opacity-20), transparent);
+    --category-red-content: var(--color-red-400);
+    --category-rose-surface: color-mix(in oklab, var(--color-rose-500) var(--opacity-20), transparent);
+    --category-rose-content: var(--color-rose-400);
+    --category-pink-surface: color-mix(in oklab, var(--color-pink-500) var(--opacity-20), transparent);
+    --category-pink-content: var(--color-pink-400);
+    --category-fuchsia-surface: color-mix(in oklab, var(--color-fuchsia-500) var(--opacity-20), transparent);
+    --category-fuchsia-content: var(--color-fuchsia-400);
+    --category-purple-surface: color-mix(in oklab, var(--color-purple-500) var(--opacity-20), transparent);
+    --category-purple-content: var(--color-purple-400);
+    --category-violet-surface: color-mix(in oklab, var(--color-violet-500) var(--opacity-20), transparent);
+    --category-violet-content: var(--color-violet-400);
+    --category-indigo-surface: color-mix(in oklab, var(--color-indigo-500) var(--opacity-20), transparent);
+    --category-indigo-content: var(--color-indigo-400);
+    --category-blue-surface: color-mix(in oklab, var(--color-blue-500) var(--opacity-20), transparent);
+    --category-blue-content: var(--color-blue-400);
+    --category-sky-surface: color-mix(in oklab, var(--color-sky-500) var(--opacity-20), transparent);
+    --category-sky-content: var(--color-sky-400);
+    --category-cyan-surface: color-mix(in oklab, var(--color-cyan-500) var(--opacity-20), transparent);
+    --category-cyan-content: var(--color-cyan-400);
+    --category-teal-surface: color-mix(in oklab, var(--color-teal-500) var(--opacity-20), transparent);
+    --category-teal-content: var(--color-teal-400);
+    --category-emerald-surface: color-mix(in oklab, var(--color-emerald-500) var(--opacity-20), transparent);
+    --category-emerald-content: var(--color-emerald-400);
+    --category-green-surface: color-mix(in oklab, var(--color-green-500) var(--opacity-20), transparent);
+    --category-green-content: var(--color-green-400);
+    --category-lime-surface: color-mix(in oklab, var(--color-lime-500) var(--opacity-20), transparent);
+    --category-lime-content: var(--color-lime-400);
+    --category-yellow-surface: color-mix(in oklab, var(--color-yellow-500) var(--opacity-20), transparent);
+    --category-yellow-content: var(--color-yellow-400);
+    --category-amber-surface: color-mix(in oklab, var(--color-amber-500) var(--opacity-20), transparent);
+    --category-amber-content: var(--color-amber-400);
+    --category-orange-surface: color-mix(in oklab, var(--color-orange-500) var(--opacity-20), transparent);
+    --category-orange-content: var(--color-orange-400);
+    --category-gray-surface: color-mix(in oklab, var(--color-zinc-500) var(--opacity-35), transparent);
+    --category-gray-content: var(--color-zinc-100);
+  }
+}
+
+:root[data-theme="dark"] {
+  --surface-page: var(--color-zinc-950);
+  --surface-raised: var(--color-zinc-900);
+  --surface-sunken: var(--color-zinc-800);
+  --surface-strong: var(--color-zinc-700);
+  --surface-selected: var(--color-zinc-600);
+  --text-primary: var(--color-white);
+  --text-secondary: var(--color-zinc-400);
+  --text-on-action: var(--color-zinc-950);
+  --line-subtle: var(--color-zinc-800);
+  --focus-ring: color-mix(in oklab, var(--color-white) var(--opacity-35), transparent);
+  --action-primary: var(--color-white);
+  --status-danger: var(--color-red-400);
+  --status-success: var(--color-green-400);
+  --status-warning: var(--color-amber-400);
+  --status-info: var(--color-blue-400);
+  --data-1: var(--color-blue-400);
+  --data-2: var(--color-green-400);
+  --data-3: var(--color-amber-400);
+  --data-4: var(--color-purple-400);
+  --data-5: var(--color-pink-400);
+  --glass-surface: color-mix(in oklab, var(--color-zinc-900) var(--opacity-30), transparent);
+  --glass-surface-strong: color-mix(in oklab, var(--color-zinc-900) var(--opacity-94), transparent);
+  --scrim: color-mix(in oklab, var(--color-black) var(--opacity-45), transparent);
+  --glass-edge: color-mix(in oklab, var(--color-white) var(--opacity-14), transparent);
+  --glass-highlight: color-mix(in oklab, var(--color-white) var(--opacity-22), transparent);
+  --glass-shade: color-mix(in oklab, var(--color-black) var(--opacity-25), transparent);
+  --glass-shadow: color-mix(in oklab, var(--color-black) var(--opacity-50), transparent);
+  --glass-lens: color-mix(in oklab, var(--color-white) var(--opacity-14), transparent);
+  --category-red-surface: color-mix(in oklab, var(--color-red-500) var(--opacity-20), transparent);
+  --category-red-content: var(--color-red-400);
+  --category-rose-surface: color-mix(in oklab, var(--color-rose-500) var(--opacity-20), transparent);
+  --category-rose-content: var(--color-rose-400);
+  --category-pink-surface: color-mix(in oklab, var(--color-pink-500) var(--opacity-20), transparent);
+  --category-pink-content: var(--color-pink-400);
+  --category-fuchsia-surface: color-mix(in oklab, var(--color-fuchsia-500) var(--opacity-20), transparent);
+  --category-fuchsia-content: var(--color-fuchsia-400);
+  --category-purple-surface: color-mix(in oklab, var(--color-purple-500) var(--opacity-20), transparent);
+  --category-purple-content: var(--color-purple-400);
+  --category-violet-surface: color-mix(in oklab, var(--color-violet-500) var(--opacity-20), transparent);
+  --category-violet-content: var(--color-violet-400);
+  --category-indigo-surface: color-mix(in oklab, var(--color-indigo-500) var(--opacity-20), transparent);
+  --category-indigo-content: var(--color-indigo-400);
+  --category-blue-surface: color-mix(in oklab, var(--color-blue-500) var(--opacity-20), transparent);
+  --category-blue-content: var(--color-blue-400);
+  --category-sky-surface: color-mix(in oklab, var(--color-sky-500) var(--opacity-20), transparent);
+  --category-sky-content: var(--color-sky-400);
+  --category-cyan-surface: color-mix(in oklab, var(--color-cyan-500) var(--opacity-20), transparent);
+  --category-cyan-content: var(--color-cyan-400);
+  --category-teal-surface: color-mix(in oklab, var(--color-teal-500) var(--opacity-20), transparent);
+  --category-teal-content: var(--color-teal-400);
+  --category-emerald-surface: color-mix(in oklab, var(--color-emerald-500) var(--opacity-20), transparent);
+  --category-emerald-content: var(--color-emerald-400);
+  --category-green-surface: color-mix(in oklab, var(--color-green-500) var(--opacity-20), transparent);
+  --category-green-content: var(--color-green-400);
+  --category-lime-surface: color-mix(in oklab, var(--color-lime-500) var(--opacity-20), transparent);
+  --category-lime-content: var(--color-lime-400);
+  --category-yellow-surface: color-mix(in oklab, var(--color-yellow-500) var(--opacity-20), transparent);
+  --category-yellow-content: var(--color-yellow-400);
+  --category-amber-surface: color-mix(in oklab, var(--color-amber-500) var(--opacity-20), transparent);
+  --category-amber-content: var(--color-amber-400);
+  --category-orange-surface: color-mix(in oklab, var(--color-orange-500) var(--opacity-20), transparent);
+  --category-orange-content: var(--color-orange-400);
+  --category-gray-surface: color-mix(in oklab, var(--color-zinc-500) var(--opacity-35), transparent);
+  --category-gray-content: var(--color-zinc-100);
+}
