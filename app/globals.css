@@ -306,14 +306,11 @@
 
 /* Cor por tela, só no celular (no desktop o fundo aparece em volta da coluna). html, body e o AppShell
    ficam no fundo da tela aberta (cinza da página; branco nas telas grouped do Screen): o Safari pinta a
-   barra de baixo com essa cor. A faixa da barra de status (StatusBarStrip) usa --screen-top: o mesmo
-   fundo, ou rosa no Início (data-top="hero", posto pelo HomeHero), e o ThemeColorSync leva essa cor ao
-   theme-color. Fora do @layer para vencer o :root. */
+   barra de baixo com essa cor. A faixa da barra de status (StatusBarStrip) usa --screen-top, o mesmo
+   fundo em todas as telas (o Safari não troca a cor do topo por tela), e o ThemeColorSync leva essa cor
+   ao theme-color. Fora do @layer para vencer o :root. */
 @media (width < 64rem) {
   html:has([data-screen="grouped"]) { --screen-bg: var(--grouped); }
-  html[data-top="hero"] { --screen-top: var(--surface-hero); }
-  /* No Início a faixa cobre também o começo do cabeçalho rosa (invisível): o Safari ignora faixa fina demais. */
-  html[data-top="hero"] [data-status-strip] { min-height: calc(var(--spacing) * 4); }
   html,
   html body,
   html [data-app-shell] {

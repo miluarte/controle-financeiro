@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import Link from 'next/link'
 import { MagnifierLinearIcon } from '@solar-icons/react'
 import { heroButtonVariants } from './hero-button'
@@ -9,14 +8,10 @@ import { NotificationsButton } from '@/components/layout/notifications-button'
 import { useProfile } from '@/hooks/use-profile'
 import { greeting } from '@/lib/utils'
 
-// Topo do Início: faixa colorida (a barra de status do iPhone fica rosa junto: data-top pinta o fundo e o ThemeColorSync leva a cor ao theme-color) com avatar (abre os Ajustes),
+// Topo do Início: faixa colorida (a barra de status fica na cor do fundo da tela, como nas outras telas) com avatar (abre os Ajustes),
 // saudação e nome, busca e notificações. O conteúdo (card de saldo) sobe por cima do fim da faixa.
 export function HomeHero({ children }: { children: React.ReactNode }) {
   const { profile } = useProfile()
-  useEffect(() => {
-    document.documentElement.dataset.top = 'hero'
-    return () => { delete document.documentElement.dataset.top }
-  }, [])
   const name = profile?.name || ' '
   return (
     <div className="relative">
