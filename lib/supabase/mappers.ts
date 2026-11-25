@@ -161,6 +161,7 @@ export function toInvoiceTotal(r: Row): InvoiceTotal {
     total: num(r.total),
     purchases: num(r.purchases),
     prepaid: num(r.prepaid),
+    scheduled: num(r.scheduled),
   }
 }
 

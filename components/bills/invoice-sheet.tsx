@@ -15,7 +15,7 @@ import { useWallets } from '@/hooks/use-wallets'
 import { invoicesApi } from '@/lib/api/invoices'
 import { transactionsApi } from '@/lib/api/transactions'
 import type { OwnWallet } from '@/lib/types'
-import { formatCurrency, formatDate, monthLabel, todayIso } from '@/lib/utils'
+import { formatCurrency, formatDate, monthLabel, todayIso, walletLabel } from '@/lib/utils'
 import { DateField } from '@/components/shared/date-field'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { LateCostGroup } from './late-cost-group'
@@ -37,7 +37,7 @@ export interface InvoiceRef {
 // CON-8: fatura do cartão (compras do período, total e pagamento).
 export function InvoiceSheet({ invoice, onClose }: { invoice: InvoiceRef | null; onClose: () => void }) {
   return (
-    <ModalSheet open={!!invoice} onOpenChange={o => { if (!o) onClose() }} title={invoice ? `Fatura ${invoice.wallet.name}` : ''}>
+    <ModalSheet open={!!invoice} onOpenChange={o => { if (!o) onClose() }} title={invoice ? `Fatura ${walletLabel(invoice.wallet)}` : ''}>
       {invoice && <Body key={`${invoice.wallet.id}-${invoice.ref}`} inv={invoice} onDone={onClose} />}
     </ModalSheet>
   )

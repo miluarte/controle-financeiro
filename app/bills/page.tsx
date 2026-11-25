@@ -13,8 +13,9 @@ import { TokenIcon } from '@/components/shared/token-icon'
 import { useCategories } from '@/hooks/use-categories'
 import { useBills } from '@/hooks/use-data'
 import { useMonth } from '@/hooks/use-month'
+import { useCardChargePaid } from '@/hooks/use-card-charge-paid'
 import type { BillOccurrence } from '@/lib/types'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, walletLabel } from '@/lib/utils'
 import { LoadingBlock } from '@/components/shared/loading-dots'
 import { useBillDelete } from '@/components/bills/use-bill-delete'
 import { QuickAddSheet } from '@/components/transactions/quick-add-sheet'
@@ -39,11 +40,13 @@ export default function BillsPage() {
   const onCard = occurrences.filter(o => o.bill.type === 'expense' && o.bill.onCard)
   const cardName = (id: string | null) => {
     const w = usable.find(x => x.id === id)
-    return w ? (w.ownerName ? `${w.name}, de ${w.ownerName}` : w.name) : 'cartão'
+    return w ? (w.ownerName ? `${walletLabel(w)}, de ${w.ownerName}` : walletLabel(w)) : 'cartão'
   }
-  // o resumo soma só as contas a pagar; as fixas no cartão já entram na fatura
-  const total = bills.reduce((s, o) => s + o.amount, 0)
+  // o resumo soma as contas e as fixas no cartão; a fixa no cartão conta como paga quando a fatura dela está paga
+  const cardChargePaid = useCardChargePaid(month, onCard)
+  const total = [...bills, ...onCard].reduce((s, o) => s + o.amount, 0)
   const paid = bills.reduce((s, o) => s + (o.paidAt ? o.amount : 0), 0)
+    + onCard.reduce((s, o) => s + (cardChargePaid(o) ? o.amount : 0), 0)
 
   return (
     <>
@@ -86,7 +89,7 @@ export default function BillsPage() {
           </ListGroup>
           )}
           {onCard.length > 0 && (
-            <ListGroup header={`Fixas no cartão · ${onCard.length}`} footer="Somam no total e já entram na fatura.">
+            <ListGroup header={`Fixas no cartão · ${onCard.length}`} footer="Contam como pagas quando a fatura ou a própria cobrança é paga.">
               {onCard.map(o => {
                 const cat = o.bill.categoryId ? catById.get(o.bill.categoryId) : undefined
                 return (
