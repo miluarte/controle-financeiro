@@ -7,8 +7,16 @@ const twMerge = extendTailwindMerge({
   extend: {
     theme: {
       text: ["large-title", "title1", "title2", "title3", "headline", "body", "callout", "subheadline", "footnote", "caption1", "caption2"],
-      spacing: ["row", "tabbar", "app"],
-      radius: ["glass"],
+      spacing: [
+        "row", "tabbar", "app", "safe-top", "safe-bottom", "safe-top-page", "safe-bottom-page", "safe-bar", "safe-sheet",
+        "shell-bottom", "sheet-max", "sheet-max-desktop",
+      ],
+      radius: ["glass", "app-icon"],
+      shadow: ["raised", "control", "floating"],
+      blur: ["glass"],
+      tracking: ["code"],
+      aspect: ["card"],
+      container: ["toast"],
     },
   },
 })
@@ -69,7 +77,9 @@ export function dayLabel(date: string): string {
   y.setDate(y.getDate() - 1)
   if (date.slice(0, 10) === today) return 'Hoje'
   if (d.toDateString() === y.toDateString()) return 'Ontem'
-  return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })
+  // outro ano: mostra o ano junto (a busca traz lançamentos de todos os meses)
+  const year = date.slice(0, 4) !== today.slice(0, 4)
+  return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', ...(year && { year: 'numeric' }) })
 }
 
 export function greeting(): string {

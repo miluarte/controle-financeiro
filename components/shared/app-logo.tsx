@@ -3,7 +3,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 // Logo oficial do Troco (mesma imagem do ícone do app em public/favicon_io).
-const logoVariants = cva('shrink-0 rounded-[22%] shadow-sm', {
+const logoVariants = cva('shrink-0 rounded-app-icon shadow-raised', {
   variants: {
     size: {
       sm: 'size-9',

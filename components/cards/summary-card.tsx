@@ -1,18 +1,18 @@
-import { formatCurrency } from '@/lib/utils'
-import { cn } from '@/lib/utils'
+import { Panel } from '@/components/ios/panel'
+import { Stat } from '@/components/ios/stat'
+import { Money } from '@/components/shared/money'
 
 // Resumo em linhas (rótulo | valor) num cartão arredondado, no topo da aba Cartões e da tela da pessoa.
 export function SummaryCard({ rows }: { rows: { label: string; value: number; tone?: 'success' }[] }) {
   return (
-    <section className="rounded-3xl bg-grouped p-4">
+    <Panel>
       <dl className="space-y-1">
         {rows.map(r => (
-          <div key={r.label} className="flex items-baseline justify-between gap-2">
-            <dt className="truncate text-subheadline text-muted-foreground">{r.label}</dt>
-            <dd className={cn('shrink-0 text-headline tabular-nums', r.tone === 'success' && 'text-success')}>{formatCurrency(r.value)}</dd>
-          </div>
+          <Stat key={r.label} layout="inline" label={r.label}>
+            <Money as="dd" size="headline" className="shrink-0" tone={r.tone ?? 'default'} cents={r.value} />
+          </Stat>
         ))}
       </dl>
-    </section>
+    </Panel>
   )
 }

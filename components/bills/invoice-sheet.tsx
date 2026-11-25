@@ -23,6 +23,10 @@ import { ReconcileSheet } from './reconcile-sheet'
 import { useTransactionDelete } from '@/components/transactions/use-transaction-delete'
 import { usePinAction } from '@/components/transactions/use-pin-action'
 import { feedback } from '@/lib/feedback'
+import { Money } from '@/components/shared/money'
+import { FormError } from '@/components/shared/form-error'
+import { EmptyState } from '@/components/shared/empty-state'
+import { Note } from '@/components/shared/note'
 
 export interface InvoiceRef {
   wallet: OwnWallet
@@ -79,7 +83,7 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
       {delTx.sheet}
       {pin.sheet}
       <div className="text-center">
-        <p className="text-large-title font-bold tabular-nums">{formatCurrency(inv.paidAt ? inv.total : remaining)}</p>
+        <Money as="p" size="display" cents={inv.paidAt ? inv.total : remaining} />
         <p className="text-subheadline text-muted-foreground">
           Fatura de {monthLabel(inv.ref)} · vence {formatDate(inv.dueDate)}
         </p>
@@ -128,10 +132,10 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
           <LateCostGroup wallet={inv.wallet} total={remaining} dueDate={inv.dueDate} />
         </>
       ) : !!inv.prepaid && (
-        <p className="px-4 text-center text-footnote text-muted-foreground">Todas as compras desta fatura já foram pagas.</p>
+        <Note>Todas as compras desta fatura já foram pagas.</Note>
       )}
 
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
 
       <Button variant="secondary" size="lg" className="w-full" onClick={() => setChecking(true)}>
         Conferir com o PDF da fatura
@@ -140,7 +144,7 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
 
       <ListGroup header={inv.paidAt ? `Compras pagas · ${count}` : `Compras · ${count}`}>
         {(purchases ?? []).length === 0 && (
-          <li className="p-4 text-center text-subheadline text-muted-foreground">Nenhuma compra nesta fatura.</li>
+          <EmptyState>Nenhuma compra nesta fatura.</EmptyState>
         )}
         {(purchases ?? []).map(t => (
           <TransactionItem

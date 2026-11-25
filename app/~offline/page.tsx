@@ -16,7 +16,7 @@ export default function OfflinePage() {
           <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
             <WiFiCrossLinearIcon className="h-10 w-10 text-muted-foreground" />
             <p className="font-medium">Você está offline</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-subheadline text-muted-foreground">
               Esta página ainda não foi carregada antes. Conecte-se à internet e tente novamente.
             </p>
           </CardContent>

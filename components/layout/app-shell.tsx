@@ -17,11 +17,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => { scroller.current?.scrollTo(0, 0) }, [pathname])
 
   return (
-    <div className="fixed inset-x-0 top-0 flex h-app flex-col overflow-hidden lg:flex-row">
+    <div data-app-shell className="fixed inset-x-0 top-0 flex h-app flex-col overflow-hidden lg:flex-row">
       <SideNav />
       <main
         ref={scroller}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-[env(safe-area-inset-top)] pb-[calc(var(--spacing-tabbar)+max(0.75rem,env(safe-area-inset-bottom))+1.5rem)] lg:pt-6 lg:pb-12"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-safe-top pb-shell-bottom lg:pt-6 lg:pb-12"
       >
         <div className="lg:mx-auto lg:max-w-3xl">{children}</div>
       </main>

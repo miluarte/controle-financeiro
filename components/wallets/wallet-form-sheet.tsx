@@ -23,6 +23,7 @@ import type { OwnWallet, WalletType } from '@/lib/types'
 import { CardPreview } from './card-preview'
 import { feedback } from '@/lib/feedback'
 import posthog from 'posthog-js'
+import { FormError } from '@/components/shared/form-error'
 
 // CAR-3, CAR-4, CAR-7: criar, editar, arquivar e excluir carteira.
 export function WalletFormSheet({
@@ -185,7 +186,7 @@ function Form({ wallet, onDone }: { wallet: OwnWallet | null; onDone: () => void
         </li>
       </ListGroup>
 
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
 
       {wallet && !isDefault && wallet.active && !isCredit && (
         <Button type="button" variant="secondary" size="lg" className="w-full" disabled={busy}

@@ -10,10 +10,12 @@ import { useRefresh } from '@/hooks/use-refresh'
 import { useWallets } from '@/hooks/use-wallets'
 import { familyApi } from '@/lib/api/family'
 import type { Settlement } from '@/lib/types'
-import { formatCurrency, formatDate, monthName } from '@/lib/utils'
+import { formatDate, monthName } from '@/lib/utils'
 import { feedback } from '@/lib/feedback'
 import { ButtonRow } from '@/components/ios/button-row'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
+import { Money } from '@/components/shared/money'
+import { FormError } from '@/components/shared/form-error'
 
 // 5.7.8 passos 2 e 3: o titular confirma (o valor entra como reembolso) ou recusa.
 export function ConfirmSettlementSheet({
@@ -46,7 +48,7 @@ function Body({ s, name, onDone }: { s: Settlement; name: string; onDone: () => 
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <p className="text-large-title font-bold tabular-nums">{formatCurrency(s.amount)}</p>
+        <Money as="p" size="display" cents={s.amount} />
         <p className="text-subheadline text-muted-foreground">
           {name} pagou {s.paidOn ? `em ${formatDate(s.paidOn)} ` : ''}{s.invoiceRef ? `a fatura de ${monthName(s.invoiceRef.slice(0, 7))}` : 'a parte do gasto dividido'}
         </p>
@@ -54,7 +56,7 @@ function Body({ s, name, onDone }: { s: Settlement; name: string; onDone: () => 
       <ListGroup header="Receber em" footer="Entra como receita (Reembolso) no dia do pagamento.">
         <WalletPicker wallets={mine} value={walletId} onChange={setWalletId} />
       </ListGroup>
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
       {ask.sheet}
       <ButtonRow>
         <Button variant="destructive" size="lg" disabled={busy}

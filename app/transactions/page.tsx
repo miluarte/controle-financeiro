@@ -4,10 +4,12 @@ import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { SearchField } from '@/components/ios/search-field'
+import { Screen } from '@/components/ios/screen'
+import { Note } from '@/components/shared/note'
 import { MonthSelector } from '@/components/shared/month-selector'
 import { TransactionDayList } from '@/components/transactions/transaction-day-list'
 import { DuplicatesSheet } from '@/components/transactions/duplicates-sheet'
-import { TransactionEditSheet } from '@/components/transactions/transaction-edit-sheet'
+import { TransactionEditor } from '@/components/transactions/transaction-editor'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { findDuplicates } from '@/lib/duplicates'
@@ -15,6 +17,8 @@ import { TransactionsSummary } from '@/components/transactions/transactions-summ
 import { useCategories } from '@/hooks/use-categories'
 import { useMonth } from '@/hooks/use-month'
 import { useMonthTransactions } from '@/hooks/use-month-transactions'
+import { useAllMyTransactions } from '@/hooks/use-data'
+import { useSession } from '@/hooks/use-session'
 import { useWallets } from '@/hooks/use-wallets'
 import type { Transaction } from '@/lib/types'
 import { LoadingBlock } from '@/components/shared/loading-dots'
@@ -36,14 +40,24 @@ function TransactionsContent() {
   const { month, setMonth } = useMonth()
   const linkMonth = params.get('mes')
   useEffect(() => { if (linkMonth) setMonth(linkMonth) }, [linkMonth, setMonth])
-  const { transactions, loading } = useMonthTransactions(month)
+  const { transactions: monthList, loading: monthLoading } = useMonthTransactions(month)
   const { categories } = useCategories()
   const { wallets } = useWallets()
   const [query, setQuery] = useState('')
+  // com texto na busca, procura em todos os lançamentos (todos os meses); sem texto, só no mês escolhido
+  const searching = query.trim().length > 0
+  const { session } = useSession()
+  const all = useAllMyTransactions(searching ? session?.user.id : undefined)
+  const allSorted = useMemo(
+    () => [...all.transactions].sort((a, b) => b.date.localeCompare(a.date) || (b.createdAt ?? '').localeCompare(a.createdAt ?? '')),
+    [all.transactions],
+  )
+  const transactions = searching ? allSorted : monthList
+  const loading = searching ? all.loading : monthLoading
   const [extra, setExtra] = useState(() => ({ ...NO_FILTER, walletIds: params.get('pagamento')?.split(',').filter(Boolean) ?? [] }))
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [showDuplicates, setShowDuplicates] = useState(false)
-  const duplicates = useMemo(() => findDuplicates(transactions), [transactions])
+  const duplicates = useMemo(() => findDuplicates(monthList), [monthList])
 
   const visible = useMemo(() => {
     const q = normalize(query.trim())
@@ -60,26 +74,28 @@ function TransactionsContent() {
   }, [transactions, query, categories, wallets, extra])
 
   return (
-    <>
+    <Screen variant="grouped">
       <LargeTitleHeader title="Transações" actions={<MonthSelector />} />
       <div className="space-y-5 px-4 pt-2">
-        <SearchField placeholder="Buscar local, item, categoria" value={query} onChange={e => setQuery(e.target.value)} />
+        <SearchField autoFocus={params.get('busca') === '1'} placeholder="Buscar local, item, categoria" value={query} onChange={e => setQuery(e.target.value)} />
+        {searching && <Note align="start" className="-mt-3">Em todos os meses</Note>}
         <TransactionFilters value={extra} onChange={setExtra} categories={categories} wallets={wallets} />
         {duplicates.length > 0 && (
-          <ListGroup>
+          <ListGroup variant="filled">
             <ListRow chevron onClick={() => setShowDuplicates(true)}
               title={`${duplicates.length} ${duplicates.length === 1 ? 'compra parece repetida' : 'compras parecem repetidas'}`} />
           </ListGroup>
         )}
-        <TransactionsSummary transactions={visible} />
+        <TransactionsSummary transactions={visible} tone="filled" />
         {loading ? (
           <LoadingBlock />
         ) : (
-          <TransactionDayList transactions={visible} onSelect={setEditing} />
+          <TransactionDayList transactions={visible} onSelect={setEditing}
+            emptyText={searching ? 'Nada encontrado em nenhum mês' : undefined} />
         )}
       </div>
-      <TransactionEditSheet transaction={editing} onClose={() => setEditing(null)} />
+      <TransactionEditor transaction={editing} onClose={() => setEditing(null)} />
       <DuplicatesSheet open={showDuplicates} pairs={duplicates} onOpenChange={setShowDuplicates} />
-    </>
+    </Screen>
   )
 }

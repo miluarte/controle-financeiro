@@ -11,6 +11,7 @@ import { transactionsApi } from '@/lib/api/transactions'
 import type { Transaction } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { feedback } from '@/lib/feedback'
+import { FormError } from '@/components/shared/form-error'
 
 // Titular: alguém da família registrou uma compra no seu cartão sem dizer qual. Você escolhe o cartão
 // e a compra entra na fatura, no nome de quem comprou.
@@ -61,7 +62,7 @@ export function ChooseCardSheet({ transaction: t, buyer, open, onOpenChange }: {
         <ListGroup>
           <WalletPicker id="choose-card" label="Cartão" wallets={cards} value={picked} onChange={setWalletId} />
         </ListGroup>
-        {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+        <FormError message={error} />
       </form>
     </ModalSheet>
   )

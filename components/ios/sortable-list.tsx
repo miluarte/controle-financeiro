@@ -132,7 +132,7 @@ export function SortableList<T>({ items, getId, onReorder, renderItem }: Sortabl
           <li key={id} ref={el => { if (el) refs.current.set(id, el); else refs.current.delete(id) }}
             className={cn(
               'group/row relative touch-pan-y bg-grouped select-none [-webkit-touch-callout:none]',
-              dragging ? 'z-10 scale-102 shadow-lg' : active && 'transition-transform duration-200 ease-out',
+              dragging ? 'z-10 scale-102 shadow-floating' : active && 'transition-transform duration-200 ease-out',
             )}
             style={{ transform: `translateY(${dragging ? active.dy : shift(index)}px)` }}
             onPointerDown={e => onPointerDown(id, e)} onPointerMove={onPointerMove}

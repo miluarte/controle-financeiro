@@ -8,6 +8,9 @@ import { averagePerDay, freePerDay, paceStatus, type Pace } from '@/lib/analysis
 import { formatCurrency } from '@/lib/utils'
 import { BudgetSheet } from './budget-sheet'
 import { PaceSparkline } from './pace-sparkline'
+import { Money } from '@/components/shared/money'
+import { Panel } from '@/components/ios/panel'
+import { Stat } from '@/components/ios/stat'
 
 const PACE_LABEL: Record<Pace, { text: string; variant: 'success' | 'secondary' | 'destructive' }> = {
   below: { text: 'Abaixo do ritmo', variant: 'success' },
@@ -29,18 +32,18 @@ export function BudgetCard({ month, spent, budget, cumulative, day }: {
 
   const stats = [
     ...(budget ? [
-      { label: 'Resta', value: formatCurrency(remaining), danger: remaining < 0 },
-      { label: 'Livre por dia', value: formatCurrency(freePerDay(remaining, month)), danger: false },
+      { label: 'Resta', value: remaining, danger: remaining < 0 },
+      { label: 'Livre por dia', value: freePerDay(remaining, month), danger: false },
     ] : []),
-    ...(day > 0 ? [{ label: 'Média por dia', value: formatCurrency(averagePerDay(cumulative, day)), danger: false }] : []),
+    ...(day > 0 ? [{ label: 'Média por dia', value: averagePerDay(cumulative, day), danger: false }] : []),
   ]
 
   return (
-    <section className="space-y-3 rounded-3xl bg-grouped p-4">
+    <Panel className="space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-subheadline text-muted-foreground">Gasto no mês</p>
-          <p className="text-title1 font-bold tabular-nums">{formatCurrency(spent)}</p>
+          <Money as="p" size="title" cents={spent} />
         </div>
         {budget ? <Button variant="plain" size="nav" className="-mr-2" onClick={() => setEditing(true)}>Editar</Button> : null}
       </div>
@@ -70,14 +73,13 @@ export function BudgetCard({ month, spent, budget, cumulative, day }: {
       {stats.length > 0 && (
         <dl className="grid grid-cols-3 gap-2 border-t border-separator pt-3">
           {stats.map(s => (
-            <div key={s.label}>
-              <dt className="text-footnote text-muted-foreground">{s.label}</dt>
-              <dd className={s.danger ? 'text-headline tabular-nums text-destructive' : 'text-headline tabular-nums'}>{s.value}</dd>
-            </div>
+            <Stat key={s.label} label={s.label}>
+              <Money as="dd" size="headline" tone={s.danger ? 'danger' : 'default'} cents={s.value} />
+            </Stat>
           ))}
         </dl>
       )}
       <BudgetSheet open={editing} onOpenChange={setEditing} month={month} current={budget} />
-    </section>
+    </Panel>
   )
 }

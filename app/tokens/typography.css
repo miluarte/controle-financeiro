@@ -6,13 +6,13 @@
    text-large-title, text-title1..3, text-headline, text-body, text-callout,
    text-subheadline, text-footnote, text-caption1/2.
 
-   Componentes usam sempre a classe do estilo, nunca text-sm, leading-5 ou
-   um tamanho solto. O peso vem das classes de peso do Tailwind
+   Componentes usam sempre a classe do estilo, nunca text-sm, leading-5,
+   tracking-widest ou um tamanho solto. O peso vem das classes de peso do Tailwind
    (font-medium, font-semibold, font-bold).
    ====================================================================== */
 
 @theme inline {
-  --font-sans: var(--font-family-system);
+  --font-sans: var(--font-family-brand);
   --font-mono: var(--font-family-system-mono);
   --font-heading: var(--font-sans);
 
@@ -39,4 +39,7 @@
   --text-caption1--line-height: var(--line-height-16);
   --text-caption2: var(--font-size-11);
   --text-caption2--line-height: var(--line-height-13);
+
+  /* Espaçamento entre letras para códigos (convite da família): tracking-code */
+  --tracking-code: var(--letter-spacing-wide);
 }

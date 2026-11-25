@@ -11,6 +11,7 @@ import { QuickAddSheet } from '@/components/transactions/quick-add-sheet'
 import { useCategories } from '@/hooks/use-categories'
 import { useMonthOutlook, type ToPayItem } from '@/hooks/use-month-outlook'
 import type { BillOccurrence } from '@/lib/types'
+import { Money } from '@/components/shared/money'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 // O que ainda falta pagar no mês, por vencimento: contas fixas, faturas e repasses.
@@ -45,7 +46,7 @@ export function ToPayList({ month }: { month: string }) {
                 <DueBadge dueDate={i.dueDate} paid={false} />
               </span>
             }
-            trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(i.amount)}</span>}
+            trailing={<Money size="row" cents={i.amount} />}
             chevron
           />
         ))}

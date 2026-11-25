@@ -11,6 +11,7 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import { feedback } from '@/lib/feedback'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
 import { ButtonRow } from '@/components/ios/button-row'
+import { EmptyState } from '@/components/shared/empty-state'
 
 // Pares de compras possivelmente repetidas: apagar a repetida ou marcar que não é.
 export function DuplicatesSheet({ open, pairs, onOpenChange }: {
@@ -38,7 +39,7 @@ export function DuplicatesSheet({ open, pairs, onOpenChange }: {
   return (
     <ModalSheet open={open} onOpenChange={onOpenChange} title="Possíveis repetidas">
       {confirmDel.sheet}
-      {pairs.length === 0 && <p className="py-6 text-center text-subheadline text-muted-foreground">Nada repetido.</p>}
+      {pairs.length === 0 && <EmptyState variant="block">Nada repetido.</EmptyState>}
       {pairs.map(([a, b]) => {
         const key = `${a.id}-${b.id}`
         return (

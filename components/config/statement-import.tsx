@@ -8,6 +8,7 @@ import { useOwnWallets } from '@/hooks/use-data'
 import { invoiceDueDate, invoiceRefDueIn } from '@/lib/invoice'
 import { findDueDate, pdfLines } from '@/lib/statement'
 import { LoadingDots } from '@/components/shared/loading-dots'
+import { Note } from '@/components/shared/note'
 
 // Importar a fatura do cartão em PDF (o do app do banco ou o que chega por e-mail): escolhe o cartão
 // e mostra as compras para adicionar, com quem fez cada uma quando o cartão é compartilhado.
@@ -33,7 +34,7 @@ export function StatementImport({ file }: { file: File }) {
       {status.startsWith('Lendo') && <LoadingDots size="lg" />}{status}
     </p>
   )
-  if (!cards.length) return <p className="px-4 text-center text-subheadline text-muted-foreground">Cadastre o cartão em Ajustes &gt; Carteiras antes.</p>
+  if (!cards.length) return <Note size="subheadline" className="px-4">Cadastre o cartão em Ajustes &gt; Carteiras antes.</Note>
 
   // vencimento lido no PDF; se não achar, usa a próxima fatura do cartão escolhido
   const dueDate = card ? (due ?? invoiceDueDate(card, invoiceRefDueIn(card, new Date().toISOString().slice(0, 7)))) : null

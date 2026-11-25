@@ -18,6 +18,8 @@ import { GuestForm } from './guest-form'
 import { feedback } from '@/lib/feedback'
 import { useConfirmDelete } from '@/components/ios/use-delete-action'
 import posthog from 'posthog-js'
+import { FormError } from '@/components/shared/form-error'
+import { Panel } from '@/components/ios/panel'
 
 // FAM-3, FAM-5 e FAM-7: código, membros, aprovação, remoção e saída.
 export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: boolean }) {
@@ -52,9 +54,9 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
   return (
     <div className="space-y-7">
       {ask.sheet}
-      <section className="space-y-1 rounded-3xl bg-grouped p-4 text-center">
+      <Panel className="space-y-1 text-center">
         <p className="text-subheadline text-muted-foreground">{family.name}</p>
-        <p className="font-mono text-title1 font-bold tracking-widest">{family.code}</p>
+        <p className="font-mono text-title1 font-bold tracking-code">{family.code}</p>
         <p className="text-footnote text-muted-foreground">Código para entrar na família</p>
         <div className="flex justify-center gap-2 pt-2">
           <Button variant="secondary" size="sm" className="rounded-full" onClick={share}>
@@ -67,7 +69,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
             </Button>
           )}
         </div>
-      </section>
+      </Panel>
 
       {isAdmin && (
         <ListGroup footer="Ninguém novo consegue entrar.">
@@ -108,7 +110,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
 
       <GuestForm onAdd={name => run(() => familyApi.addGuest(name), 'Pessoa adicionada')} />
 
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
 
       <ListGroup footer={isAdmin && active.length > 1 ? 'O membro mais antigo vira admin.' : undefined}>
         <ListRow tone="destructive" title="Sair da família"

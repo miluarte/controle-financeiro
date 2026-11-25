@@ -36,20 +36,24 @@ interface ListRowProps extends VariantProps<typeof rowVariants> {
   swipeExtra?: SwipeExtra
   // sem o <li> próprio (quando outro componente já cria o item, ex.: SortableList)
   bare?: boolean
+  // inset: separador com recuo (depois do ícone), como no iOS. plain (lista sem card, Início):
+  // 16px em cima e embaixo e separador de ponta a ponta
+  layout?: 'inset' | 'plain'
   className?: string
 }
 
 export function ListRow({
-  leading, title, subtitle, trailing, chevron, onClick, onDelete, swipeExtra, bare, tone, className,
+  leading, title, subtitle, trailing, chevron, onClick, onDelete, swipeExtra, bare, tone, layout = 'inset', className,
 }: ListRowProps) {
   const centered = tone === 'tint' || tone === 'destructive'
+  const plain = layout === 'plain'
   const content = (
     <>
-      {leading && <span className="shrink-0 py-2">{leading}</span>}
+      {leading && <span className={cn('shrink-0', !plain && 'py-2')}>{leading}</span>}
       <span
         className={cn(
-          'flex min-w-0 flex-1 items-center gap-2 self-stretch py-2.5 pr-4',
-          'border-b border-separator group-last/row:border-b-0',
+          'flex min-w-0 flex-1 items-center gap-2 self-stretch pr-4',
+          plain ? 'py-0' : 'border-b border-separator py-2.5 group-last/row:border-b-0',
           centered && 'justify-center',
         )}
       >
@@ -65,13 +69,13 @@ export function ListRow({
   )
 
   const row = onClick ? (
-    <button type="button" onClick={onClick} className={cn(rowVariants({ tone, interactive: true }), className)}>
+    <button type="button" onClick={onClick} className={cn(rowVariants({ tone, interactive: true }), plain && 'py-4', className)}>
       {content}
     </button>
   ) : (
-    <div className={cn(rowVariants({ tone, interactive: false }), className)}>{content}</div>
+    <div className={cn(rowVariants({ tone, interactive: false }), plain && 'py-4', className)}>{content}</div>
   )
 
   const body = onDelete ? <SwipeActions onDelete={onDelete} extra={swipeExtra}>{row}</SwipeActions> : row
-  return bare ? body : <li className="group/row">{body}</li>
+  return bare ? body : <li className={cn('group/row', plain && 'border-b border-separator last:border-b-0')}>{body}</li>
 }

@@ -32,8 +32,8 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const SETTINGS_ITEM: NavItem = { href: '/config', label: 'Ajustes', icon: SettingsLinearIcon, activeIcon: SettingsBoldIcon }
 
-// Barra de abas Liquid Glass (iOS 26): cápsula de vidro flutuante, aba ativa marcada por uma
-// "lente" de vidro mais densa, ícone preenchido e na cor principal. Ao lado, o botão + (AddMenu).
+// Barra de abas Liquid Glass (iOS 26): cápsula de vidro flutuante, só ícones (o nome fica no aria-label),
+// aba ativa marcada por uma "lente" rosa, ícone preenchido e na cor principal (rosa). Ao lado, o botão + (AddMenu).
 // Fica presa ao fundo do AppShell (que ocupa a tela toda), sem position fixed. No desktop dá lugar ao SideNav.
 export const isNavActive = (pathname: string, href: string, also?: string[]) =>
   [href, ...(also ?? [])].some(p => pathname.startsWith(p))
@@ -42,7 +42,7 @@ export function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="pointer-events-none absolute lg:hidden inset-x-0 bottom-0 z-40 flex justify-center gap-3 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+    <nav className="pointer-events-none absolute lg:hidden inset-x-0 bottom-0 z-40 flex justify-center gap-3 px-4 pb-safe-bar">
       <div className="glass pointer-events-auto flex h-tabbar max-w-sm flex-1 items-stretch gap-1 rounded-full p-1">
         {NAV_ITEMS.map(({ href, label, icon: Icon, activeIcon: ActiveIcon, also }) => {
           const active = isNavActive(pathname, href, also)
@@ -52,13 +52,13 @@ export function BottomNav() {
               key={href}
               href={href}
               aria-current={active ? 'page' : undefined}
+              aria-label={label}
               className={cn(
-                'flex flex-1 flex-col items-center justify-center gap-0.5 rounded-full transition-colors active:scale-95',
-                active ? 'bg-glass-lens text-tint' : 'text-foreground/70',
+                'flex flex-1 items-center justify-center rounded-full transition-colors active:scale-95',
+                active ? 'bg-glass-lens text-tint' : 'text-foreground/(--alpha-muted)',
               )}
             >
-              <IconComponent className="size-6" />
-              <span className="text-caption2 font-semibold">{label}</span>
+              <IconComponent className="size-7" />
             </Link>
           )
         })}

@@ -17,6 +17,8 @@ import type { NewTransaction } from '@/lib/types'
 import { formatCurrency, formatDate, parseCents } from '@/lib/utils'
 import { useCategorySuggest } from '@/hooks/use-category-suggest'
 import { feedback } from '@/lib/feedback'
+import { FormError } from '@/components/shared/form-error'
+import { Note } from '@/components/shared/note'
 
 // DAD-2: importar CSV ou OFX (extrato) com prévia, mapeamento e duplicadas, ou a fatura do cartão em PDF
 // (StatementImport: compras que faltam, com parcela atual e quem fez a compra).
@@ -105,14 +107,14 @@ function Importer({ onDone }: { onDone: () => void }) {
   if (!rows) {
     return (
       <div className="space-y-4">
-        <p className="px-4 text-center text-subheadline text-muted-foreground">
+        <Note size="subheadline" className="px-4">
           PDF, CSV ou OFX.
-        </p>
+        </Note>
         <label className="flex h-12.5 cursor-pointer items-center justify-center rounded-full bg-tint text-headline font-semibold text-primary-foreground">
           Escolher arquivo
           <input type="file" accept=".pdf,.csv,.ofx,application/pdf,text/csv,application/x-ofx" className="sr-only" onChange={e => e.target.files?.[0] && onFile(e.target.files[0])} />
         </label>
-        {message && <p className="px-4 text-footnote text-destructive">{message}</p>}
+        <FormError message={message} />
       </div>
     )
   }
@@ -150,7 +152,7 @@ function Importer({ onDone }: { onDone: () => void }) {
         ))}
       </ListGroup>
 
-      {message && <p className="px-4 text-footnote text-destructive">{message}</p>}
+      <FormError message={message} />
       <Button size="lg" className="w-full" disabled={busy || valid.length === 0} onClick={importAll}>
         {busy ? 'Importando…' : `Importar ${valid.length} lançamentos`}
       </Button>

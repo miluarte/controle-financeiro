@@ -84,6 +84,15 @@ export interface Transaction {
   createdAt?: string
 }
 
+// compra inteira de um lançamento (purchase_info): linhas, total, parcelas, data da compra e parcela atual
+export interface PurchaseInfo {
+  rows: number
+  total: number
+  installments: number | null
+  firstDate: string | null
+  start: number | null
+}
+
 export interface NewTransaction {
   type: 'expense' | 'income' | 'save_apply' | 'save_redeem' | 'invoice_payment'
   amount: number

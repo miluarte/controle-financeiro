@@ -49,14 +49,13 @@ export function RegistryGroup() {
   const { categories } = useAllCategories()
   const { wallets } = useOwnWallets()
   const save = useSaveProfile()
-  const activeExpense = categories.filter(c => c.active && c.type === 'expense').length
-  const activeIncome = categories.filter(c => c.active && c.type === 'income').length
+  // uma linha só: a tela de categorias tem Gastos e Receitas
+  const activeCategories = categories.filter(c => c.active).length
   const activeWallets = wallets.filter(w => w.active).length
 
   return (
     <ListGroup header="Registro" footer="O que sobra passa para o mês seguinte.">
-      <ListRow title="Categorias de gasto" trailing={`${activeExpense} ativas`} chevron onClick={() => router.push('/config/categories')} />
-      <ListRow title="Categorias de receita" trailing={`${activeIncome} ativas`} chevron onClick={() => router.push('/config/categories?tipo=receita')} />
+      <ListRow title="Categorias" trailing={`${activeCategories} ativas`} chevron onClick={() => router.push('/config/categories')} />
       <ListRow title="Carteiras" trailing={`${activeWallets} ativas`} chevron onClick={() => router.push('/config/wallets')} />
       <FormRow label="Moeda padrão" htmlFor="currency">
         <select id="currency" value={profile?.currency ?? 'BRL'} onChange={e => save({ currency: e.target.value })}

@@ -15,6 +15,7 @@ import { sharedApi } from '@/lib/api/shared'
 import { feedback } from '@/lib/feedback'
 import type { SharedDebt } from '@/lib/types'
 import { formatCurrency, todayIso } from '@/lib/utils'
+import { FormError } from '@/components/shared/form-error'
 
 // Acerto de um Pix dividido. report: quem deve informa que pagou (quem pagou confirma).
 // receive: quem pagou registra o que recebeu de uma pessoa sem o app.
@@ -75,7 +76,7 @@ function Form({ debt, mode, onSaving, onDone }: {
           <DateField id="shared-settle-date" value={date} onChange={v => setDate(v || todayIso())} />
         </FormRow>
       </ListGroup>
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
     </form>
   )
 }

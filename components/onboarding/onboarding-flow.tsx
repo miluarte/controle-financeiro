@@ -22,6 +22,8 @@ import { SecurityStep } from './security-step'
 import { NotificationsStep } from './notifications-step'
 import { OnboardingStep, StepIcon } from './onboarding-step'
 import { ButtonRow } from '@/components/ios/button-row'
+import { FormError } from '@/components/shared/form-error'
+import { Note } from '@/components/shared/note'
 
 const STEPS = ['welcome', 'name', 'cards', 'income', 'budget', 'notifications', 'security', 'done'] as const
 
@@ -92,7 +94,7 @@ export function OnboardingFlow() {
   const nextLabel = step === 'welcome' ? 'Começar' : step === 'done' ? 'Começar a usar' : 'Continuar'
 
   return (
-    <div className="flex min-h-dvh flex-col px-4 lg:mx-auto lg:w-full lg:max-w-md lg:py-12 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[max(1rem,env(safe-area-inset-bottom))]">
+    <div className="flex min-h-dvh flex-col px-4 lg:mx-auto lg:w-full lg:max-w-md lg:py-12 pt-safe-top-page pb-safe-bottom-page">
       <div className="flex items-center justify-between">
         <span className="w-16" />
         <StepDots step={i} total={STEPS.length} />
@@ -137,7 +139,7 @@ export function OnboardingFlow() {
           <OnboardingStep icon={<StepIcon><ChartSquareLinearIcon /></StepIcon>} title="Orçamento do mês"
             text="Quanto quer gastar este mês?">
             <CurrencyInput id="ob-budget" aria-label="Orçamento do mês" variant="display" value={budget} onChange={setBudget} />
-            <p className="text-center text-footnote text-muted-foreground">Pode definir depois na Análise.</p>
+            <Note className="px-0">Pode definir depois na Análise.</Note>
           </OnboardingStep>
         )}
 
@@ -154,7 +156,7 @@ export function OnboardingFlow() {
         )}
       </div>
 
-      {error && <p className="pb-2 text-center text-footnote text-destructive">{error}</p>}
+      <FormError align="center" className="pb-2" message={error} />
       <ButtonRow>
         {optional && (
           <Button variant="secondary" size="lg" onClick={skip} disabled={busy}>Pular</Button>

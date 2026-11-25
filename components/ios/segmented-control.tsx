@@ -31,7 +31,7 @@ export function SegmentedControl<T extends string>({
             onClick={() => onChange(o.value)}
             className={cn(
               'flex-1 rounded-full text-footnote font-semibold transition-all',
-              selected ? 'bg-segment text-foreground shadow-md' : 'text-foreground',
+              selected ? 'bg-segment text-foreground shadow-control' : 'text-foreground',
             )}
           >
             {o.label}

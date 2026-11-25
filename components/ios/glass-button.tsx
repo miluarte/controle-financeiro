@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 
 // Botão Liquid Glass do iOS 26: círculo ou cápsula de vidro flutuando sobre o conteúdo.
 const glassButtonVariants = cva(
-  'glass inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full text-foreground transition-transform outline-none select-none active:scale-95 focus-visible:ring-3 focus-visible:ring-ring disabled:opacity-40 [&_svg]:shrink-0',
+  'glass inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full text-foreground transition-transform outline-none select-none active:scale-95 focus-visible:ring-3 focus-visible:ring-ring disabled:opacity-(--alpha-medium) [&_svg]:shrink-0',
   {
     variants: {
       size: {

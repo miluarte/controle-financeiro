@@ -7,6 +7,7 @@
    O que não é repetido aqui:
    - Paleta de cores (zinc, red, blue…): é a do Tailwind v4, que já define
      --color-zinc-50 e afins (`@import "tailwindcss" theme(static)` emite tudo).
+     Só a cor da marca, que não existe no Tailwind, fica aqui (--color-brand-*).
    - Espaçamento: é a escala do Tailwind (calc(var(--spacing) * n)).
    - Pesos de fonte: os do Tailwind (--font-weight-medium, -semibold, -bold).
 
@@ -14,7 +15,12 @@
    ====================================================================== */
 
 :root {
-  /* Famílias */
+  /* Cor da marca (rosa do topo do Início) */
+  --color-brand-pink-400: #e86a92;
+  --color-brand-pink-600: #c4567c;
+
+  /* Famílias. --font-family-manrope vem do next/font (app/layout.tsx), na classe do <html> */
+  --font-family-brand: var(--font-family-manrope), system-ui, sans-serif;
   --font-family-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Helvetica Neue", sans-serif;
   --font-family-system-mono: ui-monospace, "SF Mono", Menlo, monospace;
 
@@ -44,10 +50,13 @@
 
   /* Espaçamento entre letras (em, acompanha o tamanho) */
   --letter-spacing-large: 0.0234em;
+  --letter-spacing-wide: 0.1em;
 
   /* Opacidades, para color-mix() na camada semântica */
   --opacity-4: 4%;
+  --opacity-5: 5%;
   --opacity-7: 7%;
+  --opacity-10: 10%;
   --opacity-12: 12%;
   --opacity-14: 14%;
   --opacity-20: 20%;
@@ -55,9 +64,11 @@
   --opacity-25: 25%;
   --opacity-30: 30%;
   --opacity-35: 35%;
+  --opacity-40: 40%;
   --opacity-45: 45%;
   --opacity-50: 50%;
   --opacity-70: 70%;
+  --opacity-80: 80%;
   --opacity-94: 94%;
   --opacity-95: 95%;
 
@@ -65,7 +76,31 @@
   --blur-6: 6px;
   --blur-14: 14px;
 
+  /* Saturação (vidro) */
+  --saturate-180: 180%;
+
+  /* Espessura de linha */
+  --border-width-hairline: 0.5px;
+
   /* Raios */
   --radius-10: 0.625rem;
   --radius-28: 1.75rem;
+  --radius-22pct: 22%; /* canto do ícone de app do iOS, proporcional ao tamanho */
+
+  /* Proporções */
+  --ratio-id1: 1.586; /* cartão de crédito (ISO/IEC 7810 ID-1) */
+
+  /* Sombras: só a geometria (x y desfoque expansão); a cor vem da camada semântica */
+  --shadow-geometry-sm: 0 1px 3px 0;
+  --shadow-geometry-md: 0 4px 12px -2px;
+  --shadow-geometry-lg: 0 8px 24px -6px;
+  --shadow-geometry-xl: 0 16px 48px -12px;
+  --shadow-geometry-inset-top: inset 0 1px 0 0;
+  --shadow-geometry-inset-bottom: inset 0 -1px 1px 0;
+
+  /* Tempos de animação */
+  --duration-1200: 1.2s;
+  --duration-2400: 2.4s;
+  --delay-150: 0.15s;
+  --delay-300: 0.3s;
 }

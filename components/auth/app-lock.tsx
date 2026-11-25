@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { AppLogo } from '@/components/shared/app-logo'
 import { lockCredential, unlock } from '@/lib/app-lock'
 import { supabase } from '@/lib/supabase/client'
+import { FormError } from '@/components/shared/form-error'
 
 // Depois de 1 minuto fora do app, pede o Face ID de novo.
 const RELOCK_MS = 60_000
@@ -43,7 +44,7 @@ export function AppLock({ userId, children }: { userId: string; children: React.
       <Button size="lg" className="w-full max-w-xs gap-2" onClick={tryUnlock}>
         <FaceScanSquareLinearIcon className="size-6" />Desbloquear
       </Button>
-      {error && <p className="text-footnote text-destructive">Não deu certo. Tente de novo.</p>}
+      <FormError align="center" message={error ? 'Não deu certo. Tente de novo.' : null} />
       <Button variant="plain" onClick={() => supabase.auth.signOut()}>Entrar com senha</Button>
     </div>
   )

@@ -7,7 +7,7 @@ import { ModalSheet } from '@/components/ios/modal-sheet'
 import { SegmentedControl } from '@/components/ios/segmented-control'
 import { FormRow } from '@/components/ios/form-row'
 import { CurrencyInput } from '@/components/shared/currency-input'
-import { TokenIcon } from '@/components/shared/token-icon'
+import { CategoryIcon } from '@/components/shared/category-icon'
 import { useRefresh } from '@/hooks/use-refresh'
 import { useReplanData } from '@/hooks/use-replan-data'
 import { analysisApi } from '@/lib/api/analysis'
@@ -17,6 +17,12 @@ import { formatCurrency, monthName } from '@/lib/utils'
 import { StepDots } from '@/components/ios/step-dots'
 import { LoadingBlock } from '@/components/shared/loading-dots'
 import { feedback } from '@/lib/feedback'
+import { Money } from '@/components/shared/money'
+import { FormError } from '@/components/shared/form-error'
+import { EmptyState } from '@/components/shared/empty-state'
+import { Note } from '@/components/shared/note'
+import { Panel } from '@/components/ios/panel'
+import { Stat, StatValue } from '@/components/ios/stat'
 
 const STEPS = ['Como você gasta hoje', 'Afine cada categoria', 'Tudo pronto']
 const ACTIONS = ['Continuar', 'Revisar', 'Salvar']
@@ -82,12 +88,12 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
 
       {step === 0 && (
         <>
-          <section className="space-y-3 rounded-3xl bg-grouped p-4">
+          <Panel className="space-y-3">
             <div className="flex items-baseline justify-between">
               <p className="text-subheadline text-muted-foreground">Gasto médio por mês</p>
               <span className="rounded-full bg-fill px-2 py-0.5 text-caption1">Base: {p.baseLabel}</span>
             </div>
-            <p className="text-title1 font-bold tabular-nums">{formatCurrency(p.averageTotal)}</p>
+            <Money as="p" size="title" cents={p.averageTotal} />
             {p.averageTotal > 0 ? (
               <>
                 <div className="flex h-3 overflow-hidden rounded-full bg-fill">
@@ -102,7 +108,7 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
             ) : (
               <p className="text-body text-muted-foreground">Nenhum gasto ainda.</p>
             )}
-          </section>
+          </Panel>
 
           <ListGroup footer="Opcional.">
             {askIncome || income != null ? (
@@ -123,9 +129,9 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
         <>
           <SegmentedControl<Rhythm> aria-label="Ritmo" value={rhythm} onChange={r => { setRhythm(r); setOverrides({}) }}
             options={[{ value: 'save', label: 'Economizar' }, { value: 'balance', label: 'Equilíbrio' }, { value: 'loose', label: 'Com folga' }]} />
-          <p className="px-4 text-center text-footnote text-muted-foreground">
+          <Note>
             {rhythm === 'save' ? 'Metas 10% abaixo do que você gasta.' : rhythm === 'loose' ? 'Metas 15% acima do que você gasta.' : 'Metas no ritmo do que você já gasta.'}
-          </p>
+          </Note>
           {[{ title: 'Com gasto recente', list: recent }, { title: 'Sem gasto recente', list: idle }].filter(g => g.list.length).map(group => (
             <ListGroup key={group.title} header={group.title}>
               {group.list.map(g => (
@@ -136,27 +142,27 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
                   </FormRow>
                 ) : (
                   <ListRow key={g.row.category.id} onClick={() => setEditing(g.row.category.id)}
-                    leading={<TokenIcon icon={g.row.category.icon} color={g.row.category.color} />}
+                    leading={<CategoryIcon icon={g.row.category.icon} />}
                     title={g.row.category.name}
                     subtitle={g.row.average ? `hoje ${formatCurrency(g.row.average)}` : g.row.currentGoal ? 'mantém a meta atual' : 'sem meta'}
-                    trailing={<span className="text-body font-semibold tabular-nums text-foreground">{g.value ? formatCurrency(g.value) : 'Sem meta'}</span>} />
+                    trailing={g.value ? <Money cents={g.value} /> : <span className="text-body font-semibold text-foreground">Sem meta</span>} />
                 )
               ))}
             </ListGroup>
           ))}
-          <dl className="grid grid-cols-3 gap-2 rounded-3xl bg-grouped p-4">
-            <div><dt className="text-footnote text-muted-foreground">Em metas</dt><dd className="text-headline tabular-nums">{formatCurrency(totalGoals)}</dd></div>
-            <div><dt className="text-footnote text-muted-foreground">Hoje</dt><dd className="text-headline tabular-nums">{formatCurrency(p.rows.reduce((s, r) => s + r.average, 0))}</dd></div>
-            <div><dt className="text-footnote text-muted-foreground">Da renda</dt><dd className="text-headline tabular-nums">{pctOf(totalGoals, income) ?? '—'}</dd></div>
-          </dl>
+          <Panel as="dl" className="grid grid-cols-3 gap-2">
+            <Stat label="Em metas"><Money as="dd" size="headline" cents={totalGoals} /></Stat>
+            <Stat label="Hoje"><Money as="dd" size="headline" cents={p.rows.reduce((s, r) => s + r.average, 0)} /></Stat>
+            <Stat label="Da renda"><StatValue>{pctOf(totalGoals, income) ?? '—'}</StatValue></Stat>
+          </Panel>
         </>
       )}
 
       {step === 2 && (
         <>
-          <section className="space-y-2 rounded-3xl bg-grouped p-4 text-center">
+          <Panel className="space-y-2 text-center">
             <p className="text-subheadline text-muted-foreground">Total em metas</p>
-            <p className="text-large-title font-bold tabular-nums">{formatCurrency(totalGoals)}</p>
+            <Money as="p" size="display" cents={totalGoals} />
             <p className="text-body">
               {budget == null
                 ? `Você ainda não definiu o orçamento de ${monthName(month)}.`
@@ -171,12 +177,12 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
                   ? `Você guarda ${formatCurrency(leftover)} por mês (${pctOf(leftover, income)} da renda).`
                   : `As metas passam ${formatCurrency(-leftover)} da sua renda.`}
             </p>
-          </section>
+          </Panel>
           <ListGroup header={`O que muda · ${changes.length}`}>
-            {changes.length === 0 && <li className="p-4 text-center text-subheadline text-muted-foreground">Nenhuma meta muda.</li>}
+            {changes.length === 0 && <EmptyState>Nenhuma meta muda.</EmptyState>}
             {changes.map(g => (
               <ListRow key={g.row.category.id}
-                leading={<TokenIcon icon={g.row.category.icon} color={g.row.category.color} />}
+                leading={<CategoryIcon icon={g.row.category.icon} />}
                 title={g.row.category.name}
                 trailing={
                   <span className="text-subheadline tabular-nums">
@@ -190,7 +196,7 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
         </>
       )}
 
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
       {step > 0 && (
         <button type="button" onClick={() => setStep(step - 1)} className="mx-auto block text-body text-tint">Voltar</button>
       )}

@@ -9,14 +9,15 @@ import { useDeleteAction } from '@/components/ios/use-delete-action'
 import { useArchiveAction } from '@/components/ios/use-archive-action'
 import { SegmentedControl } from '@/components/ios/segmented-control'
 import { ChoiceChip } from '@/components/shared/choice-chip'
-import { TokenIcon } from '@/components/shared/token-icon'
+import { CategoryIcon } from '@/components/shared/category-icon'
 import { useRefresh } from '@/hooks/use-refresh'
 import { categoriesApi } from '@/lib/api/categories'
-import { COLOR_TOKENS, ICON_TOKENS } from '@/lib/constants'
+import { ICON_TOKENS } from '@/lib/constants'
 import type { Category } from '@/lib/types'
 import { feedback } from '@/lib/feedback'
+import { FormError } from '@/components/shared/form-error'
 
-// CAT-5 e CAT-6: renomear, ícone, cor, classe, arquivar e excluir (a ordem muda arrastando na lista).
+// CAT-5 e CAT-6: renomear, ícone, classe, arquivar e excluir. Categorias são sempre cinza e em ordem alfabética.
 export function CategoryFormSheet({
   category, onClose,
 }: { category: Category | null; onClose: () => void }) {
@@ -38,7 +39,6 @@ function Form({ c, onDone }: { c: Category; onDone: () => void }) {
   const refresh = useRefresh()
   const [name, setName] = useState(c.name)
   const [icon, setIcon] = useState(c.icon)
-  const [color, setColor] = useState(c.color)
   const [klass, setKlass] = useState<'essential' | 'desire' | 'none'>(c.class ?? 'none')
   const [error, setError] = useState<string | null>(null)
 
@@ -53,13 +53,13 @@ function Form({ c, onDone }: { c: Category; onDone: () => void }) {
     e.preventDefault()
     if (!name.trim()) { setError('Dê um nome.'); return }
     run(() => categoriesApi.update(c.id, {
-      name: name.trim(), icon, color, class: c.type === 'expense' && klass !== 'none' ? klass : null,
+      name: name.trim(), icon, class: c.type === 'expense' && klass !== 'none' ? klass : null,
     }))
   }
 
   return (
     <form id="category" onSubmit={save} className="space-y-6">
-      <div className="flex justify-center"><TokenIcon icon={icon} color={color} size="lg" /></div>
+      <div className="flex justify-center"><CategoryIcon icon={icon} size="lg" /></div>
       <ListGroup>
         <FormRow label="Nome" htmlFor="c-name">
           <Input id="c-name" variant="bare" value={name} onChange={e => setName(e.target.value)} className="text-right" />
@@ -79,23 +79,13 @@ function Form({ c, onDone }: { c: Category; onDone: () => void }) {
         <li className="flex flex-wrap gap-2 p-3">
           {ICON_TOKENS.map(i => (
             <ChoiceChip key={i} selected={icon === i} onClick={() => setIcon(i)} className="px-1" aria-label={i}>
-              <TokenIcon active={icon === i} icon={i} color={color} size="sm" />
+              <CategoryIcon active={icon === i} icon={i} size="sm" />
             </ChoiceChip>
           ))}
         </li>
       </ListGroup>
 
-      <ListGroup header="Cor">
-        <li className="flex flex-wrap gap-2 p-3">
-          {COLOR_TOKENS.map(k => (
-            <ChoiceChip key={k} selected={color === k} onClick={() => setColor(k)} className="px-1" aria-label={k}>
-              <TokenIcon active={color === k} icon={icon} color={k} size="sm" />
-            </ChoiceChip>
-          ))}
-        </li>
-      </ListGroup>
-
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
     </form>
   )
 }

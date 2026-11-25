@@ -28,7 +28,7 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
     <SheetPrimitive.Backdrop
       data-slot="sheet-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-scrim transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-xs",
+        "fixed inset-0 z-50 bg-scrim transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-glass",
         className
       )}
       {...props}
@@ -53,13 +53,13 @@ function SheetContent({
         data-slot="sheet-content"
         data-side={side}
         className={cn(
-          "fixed z-50 flex flex-col gap-4 overflow-hidden bg-popover bg-clip-padding text-sm text-popover-foreground shadow-lg transition duration-200 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:inset-x-2 data-[side=bottom]:bottom-[max(0.5rem,env(safe-area-inset-bottom))] data-[side=bottom]:h-auto data-[side=bottom]:max-h-[calc(100dvh-env(safe-area-inset-top)-max(0.5rem,env(safe-area-inset-bottom))-0.75rem)] data-[side=bottom]:rounded-glass data-[side=bottom]:glass-strong data-[side=bottom]:shadow-none data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=left]:data-ending-style:translate-x-[-2.5rem] data-[side=left]:data-starting-style:translate-x-[-2.5rem] data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=right]:data-ending-style:translate-x-[2.5rem] data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:max-h-[85dvh] data-[side=top]:border-b data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem] data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm data-[side=bottom]:lg:inset-0 data-[side=bottom]:lg:m-auto data-[side=bottom]:lg:h-fit data-[side=bottom]:lg:max-h-[85dvh] data-[side=bottom]:lg:max-w-lg",
+          "fixed z-50 flex flex-col gap-4 overflow-hidden bg-popover bg-clip-padding text-subheadline text-popover-foreground shadow-floating transition duration-200 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:inset-x-2 data-[side=bottom]:bottom-safe-sheet data-[side=bottom]:h-auto data-[side=bottom]:max-h-sheet-max data-[side=bottom]:rounded-glass data-[side=bottom]:glass-strong data-[side=bottom]:shadow-none data-[side=bottom]:data-ending-style:translate-y-10 data-[side=bottom]:data-starting-style:translate-y-10 data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=left]:data-ending-style:-translate-x-10 data-[side=left]:data-starting-style:-translate-x-10 data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=right]:data-ending-style:translate-x-10 data-[side=right]:data-starting-style:translate-x-10 data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:max-h-sheet-max-desktop data-[side=top]:border-b data-[side=top]:data-ending-style:-translate-y-10 data-[side=top]:data-starting-style:-translate-y-10 data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm data-[side=bottom]:lg:inset-0 data-[side=bottom]:lg:m-auto data-[side=bottom]:lg:h-fit data-[side=bottom]:lg:max-h-sheet-max-desktop data-[side=bottom]:lg:max-w-lg",
           className
         )}
         {...props}
       >
         {side === "bottom" && (
-          <div aria-hidden className="mx-auto mt-1.5 h-1.5 w-9 shrink-0 rounded-full bg-muted-foreground/40 lg:hidden" />
+          <div aria-hidden className="mx-auto mt-1.5 h-1.5 w-9 shrink-0 rounded-full bg-muted-foreground/(--alpha-medium) lg:hidden" />
         )}
         {children}
         {showCloseButton && (
@@ -108,7 +108,7 @@ function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
     <SheetPrimitive.Title
       data-slot="sheet-title"
       className={cn(
-        "font-heading text-base font-medium text-foreground",
+        "font-heading text-callout font-medium text-foreground",
         className
       )}
       {...props}
@@ -123,7 +123,7 @@ function SheetDescription({
   return (
     <SheetPrimitive.Description
       data-slot="sheet-description"
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn("text-subheadline text-muted-foreground", className)}
       {...props}
     />
   )

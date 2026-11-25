@@ -15,6 +15,7 @@ import { familyApi } from '@/lib/api/family'
 import type { SharedDebt } from '@/lib/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { SharedSettlementSheet } from './shared-settlement-sheet'
+import { Money } from '@/components/shared/money'
 
 // Um Pix dividido com uma pessoa: quanto falta, a parte de cada um e o acerto.
 // Quem deve informa o acerto; quem pagou registra o que recebeu de quem não tem o app.
@@ -60,7 +61,7 @@ function Body({ debt, me, onPay }: { debt: SharedDebt; me: string; onPay: () => 
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <p className="text-large-title font-bold tabular-nums">{formatCurrency(paid ? debt.part : debt.open)}</p>
+        <Money as="p" size="display" cents={paid ? debt.part : debt.open} />
         <p className="text-subheadline text-muted-foreground">
           {owe ? (paid ? `Acertado com ${payer}` : `Você deve a ${payer}`) : (paid ? `${debtor} acertou` : `${debtor} te deve`)}
         </p>
@@ -100,7 +101,7 @@ function Body({ debt, me, onPay }: { debt: SharedDebt; me: string; onPay: () => 
         {(parts ?? []).map(p => (
           <ListRow key={p.userId} title={nameOf(p.userId)}
             subtitle={p.userId === debt.payerId ? 'Pagou' : p.open <= 0 ? 'Acertado' : p.settled > 0 ? `Falta ${formatCurrency(p.open)}` : undefined}
-            trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(p.part)}</span>} />
+            trailing={<Money cents={p.part} size="rowRegular" />} />
         ))}
       </ListGroup>
     </div>

@@ -14,13 +14,13 @@ import { useCategories } from '@/hooks/use-categories'
 import { useRefresh } from '@/hooks/use-refresh'
 import { useWallets } from '@/hooks/use-wallets'
 import { transactionsApi } from '@/lib/api/transactions'
+import { categoriesApi } from '@/lib/api/categories'
 import type { Transaction } from '@/lib/types'
 import { TYPE_LABEL } from './transaction-item'
 import { receiptUrl, type ReceiptItem } from '@/lib/receipt'
 import { DateField } from '@/components/shared/date-field'
 import { ItemsEditor } from './items-editor'
 import { PrepayGroup } from './prepay-group'
-import { SettlePurchaseGroup } from '@/components/cards/settle-purchase-group'
 import { useTransactionDelete } from './use-transaction-delete'
 import { usePinAction } from './use-pin-action'
 import { Switch } from '@/components/ui/switch'
@@ -33,6 +33,8 @@ import { capitalize, cn, formatCurrency, monthName } from '@/lib/utils'
 import posthog from 'posthog-js'
 import { discountData, discountError, discountOf, discountValueOf, discountAmount } from '@/lib/discount'
 import { DiscountGroup, DiscountSummary } from './discount-group'
+import { Money } from '@/components/shared/money'
+import { FormError } from '@/components/shared/form-error'
 
 // TRA-6: abrir, editar e excluir um lançamento.
 // onAssign: titular de cartão compartilhado troca de quem é a compra (linha "De quem é").
@@ -84,29 +86,50 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
   // compra dividida (split_purchase): divisão da compra inteira por pessoa
   const { nameOf, people, me } = useCardPeople()
   const [sender, setSender] = useState<Sender | null>(() => senderOf(t.sourceData))
-  const split = Array.isArray(t.sourceData?.split_parts) ? (t.sourceData.split_parts as { user_id: string; amount: number }[]) : null
-  const splitTotal = split ? split.reduce((sum, p) => sum + Number(p.amount), 0) : 0
+  const splitSaved = Array.isArray(t.sourceData?.split_parts) ? (t.sourceData.split_parts as { user_id: string; amount: number }[]) : null
   const n = t.installmentsTotal ?? 1
-  // divisão de cada parcela (split_schedule), mês a mês
-  const schedule = Array.isArray(t.sourceData?.split_schedule)
-    ? (t.sourceData.split_schedule as { n: number | null; date: string; parts: { user_id: string; amount: number }[] }[])
-    : null
   // parcela desta compra dividida: valor de cada pessoa, editável (ex.: corrigir um centavo)
   const root = typeof t.sourceData?.split_of === 'string' ? t.sourceData.split_of : t.id
-  const { data: parcelParts } = useSWR(split ? ['split-parts', root] : null, () => transactionsApi.splitParts(root))
+  const { data: parcelParts } = useSWR(splitSaved ? ['split-parts', root] : null, () => transactionsApi.splitParts(root))
   // só os valores alterados; os demais vêm do banco
   const [partAmounts, setPartAmounts] = useState<Record<string, number>>({})
   const parcelTotal = parcelParts ? parcelParts.reduce((sum, p) => sum + (partAmounts[p.id] ?? p.amount), 0) : null
+  // diferença por pessoa do que foi alterado e ainda não salvo; a Divisão já mostra o valor novo
+  const delta: Record<string, number> = {}
+  for (const p of parcelParts ?? []) delta[p.owner] = (delta[p.owner] ?? 0) + (partAmounts[p.id] ?? p.amount) - p.amount
+  const withDelta = (parts: { user_id: string; amount: number }[]) =>
+    parts.map(p => ({ ...p, amount: Number(p.amount) + (delta[p.user_id] ?? 0) }))
+  const split = splitSaved ? withDelta(splitSaved) : null
+  const splitTotal = split ? split.reduce((sum, p) => sum + p.amount, 0) : 0
+  // divisão de cada parcela (split_schedule), mês a mês
+  const schedule = Array.isArray(t.sourceData?.split_schedule)
+    ? (t.sourceData.split_schedule as { n: number | null; date: string; parts: { user_id: string; amount: number }[] }[])
+        .map(m => (m.n === t.installmentN ? { ...m, parts: withDelta(m.parts) } : m))
+    : null
   // parcela: a desta compra é exata (sua parte e o total da parcela antes de dividir); a de outra pessoa, aproximada
   const parcelOf = (userId: string | null, total: number) =>
     userId === t.owner ? t.amount
       : userId === null && typeof t.sourceData?.split_total === 'number' ? (t.sourceData.split_total as number)
       : Math.round(total / n)
-  const familyCard = wallets.find(w => w.id === t.walletId && w.type === 'credit' && !!w.ownerName)
-  // compra de outra pessoa no meu cartão: categoria é de cada um e a carteira fica no cartão
+  // "3x de R$ 30,00" ou, com parcelas diferentes, "1x de R$ 31,40 + 2x de R$ 30,00" (pela divisão mês a mês)
+  const parcelsText = (userId: string | null, total: number) => {
+    const values = schedule && schedule.length === n
+      ? schedule.map(m => m.parts.filter(p => userId === null || p.user_id === userId).reduce((sum, p) => sum + Number(p.amount), 0))
+      : null
+    if (!values) return `${n}x de ${formatCurrency(parcelOf(userId, total))}`
+    const runs: { v: number; k: number }[] = []
+    for (const v of values) {
+      const last = runs[runs.length - 1]
+      if (last && last.v === v) last.k++
+      else runs.push({ v, k: 1 })
+    }
+    return runs.map(r => `${r.k}x de ${formatCurrency(r.v)}`).join(' + ')
+  }
+  // compra de outra pessoa no meu cartão: a carteira fica no cartão e a categoria sai das categorias dela
   const mine = t.owner === me
+  const { data: ownerCategories } = useSWR(me && !mine ? ['member-categories', t.owner] : null, () => categoriesApi.ofMember(t.owner))
   const catType = t.type === 'income' ? 'income' : 'expense'
-  const showCategory = (t.type === 'expense' || t.type === 'income') && mine
+  const showCategory = (t.type === 'expense' || t.type === 'income') && (mine || !!ownerCategories)
   const showWallet = t.type !== 'income' && mine
   // gasto no Pix: para quem foi (Destinatário); receita: quem enviou (Remetente)
   const isPix = t.type === 'expense' && wallets.find(w => w.id === walletId)?.type === 'pix'
@@ -187,7 +210,7 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
       {((showCategory && editable) || (showWallet && editable && !t.installmentGroupId && !shared)) && (
         <ListGroup>
           {showCategory && editable && (
-            <CategoryField id="edit-category" categories={categories.filter(c => c.type === catType)} value={categoryId}
+            <CategoryField id="edit-category" categories={(mine ? categories : ownerCategories ?? []).filter(c => c.type === catType)} value={categoryId}
               onChange={id => id && setCategoryId(id)} />
           )}
           {showWallet && editable && !t.installmentGroupId && !shared && (
@@ -203,11 +226,11 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
           <ListRow title="Quem pagou" trailing={<span className="text-body text-foreground">{t.paidBy ? nameOf(t.paidBy) : 'Você'}</span>} />
           {sharedParts.map(p => (
             <ListRow key={p.user_id} title={nameOf(p.user_id)}
-              trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(Number(p.amount))}</span>} />
+              trailing={<Money cents={Number(p.amount)} size="rowRegular" />} />
           ))}
           {typeof t.sourceData?.shared_total === 'number' && (
             <ListRow title="Total do Pix"
-              trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(t.sourceData.shared_total as number)}</span>} />
+              trailing={<Money cents={t.sourceData.shared_total as number} />} />
           )}
         </ListGroup>
       )}
@@ -247,12 +270,12 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
           {/* total da compra e de cada pessoa; na parcelada, também a parcela de cada um */}
           <ListGroup header="Divisão">
             <ListRow title="Total da compra"
-              subtitle={n > 1 ? `${n}x de ${formatCurrency(parcelOf(null, splitTotal))}` : undefined}
-              trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(splitTotal)}</span>} />
+              subtitle={n > 1 ? parcelsText(null, splitTotal) : undefined}
+              trailing={<Money cents={splitTotal} />} />
             {split.map(p => (
               <ListRow key={p.user_id} title={nameOf(p.user_id)}
-                subtitle={n > 1 ? `${n}x de ${formatCurrency(parcelOf(p.user_id, p.amount))}` : undefined}
-                trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(p.amount)}</span>} />
+                subtitle={n > 1 ? parcelsText(p.user_id, p.amount) : undefined}
+                trailing={<Money cents={p.amount} size="rowRegular" />} />
             ))}
           </ListGroup>
           {/* mês a mês: quanto cada pessoa paga em cada parcela (a parcela desta tela em destaque) */}
@@ -262,7 +285,7 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
                 <ListRow key={m.n ?? 0}
                   title={<span className={cn(m.n === t.installmentN && 'font-semibold')}>{`${m.n} de ${n} · ${capitalize(monthName(m.date.slice(0, 7), 'short'))} ${m.date.slice(0, 4)}`}</span>}
                   subtitle={m.parts.map(p => `${nameOf(p.user_id)} ${formatCurrency(Number(p.amount))}`).join(' · ')}
-                  trailing={<span className="text-body tabular-nums text-foreground">{formatCurrency(m.parts.reduce((sum, p) => sum + Number(p.amount), 0))}</span>} />
+                  trailing={<Money cents={m.parts.reduce((sum, p) => sum + Number(p.amount), 0)} size="rowRegular" />} />
               ))}
             </ListGroup>
           )}
@@ -274,9 +297,6 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
       )}
 
       {/* compra minha no cartão de outra pessoa da família: informar o acerto daqui */}
-      {t.type === 'expense' && t.invoiceRef && t.owner === me && familyCard && (
-        <SettlePurchaseGroup t={t} card={familyCard} />
-      )}
 
       {t.receiptPath && (
         <ListGroup header="Nota fiscal">
@@ -289,7 +309,7 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
         </ListGroup>
       )}
 
-      {error && <p className="px-4 text-footnote text-destructive">{error}</p>}
+      <FormError message={error} />
 
     </form>
   )

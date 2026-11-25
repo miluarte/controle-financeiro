@@ -4,10 +4,11 @@ import { senderOf } from './sender-field'
 import { PinBoldIcon } from '@solar-icons/react'
 import { ListRow } from '@/components/ios/list-row'
 import type { SwipeExtra } from '@/components/ios/swipe-actions'
-import { TokenIcon } from '@/components/shared/token-icon'
+import { CategoryIcon } from '@/components/shared/category-icon'
+import { Money } from '@/components/shared/money'
 import { useCardPeople } from '@/hooks/use-card-people'
 import type { Category, Transaction, Wallet } from '@/lib/types'
-import { cn, formatCurrency, walletLabel } from '@/lib/utils'
+import { walletLabel } from '@/lib/utils'
 
 export const TYPE_LABEL: Record<Transaction['type'], string> = {
   expense: 'Gasto',
@@ -51,23 +52,22 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
       onClick={onClick}
       onDelete={onDelete}
       swipeExtra={swipeExtra}
+      // mesma aparência em todas as listas: 16px em cima e embaixo, separador de ponta a ponta
+      layout="plain"
+      // título e valor em subheadline negrito, subtítulo em subheadline regular
+      className="text-subheadline"
       leading={
-        <TokenIcon
-          icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')}
-          color={category?.color ?? 'gray'}
-        />
+        <CategoryIcon size="lg" icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')} />
       }
       title={pinned ? (
-        <span className="flex min-w-0 items-center gap-1.5">
+        <span className="flex min-w-0 items-center gap-1.5 font-bold">
           <span className="truncate">{title}</span>
           <PinBoldIcon aria-label="Fixada" className="size-4 shrink-0 text-muted-foreground" />
         </span>
-      ) : title}
+      ) : <span className="font-bold">{title}</span>}
       subtitle={subtitle}
       trailing={
-        <span className={cn('text-body font-semibold tabular-nums', inflow ? 'text-success' : 'text-foreground')}>
-          {inflow ? '+' : '−'}{formatCurrency(t.amount)}
-        </span>
+        <Money cents={t.amount} size="item" tone={inflow ? 'success' : 'default'} sign={inflow ? '+' : undefined} />
       }
     />
   )

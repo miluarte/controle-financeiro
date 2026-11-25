@@ -36,6 +36,7 @@ export function FirstSteps() {
 
   return (
     <ListGroup
+      variant="filled"
       header={`Primeiros passos · ${doneCount} de ${steps.length}`}
       footer={<button type="button" onClick={dismiss} className="text-tint">Dispensar</button>}
     >
