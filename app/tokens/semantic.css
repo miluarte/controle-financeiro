@@ -26,10 +26,10 @@
 
   /* Linhas */
   --line-subtle: var(--color-zinc-200); /* divisores e bordas */
-  --focus-ring: color-mix(in oklab, var(--color-zinc-950) var(--opacity-30), transparent);
+  --focus-ring: color-mix(in oklab, var(--color-brand-pink-400) var(--opacity-30), transparent);
 
   /* Ações */
-  --action-primary: var(--color-zinc-950); /* cor principal: botões, abas e seleção */
+  --action-primary: var(--color-brand-pink-400); /* cor principal (rosa da marca): botões, abas e seleção */
 
   /* Estados */
   --status-danger: var(--color-red-500);
@@ -53,7 +53,7 @@
   --glass-highlight: color-mix(in oklab, var(--color-white) var(--opacity-95), transparent);
   --glass-shade: color-mix(in oklab, var(--color-black) var(--opacity-4), transparent);
   --glass-shadow: color-mix(in oklab, var(--color-black) var(--opacity-12), transparent);
-  --glass-lens: color-mix(in oklab, var(--color-zinc-950) var(--opacity-7), transparent);
+  --glass-lens: color-mix(in oklab, var(--color-brand-pink-400) var(--opacity-14), transparent); /* aba ativa */
   --glass-blur: var(--blur-6);
   --glass-blur-strong: var(--blur-14);
   --glass-saturate: var(--saturate-180);
@@ -173,10 +173,10 @@
     --surface-selected: var(--color-zinc-600);
     --text-primary: var(--color-white);
     --text-secondary: var(--color-zinc-400);
-    --text-on-action: var(--color-zinc-950);
+    --text-on-action: var(--color-white);
     --line-subtle: var(--color-zinc-800);
-    --focus-ring: color-mix(in oklab, var(--color-white) var(--opacity-35), transparent);
-    --action-primary: var(--color-white);
+    --focus-ring: color-mix(in oklab, var(--color-brand-pink-400) var(--opacity-35), transparent);
+    --action-primary: var(--color-brand-pink-400);
     --status-danger: var(--color-red-400);
     --status-success: var(--color-green-400);
     --status-warning: var(--color-amber-400);
@@ -195,7 +195,7 @@
     --glass-highlight: color-mix(in oklab, var(--color-white) var(--opacity-22), transparent);
     --glass-shade: color-mix(in oklab, var(--color-black) var(--opacity-25), transparent);
     --glass-shadow: color-mix(in oklab, var(--color-black) var(--opacity-50), transparent);
-    --glass-lens: color-mix(in oklab, var(--color-white) var(--opacity-14), transparent);
+    --glass-lens: color-mix(in oklab, var(--color-brand-pink-400) var(--opacity-22), transparent);
     --category-red-surface: color-mix(in oklab, var(--color-red-500) var(--opacity-20), transparent);
     --category-red-content: var(--color-red-400);
     --category-rose-surface: color-mix(in oklab, var(--color-rose-500) var(--opacity-20), transparent);
@@ -243,10 +243,10 @@
   --surface-selected: var(--color-zinc-600);
   --text-primary: var(--color-white);
   --text-secondary: var(--color-zinc-400);
-  --text-on-action: var(--color-zinc-950);
+  --text-on-action: var(--color-white);
   --line-subtle: var(--color-zinc-800);
-  --focus-ring: color-mix(in oklab, var(--color-white) var(--opacity-35), transparent);
-  --action-primary: var(--color-white);
+  --focus-ring: color-mix(in oklab, var(--color-brand-pink-400) var(--opacity-35), transparent);
+  --action-primary: var(--color-brand-pink-400);
   --status-danger: var(--color-red-400);
   --status-success: var(--color-green-400);
   --status-warning: var(--color-amber-400);
@@ -265,7 +265,7 @@
   --glass-highlight: color-mix(in oklab, var(--color-white) var(--opacity-22), transparent);
   --glass-shade: color-mix(in oklab, var(--color-black) var(--opacity-25), transparent);
   --glass-shadow: color-mix(in oklab, var(--color-black) var(--opacity-50), transparent);
-  --glass-lens: color-mix(in oklab, var(--color-white) var(--opacity-14), transparent);
+  --glass-lens: color-mix(in oklab, var(--color-brand-pink-400) var(--opacity-22), transparent);
   --category-red-surface: color-mix(in oklab, var(--color-red-500) var(--opacity-20), transparent);
   --category-red-content: var(--color-red-400);
   --category-rose-surface: color-mix(in oklab, var(--color-rose-500) var(--opacity-20), transparent);

@@ -65,6 +65,7 @@ export function TransactionDayList({
               onDelete={() => del.ask(t)}
               swipeExtra={pin.extra(t)}
               pinned={pin.pinned(t)}
+              layout={variant === 'plain' ? 'plain' : 'inset'}
             />
           ))}
         </ListGroup>

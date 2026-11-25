@@ -31,9 +31,11 @@ interface TransactionItemProps {
   // fixar/desafixar no deslizar; pinned mostra o alfinete ao lado do nome
   swipeExtra?: SwipeExtra
   pinned?: boolean
+  // plain: lista sem card (Início), linha com 16px em cima e embaixo e separador de ponta a ponta
+  layout?: 'inset' | 'plain'
 }
 
-export function TransactionItem({ transaction: t, category, wallet, onClick, onDelete, note, swipeExtra, pinned }: TransactionItemProps) {
+export function TransactionItem({ transaction: t, category, wallet, onClick, onDelete, note, swipeExtra, pinned, layout }: TransactionItemProps) {
   const title = t.place || t.description || category?.name || TYPE_LABEL[t.type]
   const walletName = (wallet ? walletLabel(wallet) : null) ?? t.walletNameSnapshot
   const installment = t.installmentN && t.installmentsTotal ? `${t.installmentN} de ${t.installmentsTotal}` : null
@@ -51,6 +53,7 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
       onClick={onClick}
       onDelete={onDelete}
       swipeExtra={swipeExtra}
+      layout={layout}
       // título e valor em subheadline negrito, subtítulo em subheadline regular
       className="text-subheadline"
       leading={
@@ -65,7 +68,7 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
       subtitle={subtitle}
       trailing={
         <span className={cn('text-subheadline font-bold tabular-nums', inflow ? 'text-success' : 'text-foreground')}>
-          {inflow ? '+' : '−'}{formatCurrency(t.amount)}
+          {inflow && '+'}{formatCurrency(t.amount)}
         </span>
       }
     />
