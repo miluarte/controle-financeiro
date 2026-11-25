@@ -8,7 +8,7 @@ import { InvoiceSheet, type InvoiceRef } from '@/components/bills/invoice-sheet'
 import { ReconcileSheet } from '@/components/bills/reconcile-sheet'
 import { MemberAvatar } from '@/components/family/member-avatar'
 import { ProgressBar, toneFor } from '@/components/shared/progress-bar'
-import { TransactionEditSheet } from '@/components/transactions/transaction-edit-sheet'
+import { TransactionEditor } from '@/components/transactions/transaction-editor'
 import { TransactionItem } from '@/components/transactions/transaction-item'
 import { useCategories } from '@/hooks/use-categories'
 import { useInvoices } from '@/hooks/use-data'
@@ -21,9 +21,7 @@ import { invoiceDueDate, openInvoiceRef } from '@/lib/invoice'
 import type { FamilyMember, OwnWallet, Settlement, Transaction } from '@/lib/types'
 import { formatCurrency, formatDate, monthName, todayIso } from '@/lib/utils'
 import { ListRow } from '@/components/ios/list-row'
-import { AssignSheet } from './assign-sheet'
 import { ConfirmSettlementSheet } from './confirm-settlement-sheet'
-import { SplitSheet } from './split-sheet'
 import { InvoiceNavigator } from './invoice-navigator'
 import { ShareCardGroup } from './share-card-group'
 import { personStatementPdf, shareOrDownload } from '@/lib/person-statement-pdf'
@@ -43,10 +41,8 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
   const [ref, setRef] = useState(initialRef ?? openRef)
   const [paying, setPaying] = useState<InvoiceRef | null>(null)
   const [checking, setChecking] = useState(false)
-  const [assigning, setAssigning] = useState<Transaction | null>(null)
   const [editing, setEditing] = useState<Transaction | null>(null)
   const delTx = useTransactionDelete()
-  const [splitting, setSplitting] = useState<Transaction | null>(null)
   const [confirming, setConfirming] = useState<Settlement | null>(null)
   const settlements = useSettlements(wallet.id)
   const { totals, paid, paidAmounts } = useInvoices(today.slice(0, 7))
@@ -191,12 +187,8 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
 
 
       <InvoiceSheet invoice={paying} onClose={() => setPaying(null)} />
-      <AssignSheet transaction={assigning} people={people} me={me} onClose={() => setAssigning(null)}
-        onSplit={t => { setAssigning(null); setSplitting(t) }} />
-      <SplitSheet transaction={splitting} people={people} me={me} onClose={() => setSplitting(null)} />
       <ConfirmSettlementSheet settlement={confirming} debtorName={confirming ? nameOf(confirming.debtorId) : ''} onClose={() => setConfirming(null)} />
-      <TransactionEditSheet transaction={editing} onClose={() => setEditing(null)}
-        onAssign={shared && !paidAt ? tx => { setEditing(null); setAssigning(tx) } : undefined} />
+      <TransactionEditor transaction={editing} onClose={() => setEditing(null)} />
     </div>
   )
 }

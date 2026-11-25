@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import useSWR from 'swr'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
-import { TransactionEditSheet } from '@/components/transactions/transaction-edit-sheet'
+import { TransactionEditor } from '@/components/transactions/transaction-editor'
 import { TransactionItem } from '@/components/transactions/transaction-item'
 import { useCategories } from '@/hooks/use-categories'
 import { useMyDebts, useSettlements } from '@/hooks/use-family'
@@ -98,7 +98,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
           ))}
         </ListGroup>
       )}
-      <TransactionEditSheet transaction={editing} onClose={() => setEditing(null)} />
+      <TransactionEditor transaction={editing} onClose={() => setEditing(null)} />
       <SettlementSheet open={paying} onOpenChange={setPaying} card={wallet} debts={payable} />
     </div>
   )

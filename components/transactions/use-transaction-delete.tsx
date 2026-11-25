@@ -18,7 +18,8 @@ export function useTransactionDelete(onDone?: () => void) {
     try {
       // parte de Pix dividido: sai o Pix inteiro (a parte de todas as pessoas)
       if (t.sharedPaymentId) await sharedApi.remove(t.sharedPaymentId)
-      else if (all && t.installmentGroupId) await transactionsApi.removeInstallmentGroup(t.installmentGroupId)
+      // compra inteira: todas as parcelas e, na compra dividida, a parte de cada pessoa
+      else if (all) await transactionsApi.removePurchase(t.id)
       else await transactionsApi.remove(t.id)
       await refresh()
       posthog.capture('transaction_deleted', {
@@ -44,10 +45,14 @@ export function useTransactionDelete(onDone?: () => void) {
   }
 
   const t = target
+  // compra dividida no cartão: sai a compra inteira (a parte de todas as pessoas)
+  const split = !!t && Array.isArray(t.sourceData?.split_parts)
   const sheet = (
     <ActionSheet open={!!t} onOpenChange={o => { if (!o) setTarget(null) }}
-      title={t?.sharedPaymentId ? 'Excluir o gasto dividido? Sai a parte de todas as pessoas.' : t?.installmentGroupId ? 'O que excluir?' : 'Excluir transação?'}
-      actions={!t ? [] : t.installmentGroupId
+      title={t?.sharedPaymentId || split ? 'Excluir a compra dividida? Sai a parte de todas as pessoas.' : t?.installmentGroupId ? 'O que excluir?' : 'Excluir transação?'}
+      actions={!t ? [] : split
+        ? [{ label: 'Excluir', destructive: true, onSelect: () => remove(t, true) }]
+        : t.installmentGroupId
         ? [{ label: 'Só esta parcela', destructive: true, onSelect: () => remove(t, false) },
            { label: 'Compra inteira', destructive: true, onSelect: () => remove(t, true) }]
         : [{ label: 'Excluir', destructive: true, onSelect: () => remove(t, false) }]} />

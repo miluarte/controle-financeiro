@@ -1,4 +1,4 @@
-import type { NewTransaction, Transaction } from '../types'
+import type { NewTransaction, PurchaseInfo, Transaction } from '../types'
 import { supabase, unwrap } from '../supabase/client'
 import { toTransaction } from '../supabase/mappers'
 import { monthRange } from '../utils'
@@ -159,6 +159,32 @@ export const transactionsApi = {
   // ajusta o valor de uma pessoa na parcela e recalcula a divisão em todas as partes
   adjustSplitPart: async (id: string, amount: number) => {
     const { error } = await supabase.rpc('adjust_split_part', { p_transaction: id, p_amount: amount })
+    if (error) throw new Error(error.message)
+  },
+
+  // compra inteira (todas as parcelas e as partes de cada pessoa): dados para abrir no formulário
+  purchaseInfo: async (id: string): Promise<PurchaseInfo> => {
+    const { data, error } = await supabase.rpc('purchase_info', { p_transaction: id })
+    if (error) throw new Error(error.message)
+    const r = (data ?? {}) as Record<string, unknown>
+    return {
+      rows: Number(r.rows ?? 1),
+      total: Number(r.total ?? 0),
+      installments: r.installments == null ? null : Number(r.installments),
+      firstDate: (r.first_date as string | null) ?? null,
+      start: r.start == null ? null : Number(r.start),
+    }
+  },
+
+  // local, categoria e itens em todas as linhas da compra (sem mudar valor nem parcelas)
+  updatePurchaseInfo: async (id: string, place: string | null, categoryId: string | null, items: unknown[] | null) => {
+    const { error } = await supabase.rpc('update_purchase_info', { p_transaction: id, p_place: place, p_category: categoryId, p_items: items })
+    if (error) throw new Error(error.message)
+  },
+
+  // exclui a compra inteira: todas as parcelas e as partes de cada pessoa
+  removePurchase: async (id: string) => {
+    const { error } = await supabase.rpc('delete_purchase', { p_transaction: id })
     if (error) throw new Error(error.message)
   },
 

@@ -7,7 +7,7 @@ import { SearchField } from '@/components/ios/search-field'
 import { MonthSelector } from '@/components/shared/month-selector'
 import { TransactionDayList } from '@/components/transactions/transaction-day-list'
 import { DuplicatesSheet } from '@/components/transactions/duplicates-sheet'
-import { TransactionEditSheet } from '@/components/transactions/transaction-edit-sheet'
+import { TransactionEditor } from '@/components/transactions/transaction-editor'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { findDuplicates } from '@/lib/duplicates'
@@ -78,7 +78,7 @@ function TransactionsContent() {
           <TransactionDayList transactions={visible} onSelect={setEditing} />
         )}
       </div>
-      <TransactionEditSheet transaction={editing} onClose={() => setEditing(null)} />
+      <TransactionEditor transaction={editing} onClose={() => setEditing(null)} />
       <DuplicatesSheet open={showDuplicates} pairs={duplicates} onOpenChange={setShowDuplicates} />
     </>
   )

@@ -15,6 +15,13 @@ export const categoriesApi = {
     return rows.map(toCategory)
   },
 
+  // categorias de outra pessoa da família (titular escolhendo a categoria de uma compra dela)
+  ofMember: async (userId: string) => {
+    const { data, error } = await supabase.rpc('member_categories', { p_user: userId })
+    if (error) throw new Error(error.message)
+    return ((data ?? []) as Record<string, unknown>[]).map(toCategory)
+  },
+
   // CAT-3: quantidade de lançamentos por categoria
   usage: async () => {
     const rows = unwrap(await supabase.from('category_usage').select('*'))
