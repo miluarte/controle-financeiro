@@ -1,10 +1,14 @@
 import type { Metadata, Viewport } from 'next'
+import { Manrope } from 'next/font/google'
 import { SerwistProvider } from '@serwist/turbopack/react'
 import './globals.css'
 import { AppShell } from '@/components/layout/app-shell'
 import { Providers } from './providers'
 import { AuthGate } from '@/components/auth/auth-gate'
 import { SYSTEM_COLORS } from '@/lib/constants'
+
+// Fonte do app (Manrope, variável). Exposta como --font-family-manrope e usada pelo token --font-sans.
+const manrope = Manrope({ subsets: ['latin'], variable: '--font-family-manrope', display: 'swap' })
 
 export const metadata: Metadata = {
   title: 'Troco',
@@ -48,7 +52,7 @@ const APP_HEIGHT_SCRIPT = `(function(){var d=document.documentElement;function s
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className="h-full" suppressHydrationWarning>
+    <html lang="pt-BR" className={`${manrope.variable} h-full`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: APP_HEIGHT_SCRIPT }} />
       </head>
