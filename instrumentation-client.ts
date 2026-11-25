@@ -1,4 +1,5 @@
 import posthog from 'posthog-js'
+import { maskMoney, scrubMoney } from '@/lib/analytics-privacy'
 
 const token = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN
 const host = process.env.NEXT_PUBLIC_POSTHOG_HOST
@@ -8,6 +9,14 @@ if (token && host) {
     api_host: host,
     defaults: '2026-08-30',
     capture_exceptions: true,
+    // Gravações: os valores em dinheiro aparecem como "•••"; o resto do texto continua visível.
+    session_recording: {
+      maskAllInputs: true,
+      maskTextSelector: '*',
+      maskTextFn: (text) => maskMoney(text),
+    },
+    // Eventos do autocapture: tira valores em dinheiro do texto do elemento clicado.
+    before_send: scrubMoney,
     debug: process.env.NODE_ENV === 'development',
     logs: {
       serviceName: 'troco-web',
