@@ -52,7 +52,7 @@ function DropdownMenuItem({ className, ...props }: MenuPrimitive.Item.Props) {
       data-slot="dropdown-menu-item"
       className={cn(
         'flex h-row cursor-default items-center gap-3 rounded-2xl px-3 text-body outline-hidden select-none',
-        'data-highlighted:bg-fill data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0',
+        'data-highlighted:bg-fill data-disabled:pointer-events-none data-disabled:opacity-(--alpha-half) [&_svg]:pointer-events-none [&_svg]:size-6 [&_svg]:shrink-0',
         className,
       )}
       {...props}

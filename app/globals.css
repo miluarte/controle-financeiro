@@ -82,12 +82,67 @@
   --color-category-gray-content: var(--category-gray-content);
   --color-category-gray-solid: var(--category-gray-solid);
   --color-category-on-solid: var(--category-on-solid);
+  --color-thumb: var(--surface-thumb);
+  --color-hero: var(--surface-hero);
+  --color-on-hero: var(--text-on-hero);
+
+  /* Acabamentos do cartão: from-finish-black-start to-finish-black-end text-finish-on-dark… */
+  --color-finish-black-start: var(--card-finish-black-start);
+  --color-finish-black-end: var(--card-finish-black-end);
+  --color-finish-graphite-start: var(--card-finish-graphite-start);
+  --color-finish-graphite-end: var(--card-finish-graphite-end);
+  --color-finish-gray-start: var(--card-finish-gray-start);
+  --color-finish-gray-end: var(--card-finish-gray-end);
+  --color-finish-silver-start: var(--card-finish-silver-start);
+  --color-finish-silver-end: var(--card-finish-silver-end);
+  --color-finish-white-start: var(--card-finish-white-start);
+  --color-finish-white-end: var(--card-finish-white-end);
+  --color-finish-purple-start: var(--card-finish-purple-start);
+  --color-finish-purple-end: var(--card-finish-purple-end);
+  --color-finish-blue-start: var(--card-finish-blue-start);
+  --color-finish-blue-end: var(--card-finish-blue-end);
+  --color-finish-green-start: var(--card-finish-green-start);
+  --color-finish-green-end: var(--card-finish-green-end);
+  --color-finish-red-start: var(--card-finish-red-start);
+  --color-finish-red-end: var(--card-finish-red-end);
+  --color-finish-gold-start: var(--card-finish-gold-start);
+  --color-finish-gold-end: var(--card-finish-gold-end);
+  --color-finish-on-dark: var(--card-finish-on-dark);
+  --color-finish-on-light: var(--card-finish-on-light);
+  --color-finish-edge: var(--card-finish-edge);
+
   --radius-glass: var(--radius-28);
+  --radius-app-icon: var(--radius-22pct);
+
+  /* Sombras: shadow-raised, shadow-control, shadow-floating */
+  --shadow-raised: var(--elevation-low);
+  --shadow-control: var(--elevation-mid);
+  --shadow-floating: var(--elevation-high);
+
+  /* Desfoque do fundo: backdrop-blur-glass */
+  --blur-glass: var(--glass-blur);
+
+  /* Proporção do cartão: aspect-card */
+  --aspect-card: var(--ratio-id1);
+
+  /* Largura máxima do aviso (toast): max-w-toast */
+  --container-toast: min(calc(100vw - var(--spacing) * 8), var(--container-sm));
 
   /* Alturas padrão de controles do iOS */
   --spacing-row: calc(var(--spacing) * 11);       /* 44pt */
   --spacing-tabbar: calc(var(--spacing) * 15.5);  /* 62pt */
   --spacing-app: var(--app-height);
+
+  /* Áreas seguras do iPhone (notch e indicador de início): pt-safe-top, pb-safe-bottom… */
+  --spacing-safe-top: env(safe-area-inset-top);
+  --spacing-safe-bottom: env(safe-area-inset-bottom);
+  --spacing-safe-top-page: calc(env(safe-area-inset-top) + var(--spacing) * 4); /* tela cheia sem barra (passo a passo) */
+  --spacing-safe-bottom-page: max(calc(var(--spacing) * 4), env(safe-area-inset-bottom));
+  --spacing-safe-bar: max(calc(var(--spacing) * 3), env(safe-area-inset-bottom)); /* folga da barra de abas */
+  --spacing-safe-sheet: max(calc(var(--spacing) * 2), env(safe-area-inset-bottom)); /* folha flutuante */
+  --spacing-shell-bottom: calc(var(--spacing-tabbar) + var(--spacing-safe-bar) + var(--spacing) * 6); /* fim do conteúdo acima da barra */
+  --spacing-sheet-max: calc(100dvh - var(--spacing-safe-top) - var(--spacing-safe-sheet) - var(--spacing) * 3); /* altura máxima da folha no celular */
+  --spacing-sheet-max-desktop: 85dvh;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -107,6 +162,7 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
+  --color-success-content: var(--success-content);
   --color-warning: var(--warning);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -152,6 +208,7 @@
   --destructive: var(--status-danger);
   --destructive-foreground: var(--text-on-danger);
   --success: var(--status-success);
+  --success-content: var(--status-success-content);
   --warning: var(--status-warning);
   --tint: var(--action-primary);
   --separator: var(--line-subtle);
@@ -185,40 +242,35 @@
    borda clara com brilho no topo e sombra suave. Valores em app/tokens/semantic.css. */
 @utility glass {
   background-color: var(--glass);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-  border: 0.5px solid var(--glass-border);
-  box-shadow:
-    inset 0 1px 0 0 var(--glass-highlight),
-    inset 0 -1px 1px 0 var(--glass-shade),
-    0 8px 24px -6px var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: var(--glass-border-width) solid var(--glass-border);
+  box-shadow: var(--glass-elevation);
 }
 
 @utility glass-strong {
   background-color: var(--glass-strong);
-  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(180%);
-  backdrop-filter: blur(var(--glass-blur-strong)) saturate(180%);
-  border: 0.5px solid var(--glass-border);
-  box-shadow:
-    inset 0 1px 0 0 var(--glass-highlight),
-    0 16px 48px -12px var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border: var(--glass-border-width) solid var(--glass-border);
+  box-shadow: var(--glass-elevation-strong);
 }
 
 /* Carregando: três pontos que sobem e clareiam em sequência (LoadingDots) */
 @keyframes loading-dot {
-  0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+  0%, 80%, 100% { opacity: var(--opacity-30); transform: translateY(0); }
   40% { opacity: 1; transform: translateY(-35%); }
 }
 @utility loading-dots {
-  & > span { animation: loading-dot 1.2s ease-in-out infinite; }
-  & > span:nth-child(2) { animation-delay: 0.15s; }
-  & > span:nth-child(3) { animation-delay: 0.3s; }
-  @media (prefers-reduced-motion: reduce) { & > span { animation-duration: 2.4s; transform: none; } }
+  & > span { animation: loading-dot var(--duration-1200) ease-in-out infinite; }
+  & > span:nth-child(2) { animation-delay: var(--delay-150); }
+  & > span:nth-child(3) { animation-delay: var(--delay-300); }
+  @media (prefers-reduced-motion: reduce) { & > span { animation-duration: var(--duration-2400); transform: none; } }
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/(--alpha-half);
   }
   html {
     @apply font-sans antialiased;

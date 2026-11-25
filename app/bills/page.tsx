@@ -9,7 +9,7 @@ import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { MonthSelector } from '@/components/shared/month-selector'
-import { TokenIcon } from '@/components/shared/token-icon'
+import { CategoryIcon } from '@/components/shared/category-icon'
 import { useCategories } from '@/hooks/use-categories'
 import { useBills } from '@/hooks/use-data'
 import { useMonth } from '@/hooks/use-month'
@@ -78,7 +78,7 @@ export default function BillsPage() {
                   key={o.id}
                   onClick={() => setOpenBill(o)}
                   onDelete={() => askEnd(o)}
-                  leading={<TokenIcon icon={cat?.icon ?? 'ellipsis'} color={cat?.color ?? 'gray'} />}
+                  leading={<CategoryIcon icon={cat?.icon ?? 'ellipsis'} />}
                   title={o.bill.name}
                   subtitle={<span className="flex min-w-0 items-center gap-1.5"><span className="truncate">Vence {formatDate(o.dueDate).slice(0, 5)}{n}{to}</span> <DueBadge dueDate={o.dueDate} paid={!!o.paidAt} /></span>}
                   trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(o.amount)}</span>}
@@ -97,7 +97,7 @@ export default function BillsPage() {
                     key={o.id}
                     onClick={() => setOpenBill(o)}
                     onDelete={() => askEnd(o)}
-                    leading={<TokenIcon icon={cat?.icon ?? 'ellipsis'} color={cat?.color ?? 'gray'} />}
+                    leading={<CategoryIcon icon={cat?.icon ?? 'ellipsis'} />}
                     title={o.bill.name}
                     subtitle={`Dia ${formatDate(o.dueDate).slice(0, 5)} · ${cardName(o.bill.walletId)}`}
                     trailing={<span className="text-body tabular-nums text-muted-foreground">{formatCurrency(o.amount)}</span>}
@@ -116,7 +116,7 @@ export default function BillsPage() {
                     key={o.id}
                     onClick={() => setOpenBill(o)}
                     onDelete={() => askEnd(o)}
-                    leading={<TokenIcon icon={cat?.icon ?? 'ellipsis'} color={cat?.color ?? 'gray'} />}
+                    leading={<CategoryIcon icon={cat?.icon ?? 'ellipsis'} />}
                     title={o.bill.name}
                     subtitle={<span className="flex items-center gap-1.5">Dia {formatDate(o.dueDate).slice(0, 5)} <DueBadge dueDate={o.dueDate} paid={!!o.paidAt} income /></span>}
                     trailing={<span className="text-body font-semibold tabular-nums text-success">+{formatCurrency(o.amount)}</span>}

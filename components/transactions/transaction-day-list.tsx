@@ -14,6 +14,8 @@ interface TransactionDayListProps {
   emptyTitle?: string
   emptyText?: string
   onSelect?: (t: Transaction) => void
+  // plain: sem card, direto no fundo (Início)
+  variant?: 'inset' | 'plain'
 }
 
 // TRA-1: lista agrupada por dia, um grupo do iOS por dia.
@@ -22,6 +24,7 @@ export function TransactionDayList({
   emptyTitle = 'Nenhuma transação',
   emptyText = 'Nenhum gasto registrado neste mês',
   onSelect,
+  variant,
 }: TransactionDayListProps) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
@@ -51,7 +54,7 @@ export function TransactionDayList({
       {del.sheet}
       {pin.sheet}
       {groups.map(g => (
-        <ListGroup key={g.day} header={dayLabel(g.day)}>
+        <ListGroup key={g.day} header={dayLabel(g.day)} variant={variant}>
           {g.items.map(t => (
             <TransactionItem
               key={t.id}

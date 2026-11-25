@@ -1,25 +1,29 @@
-import type { CategoryInput } from '../types'
+import type { Category, CategoryInput } from '../types'
 import { supabase, unwrap } from '../supabase/client'
 import { toCategory } from '../supabase/mappers'
+
+// Categorias sempre em ordem alfabética (português, sem diferenciar acento nem maiúscula).
+const byName = (list: Category[]) =>
+  list.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }))
 
 export const categoriesApi = {
   getActive: async () => {
     const rows = unwrap(
-      await supabase.from('categories').select('*').eq('active', true).order('sort_order').order('name'),
+      await supabase.from('categories').select('*').eq('active', true),
     )
-    return rows.map(toCategory)
+    return byName(rows.map(toCategory))
   },
 
   getAll: async () => {
-    const rows = unwrap(await supabase.from('categories').select('*').order('sort_order').order('name'))
-    return rows.map(toCategory)
+    const rows = unwrap(await supabase.from('categories').select('*'))
+    return byName(rows.map(toCategory))
   },
 
   // categorias de outra pessoa da família (titular escolhendo a categoria de uma compra dela)
   ofMember: async (userId: string) => {
     const { data, error } = await supabase.rpc('member_categories', { p_user: userId })
     if (error) throw new Error(error.message)
-    return ((data ?? []) as Record<string, unknown>[]).map(toCategory)
+    return byName(((data ?? []) as Record<string, unknown>[]).map(toCategory))
   },
 
   // CAT-3: quantidade de lançamentos por categoria

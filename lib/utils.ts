@@ -7,8 +7,16 @@ const twMerge = extendTailwindMerge({
   extend: {
     theme: {
       text: ["large-title", "title1", "title2", "title3", "headline", "body", "callout", "subheadline", "footnote", "caption1", "caption2"],
-      spacing: ["row", "tabbar", "app"],
-      radius: ["glass"],
+      spacing: [
+        "row", "tabbar", "app", "safe-top", "safe-bottom", "safe-top-page", "safe-bottom-page", "safe-bar", "safe-sheet",
+        "shell-bottom", "sheet-max", "sheet-max-desktop",
+      ],
+      radius: ["glass", "app-icon"],
+      shadow: ["raised", "control", "floating"],
+      blur: ["glass"],
+      tracking: ["code"],
+      aspect: ["card"],
+      container: ["toast"],
     },
   },
 })

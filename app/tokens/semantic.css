@@ -36,6 +36,7 @@
   --status-success: var(--color-green-500);
   --status-warning: var(--color-amber-500);
   --status-info: var(--color-blue-500);
+  --status-success-content: var(--color-green-700); /* texto verde sobre fundo claro (selo) */
 
   /* Dados (gráficos) */
   --data-1: var(--color-blue-500);
@@ -55,6 +56,55 @@
   --glass-lens: color-mix(in oklab, var(--color-zinc-950) var(--opacity-7), transparent);
   --glass-blur: var(--blur-6);
   --glass-blur-strong: var(--blur-14);
+  --glass-saturate: var(--saturate-180);
+  --glass-border-width: var(--border-width-hairline);
+  --glass-elevation: var(--shadow-geometry-inset-top) var(--glass-highlight), var(--shadow-geometry-inset-bottom) var(--glass-shade), var(--shadow-geometry-lg) var(--glass-shadow);
+  --glass-elevation-strong: var(--shadow-geometry-inset-top) var(--glass-highlight), var(--shadow-geometry-xl) var(--glass-shadow);
+
+  /* Transparência por uso: cor com /(--alpha-*) nas classes (ex.: bg-destructive/(--alpha-faint)) */
+  --alpha-faint: var(--opacity-10); /* fundo levemente colorido, contorno quase invisível */
+  --alpha-soft: var(--opacity-20); /* fundo colorido, anel de erro */
+  --alpha-medium: var(--opacity-40); /* realce de toque, borda de erro */
+  --alpha-half: var(--opacity-50); /* anel de foco, desabilitado */
+  --alpha-muted: var(--opacity-70); /* texto ou ícone atenuado, toque */
+  --alpha-strong: var(--opacity-80); /* hover de botão preenchido, texto quase cheio */
+
+  /* Elevação (sombra de controles e itens flutuantes) */
+  --elevation-low: var(--shadow-geometry-sm) var(--glass-shadow); /* ícone, miniatura */
+  --elevation-mid: var(--shadow-geometry-md) var(--glass-shadow); /* item escolhido do segmentado, botão da chave */
+  --elevation-high: var(--shadow-geometry-lg) var(--glass-shadow); /* folha, aviso, opções do +, linha arrastada */
+
+  /* Topo do Início: faixa colorida atrás da saudação e do saldo */
+  --surface-hero: var(--color-brand-pink-400);
+  --text-on-hero: var(--color-white);
+
+  /* Controles */
+  --surface-thumb: var(--color-white); /* botão da chave (switch), branco nos dois modos como no iOS */
+
+  /* Acabamentos do cartão (prévia da carteira): início e fim do degradê e texto por cima */
+  --card-finish-black-start: var(--color-neutral-800);
+  --card-finish-black-end: var(--color-black);
+  --card-finish-graphite-start: var(--color-neutral-600);
+  --card-finish-graphite-end: var(--color-neutral-800);
+  --card-finish-gray-start: var(--color-neutral-400);
+  --card-finish-gray-end: var(--color-neutral-500);
+  --card-finish-silver-start: var(--color-neutral-100);
+  --card-finish-silver-end: var(--color-neutral-300);
+  --card-finish-white-start: var(--color-white);
+  --card-finish-white-end: var(--color-neutral-100);
+  --card-finish-purple-start: var(--color-purple-500);
+  --card-finish-purple-end: var(--color-purple-800);
+  --card-finish-blue-start: var(--color-blue-500);
+  --card-finish-blue-end: var(--color-blue-800);
+  --card-finish-green-start: var(--color-emerald-500);
+  --card-finish-green-end: var(--color-emerald-800);
+  --card-finish-red-start: var(--color-red-500);
+  --card-finish-red-end: var(--color-red-800);
+  --card-finish-gold-start: var(--color-amber-300);
+  --card-finish-gold-end: var(--color-amber-600);
+  --card-finish-on-dark: var(--color-white); /* texto sobre acabamento escuro */
+  --card-finish-on-light: var(--color-neutral-900); /* texto sobre acabamento claro */
+  --card-finish-edge: color-mix(in oklab, var(--color-black) var(--opacity-5), transparent); /* contorno do cartão branco */
 
   /* Categorias (COLOR_TOKENS): fundo e ícone do círculo; solid = item escolhido */
   --category-red-surface: var(--color-red-100);
@@ -131,6 +181,8 @@
     --status-success: var(--color-green-400);
     --status-warning: var(--color-amber-400);
     --status-info: var(--color-blue-400);
+    --status-success-content: var(--color-green-400);
+    --surface-hero: var(--color-brand-pink-600);
     --data-1: var(--color-blue-400);
     --data-2: var(--color-green-400);
     --data-3: var(--color-amber-400);
@@ -199,6 +251,8 @@
   --status-success: var(--color-green-400);
   --status-warning: var(--color-amber-400);
   --status-info: var(--color-blue-400);
+  --status-success-content: var(--color-green-400);
+  --surface-hero: var(--color-brand-pink-600);
   --data-1: var(--color-blue-400);
   --data-2: var(--color-green-400);
   --data-3: var(--color-amber-400);

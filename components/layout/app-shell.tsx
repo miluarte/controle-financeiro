@@ -21,7 +21,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <SideNav />
       <main
         ref={scroller}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-[env(safe-area-inset-top)] pb-[calc(var(--spacing-tabbar)+max(0.75rem,env(safe-area-inset-bottom))+1.5rem)] lg:pt-6 lg:pb-12"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-safe-top pb-shell-bottom lg:pt-6 lg:pb-12"
       >
         <div className="lg:mx-auto lg:max-w-3xl">{children}</div>
       </main>

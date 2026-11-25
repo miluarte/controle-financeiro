@@ -54,7 +54,7 @@ export function FamilyPanel({ family, isAdmin }: { family: Family; isAdmin: bool
       {ask.sheet}
       <section className="space-y-1 rounded-3xl bg-grouped p-4 text-center">
         <p className="text-subheadline text-muted-foreground">{family.name}</p>
-        <p className="font-mono text-title1 font-bold tracking-widest">{family.code}</p>
+        <p className="font-mono text-title1 font-bold tracking-code">{family.code}</p>
         <p className="text-footnote text-muted-foreground">Código para entrar na família</p>
         <div className="flex justify-center gap-2 pt-2">
           <Button variant="secondary" size="sm" className="rounded-full" onClick={share}>

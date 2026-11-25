@@ -7,7 +7,7 @@ import { ModalSheet } from '@/components/ios/modal-sheet'
 import { SegmentedControl } from '@/components/ios/segmented-control'
 import { FormRow } from '@/components/ios/form-row'
 import { CurrencyInput } from '@/components/shared/currency-input'
-import { TokenIcon } from '@/components/shared/token-icon'
+import { CategoryIcon } from '@/components/shared/category-icon'
 import { useRefresh } from '@/hooks/use-refresh'
 import { useReplanData } from '@/hooks/use-replan-data'
 import { analysisApi } from '@/lib/api/analysis'
@@ -136,7 +136,7 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
                   </FormRow>
                 ) : (
                   <ListRow key={g.row.category.id} onClick={() => setEditing(g.row.category.id)}
-                    leading={<TokenIcon icon={g.row.category.icon} color={g.row.category.color} />}
+                    leading={<CategoryIcon icon={g.row.category.icon} />}
                     title={g.row.category.name}
                     subtitle={g.row.average ? `hoje ${formatCurrency(g.row.average)}` : g.row.currentGoal ? 'mantém a meta atual' : 'sem meta'}
                     trailing={<span className="text-body font-semibold tabular-nums text-foreground">{g.value ? formatCurrency(g.value) : 'Sem meta'}</span>} />
@@ -176,7 +176,7 @@ function Flow({ step, setStep, onDone }: { step: number; setStep: (n: number) =>
             {changes.length === 0 && <li className="p-4 text-center text-subheadline text-muted-foreground">Nenhuma meta muda.</li>}
             {changes.map(g => (
               <ListRow key={g.row.category.id}
-                leading={<TokenIcon icon={g.row.category.icon} color={g.row.category.color} />}
+                leading={<CategoryIcon icon={g.row.category.icon} />}
                 title={g.row.category.name}
                 trailing={
                   <span className="text-subheadline tabular-nums">

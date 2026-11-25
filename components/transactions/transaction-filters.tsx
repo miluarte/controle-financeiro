@@ -52,7 +52,7 @@ export function TransactionFilters({ value, onChange, categories, wallets }: {
 
   const expense = categories.filter(c => c.type === 'expense')
   const income = categories.filter(c => c.type === 'income')
-  const catOption = (c: Category): Option => ({ id: c.id, label: c.name, icon: c.icon, color: c.color })
+  const catOption = (c: Category): Option => ({ id: c.id, label: c.name, icon: c.icon, color: 'gray' })
   const walletOptions = wallets.map(w => ({
     id: w.id, label: w.ownerName ? `${walletLabel(w)}, de ${w.ownerName}` : walletLabel(w), icon: WALLET_TYPE_ICON[w.type] ?? 'wallet', color: 'gray',
   }))

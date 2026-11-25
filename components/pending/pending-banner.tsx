@@ -27,7 +27,7 @@ export function PendingBanner() {
 
   return (
     <>
-      <ListGroup>
+      <ListGroup variant="filled">
         <ListRow chevron onClick={() => setOpen(true)}
           leading={<InboxLinearIcon className="size-6 text-tint" />}
           title={`${pending.length} para confirmar`}

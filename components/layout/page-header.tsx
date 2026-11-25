@@ -22,7 +22,7 @@ export function PageHeader({ title, back, actions, className }: PageHeaderProps)
           <AltArrowLeftLinearIcon className="h-6 w-6" />
         </Button>
       )}
-      <h1 className="flex-1 text-lg font-semibold">{title}</h1>
+      <h1 className="flex-1 text-headline font-semibold">{title}</h1>
       {actions}
     </header>
   )

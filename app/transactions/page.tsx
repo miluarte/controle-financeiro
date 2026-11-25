@@ -63,7 +63,7 @@ function TransactionsContent() {
     <>
       <LargeTitleHeader title="Transações" actions={<MonthSelector />} />
       <div className="space-y-5 px-4 pt-2">
-        <SearchField placeholder="Buscar local, item, categoria" value={query} onChange={e => setQuery(e.target.value)} />
+        <SearchField autoFocus={params.get('busca') === '1'} placeholder="Buscar local, item, categoria" value={query} onChange={e => setQuery(e.target.value)} />
         <TransactionFilters value={extra} onChange={setExtra} categories={categories} wallets={wallets} />
         {duplicates.length > 0 && (
           <ListGroup>

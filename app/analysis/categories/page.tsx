@@ -7,7 +7,7 @@ import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { ReplanSheet } from '@/components/replan/replan-sheet'
 import { ProgressBar } from '@/components/shared/progress-bar'
-import { TokenIcon } from '@/components/shared/token-icon'
+import { CategoryIcon } from '@/components/shared/category-icon'
 import { useReplanData } from '@/hooks/use-replan-data'
 import { UNLOCK_EXPENSES } from '@/lib/replan'
 import { formatCurrency } from '@/lib/utils'
@@ -40,7 +40,7 @@ export default function YourCategoriesPage() {
           <ListGroup header="Média por mês" footer={`Base: ${p.baseLabel}.`}>
             {p.rows.map(r => (
               <ListRow key={r.category.id}
-                leading={<TokenIcon icon={r.category.icon} color={r.category.color} />}
+                leading={<CategoryIcon icon={r.category.icon} />}
                 title={r.category.name}
                 subtitle={[r.category.class ? CLASS_LABEL[r.category.class] : null, r.currentGoal ? `meta ${formatCurrency(r.currentGoal)}` : 'sem meta'].filter(Boolean).join(' · ')}
                 trailing={<span className="text-body font-semibold tabular-nums text-foreground">{formatCurrency(r.average)}</span>} />

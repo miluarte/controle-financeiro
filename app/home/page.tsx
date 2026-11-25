@@ -1,35 +1,27 @@
 'use client'
 
 import { Suspense } from 'react'
-import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { BalanceCard } from '@/components/home/balance-card'
 import { FirstSteps } from '@/components/home/first-steps'
+import { HomeHero } from '@/components/home/home-hero'
 import { RecentTransactions } from '@/components/home/recent-transactions'
 import { PendingBanner } from '@/components/pending/pending-banner'
-import { NotificationsButton } from '@/components/layout/notifications-button'
-import { ProfileButton } from '@/components/layout/profile-button'
-import { MonthSelector } from '@/components/shared/month-selector'
-import { useMonth } from '@/hooks/use-month'
-import { useProfile } from '@/hooks/use-profile'
-import { greeting } from '@/lib/utils'
+import { currentMonth } from '@/lib/utils'
 
+// Início: faixa colorida com saudação e saldo do mês atual, depois a atividade recente.
+// Fundo da tela no tom dos cards (a lista fica direto nele, sem card).
 export default function HomePage() {
-  const { month } = useMonth()
-  const { profile } = useProfile()
-
+  const month = currentMonth()
   return (
-    <>
-      <LargeTitleHeader
-        eyebrow={`${greeting()},`}
-        title={profile?.name || ' '}
-        actions={<><MonthSelector /><NotificationsButton /><ProfileButton /></>}
-      />
-      <div className="space-y-7 px-4 pt-2">
-        <Suspense><PendingBanner /></Suspense>
+    <div className="-mb-shell-bottom min-h-app bg-grouped pb-shell-bottom lg:mb-0 lg:min-h-0 lg:rounded-3xl lg:pb-6">
+      <HomeHero>
         <BalanceCard month={month} />
+      </HomeHero>
+      <div className="space-y-7 px-4 pt-7">
+        <Suspense><PendingBanner /></Suspense>
         <FirstSteps />
         <RecentTransactions month={month} />
       </div>
-    </>
+    </div>
   )
 }

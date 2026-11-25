@@ -24,15 +24,15 @@ export function RecentTransactions({ month, limit = 6 }: { month: string; limit?
   const [editing, setEditing] = useState<Transaction | null>(null)
 
   return (
-    <section className="space-y-2">
+    <section className="space-y-3">
       <div className="flex items-baseline justify-between">
-        <h2 className="text-title3 font-semibold">Últimas transações</h2>
-        <Link href="/transactions" className="text-body text-tint active:opacity-50">Ver todas</Link>
+        <h2 className="text-title3 font-bold">Atividade</h2>
+        <Link href={`/transactions?mes=${month}`} className="text-body text-tint active:opacity-(--alpha-half)">Ver todas</Link>
       </div>
       {loading ? (
         <LoadingBlock />
       ) : (
-        <TransactionDayList transactions={latest(transactions, limit)} onSelect={setEditing} />
+        <TransactionDayList variant="plain" transactions={latest(transactions, limit)} onSelect={setEditing} />
       )}
       <TransactionEditor transaction={editing} onClose={() => setEditing(null)} />
     </section>
