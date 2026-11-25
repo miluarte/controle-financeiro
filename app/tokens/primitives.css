@@ -19,7 +19,8 @@
   --color-brand-pink-400: #e86a92;
   --color-brand-pink-600: #c4567c;
 
-  /* Famílias */
+  /* Famílias. --font-family-manrope vem do next/font (app/layout.tsx), na classe do <html> */
+  --font-family-brand: var(--font-family-manrope), system-ui, sans-serif;
   --font-family-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Helvetica Neue", sans-serif;
   --font-family-system-mono: ui-monospace, "SF Mono", Menlo, monospace;
 
