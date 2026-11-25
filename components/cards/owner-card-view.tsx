@@ -59,6 +59,15 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
   const nameOf = (id: string) => (id === me ? 'Você' : people.find(p => p.userId === id)?.name ?? 'Membro')
 
   const list = purchases ?? []
+  // compra dividida: uma linha por compra (soma das partes); a parte original abre o detalhe com a divisão
+  const rows = useMemo(() => {
+    const groups = new Map<string, Transaction[]>()
+    for (const t of purchases ?? []) {
+      const key = typeof t.sourceData?.split_of === 'string' ? t.sourceData.split_of : t.id
+      groups.set(key, [...(groups.get(key) ?? []), t])
+    }
+    return [...groups].map(([key, parts]) => ({ main: parts.find(p => p.id === key) ?? parts[0], parts }))
+  }, [purchases])
   const total = list.reduce((s, t) => s + t.amount, 0)
   const byPerson = new Map<string, number>()
   for (const t of list) byPerson.set(t.owner, (byPerson.get(t.owner) ?? 0) + t.amount)
@@ -165,12 +174,17 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
 
       <ListGroup header="Compras">
         {list.length === 0 && <li className="p-4 text-center text-subheadline text-muted-foreground">Nenhuma compra nesta fatura.</li>}
-        {list.map(t => (
-          <TransactionItem key={t.id} transaction={t}
-            category={t.categoryId ? catById.get(t.categoryId) : undefined}
-            note={shared ? `de ${nameOf(t.owner)}` : undefined}
-            onClick={() => setEditing(t)}
-            onDelete={() => delTx.ask(t)} />
+        {rows.map(({ main, parts }) => parts.length > 1 ? (
+          <TransactionItem key={main.id} transaction={{ ...main, amount: parts.reduce((s, p) => s + p.amount, 0) }}
+            category={main.categoryId ? catById.get(main.categoryId) : undefined}
+            note={parts.map(p => nameOf(p.owner)).join(', ')}
+            onClick={() => setEditing(main)} />
+        ) : (
+          <TransactionItem key={main.id} transaction={main}
+            category={main.categoryId ? catById.get(main.categoryId) : undefined}
+            note={shared ? `de ${nameOf(main.owner)}` : undefined}
+            onClick={() => setEditing(main)}
+            onDelete={() => delTx.ask(main)} />
         ))}
       </ListGroup>
 

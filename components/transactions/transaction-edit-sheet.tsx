@@ -126,7 +126,10 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
 
   return (
     <form id="edit-transaction" onSubmit={save} className="space-y-6">
-      <CurrencyInput id="edit-amount" aria-label="Valor" variant="display" value={amount} onChange={setAmount} disabled={!editable || shared} />
+      {/* compra dividida: mostra o valor da parcela inteira (soma das partes); a parte de cada um fica em Divisão */}
+      <CurrencyInput id="edit-amount" aria-label="Valor" variant="display"
+        value={split && typeof t.sourceData?.split_total === 'number' ? (t.sourceData.split_total as number) : amount}
+        onChange={setAmount} disabled={!editable || shared || !!split} />
 
       <ListGroup footer={t.installmentN ? `Parcela ${t.installmentN} de ${t.installmentsTotal}` : undefined}>
         <FormRow label="Data" htmlFor="edit-date">
