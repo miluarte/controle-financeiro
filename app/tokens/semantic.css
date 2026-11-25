@@ -74,6 +74,10 @@
   --elevation-mid: var(--shadow-geometry-md) var(--glass-shadow); /* item escolhido do segmentado, botão da chave */
   --elevation-high: var(--shadow-geometry-lg) var(--glass-shadow); /* folha, aviso, opções do +, linha arrastada */
 
+  /* Topo do Início: faixa colorida atrás da saudação e do saldo */
+  --surface-hero: var(--color-brand-pink-400);
+  --text-on-hero: var(--color-white);
+
   /* Controles */
   --surface-thumb: var(--color-white); /* botão da chave (switch), branco nos dois modos como no iOS */
 
@@ -178,6 +182,7 @@
     --status-warning: var(--color-amber-400);
     --status-info: var(--color-blue-400);
     --status-success-content: var(--color-green-400);
+    --surface-hero: var(--color-brand-pink-600);
     --data-1: var(--color-blue-400);
     --data-2: var(--color-green-400);
     --data-3: var(--color-amber-400);
@@ -247,6 +252,7 @@
   --status-warning: var(--color-amber-400);
   --status-info: var(--color-blue-400);
   --status-success-content: var(--color-green-400);
+  --surface-hero: var(--color-brand-pink-600);
   --data-1: var(--color-blue-400);
   --data-2: var(--color-green-400);
   --data-3: var(--color-amber-400);

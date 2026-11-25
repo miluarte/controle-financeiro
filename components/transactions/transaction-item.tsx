@@ -51,18 +51,20 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
       onClick={onClick}
       onDelete={onDelete}
       swipeExtra={swipeExtra}
+      // título e valor em subheadline negrito, subtítulo em subheadline regular
+      className="text-subheadline"
       leading={
-        <CategoryIcon icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')} />
+        <CategoryIcon size="lg" icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')} />
       }
       title={pinned ? (
-        <span className="flex min-w-0 items-center gap-1.5">
+        <span className="flex min-w-0 items-center gap-1.5 font-bold">
           <span className="truncate">{title}</span>
           <PinBoldIcon aria-label="Fixada" className="size-4 shrink-0 text-muted-foreground" />
         </span>
-      ) : title}
+      ) : <span className="font-bold">{title}</span>}
       subtitle={subtitle}
       trailing={
-        <span className={cn('text-body font-semibold tabular-nums', inflow ? 'text-success' : 'text-foreground')}>
+        <span className={cn('text-subheadline font-bold tabular-nums', inflow ? 'text-success' : 'text-foreground')}>
           {inflow ? '+' : '−'}{formatCurrency(t.amount)}
         </span>
       }

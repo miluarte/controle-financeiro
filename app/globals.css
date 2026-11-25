@@ -83,6 +83,8 @@
   --color-category-gray-solid: var(--category-gray-solid);
   --color-category-on-solid: var(--category-on-solid);
   --color-thumb: var(--surface-thumb);
+  --color-hero: var(--surface-hero);
+  --color-on-hero: var(--text-on-hero);
 
   /* Acabamentos do cartão: from-finish-black-start to-finish-black-end text-finish-on-dark… */
   --color-finish-black-start: var(--card-finish-black-start);

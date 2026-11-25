@@ -7,6 +7,7 @@
    O que não é repetido aqui:
    - Paleta de cores (zinc, red, blue…): é a do Tailwind v4, que já define
      --color-zinc-50 e afins (`@import "tailwindcss" theme(static)` emite tudo).
+     Só a cor da marca, que não existe no Tailwind, fica aqui (--color-brand-*).
    - Espaçamento: é a escala do Tailwind (calc(var(--spacing) * n)).
    - Pesos de fonte: os do Tailwind (--font-weight-medium, -semibold, -bold).
 
@@ -14,6 +15,10 @@
    ====================================================================== */
 
 :root {
+  /* Cor da marca (rosa do topo do Início) */
+  --color-brand-pink-400: #e86a92;
+  --color-brand-pink-600: #c4567c;
+
   /* Famílias */
   --font-family-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Helvetica Neue", sans-serif;
   --font-family-system-mono: ui-monospace, "SF Mono", Menlo, monospace;
