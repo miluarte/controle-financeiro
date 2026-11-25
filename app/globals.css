@@ -21,6 +21,7 @@
   --color-fill: var(--fill);
   --color-grouped: var(--grouped);
   --color-bar: var(--bar);
+  --color-screen-top: var(--screen-top);
   --color-segment: var(--segment);
   --color-glass: var(--glass);
   --color-glass-lens: var(--glass-lens);
@@ -216,6 +217,9 @@
   --grouped: var(--surface-raised);
   --bar: var(--glass-surface-strong);
   --bar-solid: var(--surface-raised);
+  /* Fundo da tela aberta e cor da faixa da barra de status (trocados por tela no fim deste arquivo) */
+  --screen-bg: var(--background);
+  --screen-top: var(--screen-bg);
   --segment: var(--surface-selected);
   --glass: var(--glass-surface);
   --glass-strong: var(--glass-surface-strong);
@@ -298,14 +302,20 @@
     @apply bg-background text-body text-foreground;
     overscroll-behavior-y: none;
   }
-  /* Início (data-top="hero", posto pelo HomeHero): o iOS 26 tinge a área da barra de status com o fundo
-     da página ou do elemento fixo que encosta no topo. Pintar html, body e o AppShell com a cor da faixa
-     evita o degradê claro por cima do rosa. A tela do Início cobre todo o resto, então nada mais muda. Só no celular (no desktop o fundo aparece em volta da coluna). */
-  @media (width < 64rem) {
-    html[data-top="hero"],
-    html[data-top="hero"] body,
-    html[data-top="hero"] [data-app-shell] {
-      background-color: var(--surface-hero);
-    }
+}
+
+/* Cor por tela, só no celular (no desktop o fundo aparece em volta da coluna). html, body e o AppShell
+   ficam no fundo da tela aberta (cinza da página; branco nas telas grouped do Screen): o Safari pinta a
+   barra de baixo com essa cor. No Início tudo fica rosa: o Safari só pinta o topo de rosa quando o fundo
+   da página também é rosa, então a barra de baixo do Início fica rosa junto. A faixa da barra de status (StatusBarStrip) usa --screen-top: o mesmo
+   fundo, ou rosa no Início (data-top="hero", posto pelo HomeHero), e o ThemeColorSync leva essa cor ao
+   theme-color. Fora do @layer para vencer o :root. */
+@media (width < 64rem) {
+  html:has([data-screen="grouped"]) { --screen-bg: var(--grouped); }
+  html[data-top="hero"] { --screen-bg: var(--surface-hero); --screen-top: var(--surface-hero); }
+  html,
+  html body,
+  html [data-app-shell] {
+    background-color: var(--screen-bg);
   }
 }
