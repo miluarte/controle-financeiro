@@ -3,6 +3,9 @@
 import { useState } from 'react'
 import { BillOccurrenceSheet } from '@/components/bills/bill-occurrence-sheet'
 import { BillsMonthCard } from '@/components/bills/bills-month-card'
+import { CardStatement } from '@/components/bills/card-statement'
+import { Screen } from '@/components/ios/screen'
+import { SegmentedControl } from '@/components/ios/segmented-control'
 import { DueBadge } from '@/components/bills/due-badge'
 import { useWallets } from '@/hooks/use-wallets'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
@@ -25,6 +28,8 @@ export default function BillsPage() {
   const { occurrences, loading } = useBills(month)
   const { wallets: usable } = useWallets()
   const { categories } = useCategories()
+  // Cartões: gasto de todos os cartões somados, por mês. Fixas: só o que é fixo.
+  const [view, setView] = useState<'cards' | 'fixed'>('cards')
   const [openBill, setOpenBill] = useState<BillOccurrence | null>(null)
   const [editing, setEditing] = useState<BillOccurrence | null>(null)
   const del = useBillDelete()
@@ -49,10 +54,13 @@ export default function BillsPage() {
     + onCard.reduce((s, o) => s + (cardChargePaid(o) ? o.amount : 0), 0)
 
   return (
-    <>
+    <Screen variant={view === 'cards' ? 'grouped' : 'page'}>
       {del.sheet}
       <LargeTitleHeader title="Contas" />
       <div className="space-y-7 px-4 pt-2">
+        <SegmentedControl aria-label="Visão" value={view} onChange={setView}
+          options={[{ value: 'cards', label: 'Cartões' }, { value: 'fixed', label: 'Fixas' }]} />
+        {view === 'cards' ? <CardStatement /> : <>
         <BillsMonthCard total={total} paid={paid} />
 
         {loading ? (
@@ -125,10 +133,11 @@ export default function BillsPage() {
           )}
           </>
         )}
+        </>}
       </div>
       <BillOccurrenceSheet occurrence={openBill} onClose={() => setOpenBill(null)}
         onEdit={o => { setOpenBill(null); setEditing(o) }} />
       {editing && <QuickAddSheet key={editing.id} open editBill={editing} onOpenChange={o => { if (!o) setEditing(null) }} />}
-    </>
+    </Screen>
   )
 }

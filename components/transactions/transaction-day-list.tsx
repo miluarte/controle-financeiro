@@ -15,6 +15,9 @@ interface TransactionDayListProps {
   emptyTitle?: string
   emptyText?: string
   onSelect?: (t: Transaction) => void
+  // complemento do subtítulo de cada linha (ex.: "de Ana") e linhas sem excluir/fixar no deslizar
+  // (ex.: compra dividida somada numa linha só)
+  describe?: (t: Transaction) => { note?: string; locked?: boolean }
 }
 
 // TRA-1: lista por dia, direto no fundo da tela (sem card), igual em todas as telas.
@@ -23,6 +26,7 @@ export function TransactionDayList({
   emptyTitle = 'Nenhuma transação',
   emptyText = 'Nenhum gasto registrado neste mês',
   onSelect,
+  describe,
 }: TransactionDayListProps) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
@@ -50,18 +54,22 @@ export function TransactionDayList({
       {pin.sheet}
       {groups.map(g => (
         <ListGroup key={g.day} header={dayLabel(g.day)} variant="plain">
-          {g.items.map(t => (
-            <TransactionItem
-              key={t.id}
-              transaction={t}
-              category={t.categoryId ? catById.get(t.categoryId) : undefined}
-              wallet={t.walletId ? walletById.get(t.walletId) : undefined}
-              onClick={onSelect ? () => onSelect(t) : undefined}
-              onDelete={() => del.ask(t)}
-              swipeExtra={pin.extra(t)}
-              pinned={pin.pinned(t)}
-            />
-          ))}
+          {g.items.map(t => {
+            const row = describe?.(t) ?? {}
+            return (
+              <TransactionItem
+                key={t.id}
+                transaction={t}
+                category={t.categoryId ? catById.get(t.categoryId) : undefined}
+                wallet={t.walletId ? walletById.get(t.walletId) : undefined}
+                note={row.note}
+                onClick={onSelect ? () => onSelect(t) : undefined}
+                onDelete={row.locked ? undefined : () => del.ask(t)}
+                swipeExtra={row.locked ? undefined : pin.extra(t)}
+                pinned={pin.pinned(t)}
+              />
+            )
+          })}
         </ListGroup>
       ))}
     </div>
