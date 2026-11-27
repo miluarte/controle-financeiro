@@ -85,6 +85,17 @@ export const transactionsApi = {
     return (rows[0]?.id as string | undefined) ?? null
   },
 
+  // Minhas compras em qualquer cartão de crédito (meus e da família), das faturas de fromRef a toRef (AAAA-MM-01).
+  getMyCardPurchases: async (userId: string, fromRef: string, toRef: string) => {
+    const rows = unwrap(
+      await supabase.from('transactions').select('*')
+        .eq('assigned_to', userId).eq('type', 'expense').eq('status', 'confirmed')
+        .not('invoice_ref', 'is', null).gte('invoice_ref', fromRef).lte('invoice_ref', toRef)
+        .order('date', { ascending: false }),
+    )
+    return rows.map(toTransaction)
+  },
+
   // Compras de um cartão numa fatura (todas que eu posso ver).
   getByInvoice: async (walletId: string, invoiceRef: string) => {
     const rows = unwrap(

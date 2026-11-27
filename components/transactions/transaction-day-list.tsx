@@ -16,6 +16,8 @@ interface TransactionDayListProps {
   emptyTitle?: string
   emptyText?: string
   onSelect?: (t: Transaction) => void
+  // compra parcelada com o valor cheio e "em Nx" (Início e Transações); false mostra a parcela (faturas)
+  fullPurchase?: boolean
 }
 
 // TRA-1: lista por dia, direto no fundo da tela (sem card), no Início e em Transações.
@@ -24,6 +26,7 @@ export function TransactionDayList({
   emptyTitle = 'Nenhuma transação',
   emptyText = 'Nenhum gasto registrado neste mês',
   onSelect,
+  fullPurchase = true,
 }: TransactionDayListProps) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
@@ -63,7 +66,7 @@ export function TransactionDayList({
               onDelete={() => del.ask(t)}
               swipeExtra={pin.extra(t)}
               pinned={pin.pinned(t)}
-              purchaseTotal={totalOf(t)}
+              purchaseTotal={fullPurchase ? totalOf(t) : undefined}
             />
           ))}
         </ListGroup>
