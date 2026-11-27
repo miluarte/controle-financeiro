@@ -8,21 +8,20 @@ import { useWallets } from '@/hooks/use-wallets'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
-import { MonthSelector } from '@/components/shared/month-selector'
 import { CategoryIcon } from '@/components/shared/category-icon'
 import { useCategories } from '@/hooks/use-categories'
 import { useBills } from '@/hooks/use-data'
-import { useMonth } from '@/hooks/use-month'
 import { useCardChargePaid } from '@/hooks/use-card-charge-paid'
 import type { BillOccurrence } from '@/lib/types'
-import { formatCurrency, formatDate, walletLabel } from '@/lib/utils'
+import { currentMonth, formatCurrency, formatDate, walletLabel } from '@/lib/utils'
 import { LoadingBlock } from '@/components/shared/loading-dots'
 import { useBillDelete } from '@/components/bills/use-bill-delete'
 import { QuickAddSheet } from '@/components/transactions/quick-add-sheet'
 import { Money } from '@/components/shared/money'
 
 export default function BillsPage() {
-  const { month } = useMonth()
+  // tela principal: sempre o mês atual, sem seletor de mês
+  const month = currentMonth()
   const { occurrences, loading } = useBills(month)
   const { wallets: usable } = useWallets()
   const { categories } = useCategories()
@@ -52,10 +51,7 @@ export default function BillsPage() {
   return (
     <>
       {del.sheet}
-      <LargeTitleHeader
-        title="Contas"
-        actions={<MonthSelector />}
-      />
+      <LargeTitleHeader title="Contas" />
       <div className="space-y-7 px-4 pt-2">
         <BillsMonthCard total={total} paid={paid} />
 
