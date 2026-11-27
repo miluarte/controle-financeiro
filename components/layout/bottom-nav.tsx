@@ -9,8 +9,6 @@ import {
   BillListBoldIcon,
   CardLinearIcon,
   CardBoldIcon,
-  ChartSquareLinearIcon,
-  ChartSquareBoldIcon,
   Home2LinearIcon,
   Home2BoldIcon,
   SettingsLinearIcon,
@@ -21,13 +19,12 @@ type SolarIcon = React.ComponentType<{ className?: string }>
 
 type NavItem = { href: string; label: string; icon: SolarIcon; activeIcon: SolarIcon; also?: string[] }
 
-// Início, Contas (só fixas), Cartões (faturas) e Análise. Transações abre por "Ver todas" no Início.
+// Início, Contas (só fixas) e Cartões (faturas). Transações abre por "Ver todas" e Análise pelo card "Análise de {mês}", ambos no Início.
 // Ajustes abre pelo avatar no Início (no desktop, também no fim do menu lateral).
 export const NAV_ITEMS: NavItem[] = [
-  { href: '/home',     label: 'Início',  icon: Home2LinearIcon,       activeIcon: Home2BoldIcon, also: ['/transactions'] },
+  { href: '/home',     label: 'Início',  icon: Home2LinearIcon,       activeIcon: Home2BoldIcon, also: ['/transactions', '/analysis'] },
   { href: '/bills',    label: 'Contas',  icon: BillListLinearIcon,    activeIcon: BillListBoldIcon },
   { href: '/cards',    label: 'Cartões', icon: CardLinearIcon,        activeIcon: CardBoldIcon },
-  { href: '/analysis', label: 'Análise', icon: ChartSquareLinearIcon, activeIcon: ChartSquareBoldIcon },
 ]
 
 export const SETTINGS_ITEM: NavItem = { href: '/config', label: 'Ajustes', icon: SettingsLinearIcon, activeIcon: SettingsBoldIcon }
