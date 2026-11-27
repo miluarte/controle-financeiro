@@ -11,6 +11,8 @@ const listVariants = cva('', {
       plain: '-mx-4',
       // card cinza claro, para quando o fundo da tela já é o dos cards (Início)
       filled: 'overflow-hidden rounded-3xl bg-fill',
+      // aviso: o mesmo card tingido de amarelo (ex.: gastos para confirmar no Início)
+      warning: 'overflow-hidden rounded-3xl bg-warning/(--alpha-soft)',
     },
   },
   defaultVariants: { variant: 'inset' },
@@ -22,6 +24,7 @@ const headerVariants = cva('text-muted-foreground', {
       inset: 'px-4 text-footnote uppercase',
       plain: 'text-subheadline',
       filled: 'px-4 text-footnote uppercase',
+      warning: 'px-4 text-footnote uppercase',
     },
   },
   defaultVariants: { variant: 'inset' },
