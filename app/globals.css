@@ -170,6 +170,7 @@
   --color-danger-content: var(--danger-content);
   --color-danger-content-secondary: var(--danger-content-secondary);
   --color-warning: var(--warning);
+  --color-info: var(--info);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -216,6 +217,7 @@
   --success: var(--status-success);
   --success-content: var(--status-success-content);
   --warning: var(--status-warning);
+  --info: var(--status-info);
   --warning-content: var(--status-warning-content);
   --warning-content-secondary: var(--status-warning-content-secondary);
   --danger-content: var(--status-danger-content);

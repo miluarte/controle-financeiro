@@ -82,6 +82,18 @@ export function dayLabel(date: string): string {
   return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', ...(year && { year: 'numeric' }) })
 }
 
+// "Quinta-feira, 8 de janeiro de 2026" (detalhe de um lançamento)
+export function longDate(date: string): string {
+  const d = new Date(`${date.slice(0, 10)}T12:00:00`)
+  return capitalize(d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))
+}
+
+// "9 jan 2026" (mês abreviado, sem ponto)
+export function shortDate(date: string): string {
+  const d = new Date(`${date.slice(0, 10)}T12:00:00`)
+  return `${d.getDate()} ${monthName(date.slice(0, 7), 'short')} ${d.getFullYear()}`
+}
+
 export function greeting(): string {
   const h = new Date().getHours()
   if (h < 12) return 'Bom dia'

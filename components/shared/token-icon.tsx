@@ -292,12 +292,14 @@ const SIZE: Record<string, { wrap: string; icon: string }> = {
   sm: { wrap: 'size-7',  icon: 'size-3.5' },
   md: { wrap: 'size-9',  icon: 'size-4'   },
   lg: { wrap: 'size-11', icon: 'size-5'   },
+  // destaque no topo do detalhe de um lançamento
+  xl: { wrap: 'size-16', icon: 'size-7'   },
 }
 
 interface TokenIconProps {
   icon: string
   color: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   active?: boolean
   className?: string
 }
