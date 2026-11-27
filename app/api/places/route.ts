@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 
 // Busca de lugar no Google (Places API New) para o cadastro de locais. A chave fica só no servidor
 // (GOOGLE_MAPS_API_KEY na Vercel); sem ela, { enabled: false } e o app esconde a busca e fica só o link.
+// Até 100 chamadas por dia no total (use_google_places_quota); acima disso, { reason: 'limit' } sem chamar o Google.
 // Corpo: { action: 'status' } | { action: 'search', input, session } | { action: 'details', placeId, session }.
 // Busca e detalhe usam o mesmo token de sessão (o Google cobra só o detalhe), e o detalhe pede só
 // campos Essentials (endereço e ponto). O nome vem da própria sugestão.
@@ -25,17 +26,26 @@ async function google(url: string, init: RequestInit) {
   } catch { return null }
 }
 
-// só quem está logado no app usa a busca (a cota é paga)
-async function signedIn(req: Request) {
+// cliente do Supabase com o login de quem chamou (só quem está logado usa a busca, que é paga)
+async function userClient(req: Request) {
   const token = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
-  if (!token) return false
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } })
+  if (!token) return null
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { persistSession: false }, global: { headers: { Authorization: `Bearer ${token}` } },
+  })
   const { data } = await supabase.auth.getUser(token)
-  return !!data.user
+  return data.user ? supabase : null
+}
+
+// limite de 100 chamadas por dia no total, contado no banco antes de chamar o Google
+async function withinQuota(supabase: NonNullable<Awaited<ReturnType<typeof userClient>>>) {
+  const { data, error } = await supabase.rpc('use_google_places_quota')
+  return !error && data === true
 }
 
 export async function POST(req: Request) {
-  if (!(await signedIn(req))) return Response.json({ ok: false, reason: 'unauthorized' }, { status: 401 })
+  const supabase = await userClient(req)
+  if (!supabase) return Response.json({ ok: false, reason: 'unauthorized' }, { status: 401 })
   const key = process.env.GOOGLE_MAPS_API_KEY
   if (!key) return Response.json({ ok: true, enabled: false })
 
@@ -47,6 +57,7 @@ export async function POST(req: Request) {
   if (body.action === 'search') {
     const input = String(body.input ?? '').trim().slice(0, 120)
     if (input.length < 3) return Response.json({ ok: true, results: [] })
+    if (!(await withinQuota(supabase))) return Response.json({ ok: false, reason: 'limit' })
     const data = await google(`${API}/places:autocomplete`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': key },
@@ -68,6 +79,7 @@ export async function POST(req: Request) {
   if (body.action === 'details') {
     const placeId = String(body.placeId ?? '')
     if (!/^[\w-]{10,300}$/.test(placeId)) return Response.json({ ok: false, reason: 'bad_place' })
+    if (!(await withinQuota(supabase))) return Response.json({ ok: false, reason: 'limit' })
     const qs = new URLSearchParams({ languageCode: 'pt-BR', regionCode: 'br', ...(session ? { sessionToken: session } : {}) })
     const data = await google(`${API}/places/${placeId}?${qs}`, {
       headers: { 'X-Goog-Api-Key': key, 'X-Goog-FieldMask': 'id,formattedAddress,location' },
