@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { AltArrowDownLinearIcon, CheckCircleBoldIcon } from '@solar-icons/react'
+import { Collapse } from '@/components/ios/collapse'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { CategoryIcon } from '@/components/shared/category-icon'
@@ -44,7 +45,7 @@ export function CategoryAccordion({ categories, type, value, onSelect, query = '
     const selected = c.id === value
     return (
       <ListRow key={`${sub ? 'sub' : 'all'}-${c.id}`} onClick={onSelect ? () => onSelect(c.id) : undefined}
-        className={sub ? 'pl-8' : undefined}
+        className={sub ? 'pl-4' : undefined}
         leading={<CategoryIcon icon={c.icon} size="sm" active={selected} />}
         title={c.name}
         trailing={selected ? <CheckCircleBoldIcon className="size-5 text-tint" /> : undefined} />
@@ -55,16 +56,23 @@ export function CategoryAccordion({ categories, type, value, onSelect, query = '
     <ListGroup>
       {groups.map(({ parent, children }) => {
         const expanded = !!q || open.has(parent.id)
-        return [
-          <ListRow key={parent.id} onClick={() => toggle(parent.id)}
-            leading={<CategoryIcon icon={parent.icon} active={expanded} />}
-            title={parent.name}
-            trailing={<AltArrowDownLinearIcon className={cn('size-4 stroke-(length:--icon-stroke-chevron) transition-transform', expanded && 'rotate-180')} />} />,
-          ...(expanded ? [
-            ...(onSelect && (!q || hit(parent)) ? [option(parent, true)] : []),
-            ...children.map(c => option(c, true)),
-          ] : []),
-        ]
+        // um <li> por grupo: a principal e, embaixo, as subcategorias abrindo com animação.
+        // Separadores: a linha da principal some só no último grupo fechado; a lista das
+        // subcategorias fecha com uma linha, menos no último grupo.
+        return (
+          <li key={parent.id} className={cn('group/acc', !expanded && 'group/row')}>
+            <ListRow bare onClick={() => toggle(parent.id)}
+              leading={<CategoryIcon icon={parent.icon} active={expanded} />}
+              title={parent.name}
+              trailing={<AltArrowDownLinearIcon className={cn('size-4 stroke-(length:--icon-stroke-chevron) transition-transform duration-300 ease-out', expanded && 'rotate-180')} />} />
+            <Collapse open={expanded}>
+              <ul className="ml-4 border-b border-separator group-last/acc:border-b-0">
+                {onSelect && (!q || hit(parent)) && option(parent, true)}
+                {children.map(c => option(c, true))}
+              </ul>
+            </Collapse>
+          </li>
+        )
       })}
     </ListGroup>
   )
