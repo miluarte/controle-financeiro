@@ -13,6 +13,8 @@ const rowVariants = cva(
         default: 'text-foreground',
         tint: 'justify-center text-tint',
         destructive: 'justify-center text-destructive',
+        // aviso (card amarelo): título e subtítulo em âmbar escuro, no tom do fundo
+        warning: 'text-warning-content',
       },
       interactive: {
         true: 'transition-colors active:bg-fill',
@@ -60,10 +62,10 @@ export function ListRow({
         <span className={cn('min-w-0', !centered && 'flex-1')}>
           {/* no máximo duas linhas (título e subtítulo), cada uma corta com reticências numa linha só */}
           <span className="block truncate">{title}</span>
-          {subtitle && <span className="block truncate whitespace-nowrap text-subheadline text-muted-foreground [&>*]:whitespace-nowrap">{subtitle}</span>}
+          {subtitle && <span className={cn('block truncate whitespace-nowrap text-subheadline [&>*]:whitespace-nowrap', tone === 'warning' ? 'text-warning-content' : 'text-muted-foreground')}>{subtitle}</span>}
         </span>
         {trailing && <span className="shrink-0 text-muted-foreground">{trailing}</span>}
-        {chevron && <AltArrowRightLinearIcon className="size-4 shrink-0 text-muted-foreground" />}
+        {chevron && <AltArrowRightLinearIcon className={cn('size-4 shrink-0', tone === 'warning' ? 'text-warning-content' : 'text-muted-foreground')} />}
       </span>
     </>
   )

@@ -37,6 +37,7 @@
   --status-warning: var(--color-amber-500);
   --status-info: var(--color-blue-500);
   --status-success-content: var(--color-green-700); /* texto verde sobre fundo claro (selo) */
+  --status-warning-content: var(--color-amber-800); /* texto âmbar escuro sobre o fundo amarelo do aviso */
 
   /* Dados (gráficos) */
   --data-1: var(--color-blue-500);
@@ -183,6 +184,8 @@
     --status-warning: var(--color-amber-400);
     --status-info: var(--color-blue-400);
     --status-success-content: var(--color-green-400);
+  --status-warning-content: var(--color-amber-200);
+    --status-warning-content: var(--color-amber-200);
     --surface-hero: var(--color-brand-pink-600);
     --data-1: var(--color-blue-400);
     --data-2: var(--color-green-400);

@@ -28,8 +28,8 @@ export function PendingBanner() {
   return (
     <>
       <ListGroup variant="warning">
-        <ListRow chevron onClick={() => setOpen(true)}
-          leading={<DangerTriangleLinearIcon className="size-6 text-warning" />}
+        <ListRow tone="warning" chevron onClick={() => setOpen(true)}
+          leading={<DangerTriangleLinearIcon className="size-6 text-warning-content" />}
           title={<span className="text-subheadline font-semibold">
             {pending.length === 1 ? '1 gasto para confirmar' : `${pending.length} gastos para confirmar`}
           </span>}

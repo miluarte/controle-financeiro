@@ -165,6 +165,7 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
   --color-success-content: var(--success-content);
+  --color-warning-content: var(--warning-content);
   --color-warning: var(--warning);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -212,6 +213,7 @@
   --success: var(--status-success);
   --success-content: var(--status-success-content);
   --warning: var(--status-warning);
+  --warning-content: var(--status-warning-content);
   --tint: var(--action-primary);
   --separator: var(--line-subtle);
   --fill: var(--surface-sunken);

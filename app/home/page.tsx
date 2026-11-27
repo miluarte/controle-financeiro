@@ -20,8 +20,11 @@ export default function HomePage() {
         <BalanceCard month={month} />
       </HomeHero>
       <div className="space-y-7 px-4 pt-7">
-        <Suspense><PendingBanner /></Suspense>
-        <MonthAnalysisLink month={month} />
+        {/* aviso de pendentes e análise do mês juntos, com espaço menor entre eles */}
+        <div className="space-y-3">
+          <Suspense><PendingBanner /></Suspense>
+          <MonthAnalysisLink month={month} />
+        </div>
         <FirstSteps />
         <RecentTransactions month={month} />
       </div>
