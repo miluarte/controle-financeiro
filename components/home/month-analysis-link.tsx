@@ -17,12 +17,13 @@ export function MonthAnalysisLink({ month }: { month: string }) {
 
   return (
     <ListGroup variant="filled">
-      <li>
+      {/* group/row: a linha é a última do card, sem borda embaixo */}
+      <li className="group/row">
         <Link href="/analysis" className="block active:bg-fill">
           <ListRow
             bare
             leading={<PieChart2LinearIcon className="size-6 text-muted-foreground" />}
-            title={<span className="font-semibold">Análise de {monthName(month)}</span>}
+            title={<span className="text-subheadline font-semibold">Análise de {monthName(month)}</span>}
             subtitle={summary
               ? <><Money size="inherit" tone="inherit" cents={summary.spending} mask={hidden ? HIDDEN_MONEY : undefined} /> gastos até agora</>
               : ' '}
