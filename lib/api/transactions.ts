@@ -55,6 +55,28 @@ export const transactionsApi = {
     return rows.map(toTransaction)
   },
 
+  // Um lançamento pelo id (detalhe; null se foi excluído ou não está mais visível).
+  getOne: async (id: string): Promise<Transaction | null> => {
+    const rows = unwrap(await supabase.from('transactions').select('*').eq('id', id).limit(1))
+    return rows[0] ? toTransaction(rows[0]) : null
+  },
+
+  // Parcelas de uma compra parcelada, em ordem.
+  getGroup: async (groupId: string) => {
+    const rows = unwrap(
+      await supabase.from('transactions').select('*').eq('installment_group_id', groupId).order('installment_n'),
+    )
+    return rows.map(toTransaction)
+  },
+
+  // Gasto dividido: a parte de uma pessoa (o lançamento no nome dela).
+  partOfShared: async (sharedPaymentId: string, userId: string): Promise<string | null> => {
+    const rows = unwrap(
+      await supabase.from('transactions').select('id').eq('shared_payment_id', sharedPaymentId).eq('assigned_to', userId).limit(1),
+    )
+    return (rows[0]?.id as string | undefined) ?? null
+  },
+
   // Compras de um cartão numa fatura (todas que eu posso ver).
   getByInvoice: async (walletId: string, invoiceRef: string) => {
     const rows = unwrap(
@@ -189,7 +211,7 @@ export const transactionsApi = {
   },
 
   idsOfGroup: async (groupId: string) =>
-    unwrap(await supabase.from('transactions').select('id').eq('installment_group_id', groupId)).map(r => r.id as string),
+    unwrap(await supabase.from('transactions').select('id').eq('installment_group_id', groupId).order('installment_n')).map(r => r.id as string),
 
   remove: async (id: string) => {
     unwrap(await supabase.from('transactions').delete().eq('id', id))

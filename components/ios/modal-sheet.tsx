@@ -18,6 +18,8 @@ interface ModalSheetProps {
   formId?: string
   actionLabel?: string
   actionDisabled?: boolean
+  // ação do topo sem formulário (ex.: Editar no detalhe de um lançamento)
+  onAction?: () => void
   onDelete?: () => void
   deleteLabel?: string
   secondaryAction?: { label: string; onClick: () => void; disabled?: boolean }
@@ -25,7 +27,7 @@ interface ModalSheetProps {
 }
 
 export function ModalSheet({
-  open, onOpenChange, title, formId, actionLabel, actionDisabled, onDelete, deleteLabel = 'Excluir', secondaryAction, children,
+  open, onOpenChange, title, formId, actionLabel, actionDisabled, onAction, onDelete, deleteLabel = 'Excluir', secondaryAction, children,
 }: ModalSheetProps) {
   const saveBelow = !!onDelete && !!formId && !!actionLabel
   return (
@@ -38,6 +40,11 @@ export function ModalSheet({
             <Button type="button" variant="plain-destructive" size="nav" className="justify-self-end" onClick={onDelete}>
               {deleteLabel}
             </Button>
+          ) : onAction && actionLabel ? (
+            <GlassButton type="button" size="capsule" tone="prominent"
+              className="justify-self-end font-semibold" disabled={actionDisabled} onClick={onAction}>
+              {actionLabel}
+            </GlassButton>
           ) : formId && actionLabel ? (
             <GlassButton type="submit" form={formId} size="capsule" tone="prominent"
               className="justify-self-end font-semibold" disabled={actionDisabled}>

@@ -4,7 +4,7 @@ import { TokenIcon } from './token-icon'
 // preenchido (Bold) quando a categoria está selecionada.
 export function CategoryIcon({ icon, size, active, className }: {
   icon: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   active?: boolean
   className?: string
 }) {
