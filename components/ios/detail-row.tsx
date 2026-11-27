@@ -31,7 +31,8 @@ export function DetailRow({ label, value, leading, trailing, onClick }: DetailRo
     <>
       {leading && <span className="shrink-0">{leading}</span>}
       <span className="flex min-w-0 flex-1 items-center gap-2 self-stretch border-b border-separator py-3 pr-4 group-last/row:border-b-0">
-        <span className="min-w-0 flex-1">
+        {/* 2px entre o rótulo e o valor (escala do Tailwind, 0.5) */}
+        <span className="min-w-0 flex-1 space-y-0.5">
           <span className="block truncate text-field text-muted-foreground">{label}</span>
           <span className="block truncate text-field font-semibold text-foreground">{value}</span>
         </span>
