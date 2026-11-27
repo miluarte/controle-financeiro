@@ -57,6 +57,7 @@ export function RegistryGroup() {
     <ListGroup header="Registro" footer="O que sobra passa para o mês seguinte.">
       <ListRow title="Categorias" trailing={`${activeCategories} ativas`} chevron onClick={() => router.push('/config/categories')} />
       <ListRow title="Carteiras" trailing={`${activeWallets} ativas`} chevron onClick={() => router.push('/config/wallets')} />
+      <ListRow title="Locais" chevron onClick={() => router.push('/config/places')} />
       <FormRow label="Moeda padrão" htmlFor="currency">
         <select id="currency" value={profile?.currency ?? 'BRL'} onChange={e => save({ currency: e.target.value })}
           className="bg-transparent text-right text-body text-muted-foreground outline-none">

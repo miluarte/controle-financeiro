@@ -389,3 +389,16 @@ export interface InstitutionRate {
   periodStart: string
   periodEnd: string
 }
+
+// Local (cadastro compartilhado com a família): nomes da maquininha, apelido e endereço opcionais.
+export interface PlaceName {
+  key: string   // nome normalizado (normPlace)
+  name: string  // como apareceu na compra
+}
+
+export interface Place {
+  id: string
+  nickname: string | null
+  address: string | null
+  names: PlaceName[]
+}
