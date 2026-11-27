@@ -39,6 +39,13 @@ export function formatCurrency(cents: number): string {
   })
 }
 
+// parcela embaixo do valor nas listas: "3 de 12" (lançamento ou conta) ou "em 12x" (valor cheio da compra)
+export function installmentLabel(n: number | null | undefined, total: number | null | undefined, full = false) {
+  if (!total) return undefined
+  if (full) return `em ${total}x`
+  return n ? `${n} de ${total}` : undefined
+}
+
 export function formatDate(date: string): string {
   const [year, month, day] = date.slice(0, 10).split('-')
   return `${day}/${month}/${year}`
