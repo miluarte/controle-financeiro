@@ -4,11 +4,17 @@ import type { Category, CategoryType } from './types'
 // O gasto pode guardar a subcategoria, mas a tela mostra sempre a principal; a subcategoria
 // só aparece na escolha e no detalhamento da análise.
 
-const byName = (a: Category, b: Category) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
+// "Outros" fica sempre por último; o resto em ordem alfabética (português, sem diferenciar
+// acento nem maiúscula).
+const LAST = 'outros'
+const isLast = (c: Pick<Category, 'name'>) => c.name.trim().toLocaleLowerCase('pt-BR') === LAST
+export const byName = (a: Pick<Category, 'name'>, b: Pick<Category, 'name'>) =>
+  Number(isLast(a)) - Number(isLast(b)) || a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
 
 export interface CategoryGroup { parent: Category; children: Category[] }
 
-// Principais em ordem alfabética e, dentro de cada uma, as subcategorias em ordem alfabética.
+// Principais em ordem alfabética e, dentro de cada uma, as subcategorias em ordem alfabética,
+// com "Outros" sempre por último.
 export function categoryTree(categories: Category[], type?: CategoryType): CategoryGroup[] {
   const list = type ? categories.filter(c => c.type === type) : categories
   const children = new Map<string, Category[]>()
