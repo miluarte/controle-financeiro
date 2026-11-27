@@ -167,6 +167,8 @@
   --color-success-content: var(--success-content);
   --color-warning-content: var(--warning-content);
   --color-warning-content-secondary: var(--warning-content-secondary);
+  --color-danger-content: var(--danger-content);
+  --color-danger-content-secondary: var(--danger-content-secondary);
   --color-warning: var(--warning);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -216,6 +218,8 @@
   --warning: var(--status-warning);
   --warning-content: var(--status-warning-content);
   --warning-content-secondary: var(--status-warning-content-secondary);
+  --danger-content: var(--status-danger-content);
+  --danger-content-secondary: var(--status-danger-content-secondary);
   --tint: var(--action-primary);
   --separator: var(--line-subtle);
   --fill: var(--surface-sunken);

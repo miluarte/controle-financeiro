@@ -2,6 +2,7 @@
 
 import { Suspense } from 'react'
 import { BalanceCard } from '@/components/home/balance-card'
+import { CardDueAlerts } from '@/components/home/card-due-alerts'
 import { FirstSteps } from '@/components/home/first-steps'
 import { HomeHero } from '@/components/home/home-hero'
 import { MonthAnalysisLink } from '@/components/home/month-analysis-link'
@@ -20,8 +21,9 @@ export default function HomePage() {
         <BalanceCard month={month} />
       </HomeHero>
       <div className="space-y-7 px-4 pt-7">
-        {/* aviso de pendentes e análise do mês juntos, com espaço menor entre eles */}
+        {/* avisos (fatura perto de vencer ou vencida, pendentes) e análise do mês juntos, com espaço menor entre eles */}
         <div className="space-y-3">
+          <CardDueAlerts month={month} />
           <Suspense><PendingBanner /></Suspense>
           <MonthAnalysisLink month={month} />
         </div>

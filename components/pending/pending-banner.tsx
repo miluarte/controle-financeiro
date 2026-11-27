@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { DangerTriangleLinearIcon } from '@solar-icons/react'
-import { ListGroup } from '@/components/ios/list-group'
-import { ListRow } from '@/components/ios/list-row'
+import { AlertCard } from '@/components/shared/alert-card'
 import { usePending } from '@/hooks/use-data'
 import { useSession } from '@/hooks/use-session'
 import { PendingSheet } from './pending-sheet'
@@ -27,14 +26,9 @@ export function PendingBanner() {
 
   return (
     <>
-      <ListGroup variant="warning">
-        <ListRow tone="warning" chevron onClick={() => setOpen(true)}
-          leading={<DangerTriangleLinearIcon className="size-6 text-warning-content" />}
-          title={<span className="text-subheadline font-semibold">
-            {pending.length === 1 ? '1 gasto para confirmar' : `${pending.length} gastos para confirmar`}
-          </span>}
-          subtitle={<><Money size="inherit" tone="inherit" cents={total} /> no total</>} />
-      </ListGroup>
+      <AlertCard tone="warning" icon={DangerTriangleLinearIcon} onClick={() => setOpen(true)}
+        title={pending.length === 1 ? '1 gasto para confirmar' : `${pending.length} gastos para confirmar`}
+        subtitle={<><Money size="inherit" tone="inherit" cents={total} /> no total</>} />
       <PendingSheet open={open} pending={pending} onOpenChange={setOpen} />
     </>
   )

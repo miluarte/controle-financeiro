@@ -39,6 +39,8 @@
   --status-success-content: var(--color-green-700); /* texto verde sobre fundo claro (selo) */
   --status-warning-content: var(--color-amber-900); /* título e ícone do aviso, sobre o fundo amarelo */
   --status-warning-content-secondary: var(--color-amber-600); /* descrição e seta do aviso */
+  --status-danger-content: var(--color-red-900); /* título e ícone do aviso vermelho */
+  --status-danger-content-secondary: var(--color-red-600); /* descrição e seta do aviso vermelho */
 
   /* Dados (gráficos) */
   --data-1: var(--color-blue-500);
@@ -187,8 +189,12 @@
     --status-success-content: var(--color-green-400);
   --status-warning-content: var(--color-amber-100);
   --status-warning-content-secondary: var(--color-amber-300);
+  --status-danger-content: var(--color-red-100);
+  --status-danger-content-secondary: var(--color-red-300);
     --status-warning-content: var(--color-amber-100);
   --status-warning-content-secondary: var(--color-amber-300);
+  --status-danger-content: var(--color-red-100);
+  --status-danger-content-secondary: var(--color-red-300);
     --surface-hero: var(--color-brand-pink-600);
     --data-1: var(--color-blue-400);
     --data-2: var(--color-green-400);

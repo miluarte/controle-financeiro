@@ -13,6 +13,8 @@ const listVariants = cva('', {
       filled: 'overflow-hidden rounded-3xl bg-fill',
       // aviso: o mesmo card tingido de amarelo (ex.: gastos para confirmar no Início)
       warning: 'overflow-hidden rounded-3xl bg-warning/(--alpha-soft)',
+      // aviso vermelho (ex.: fatura vencida no Início)
+      danger: 'overflow-hidden rounded-3xl bg-destructive/(--alpha-soft)',
     },
   },
   defaultVariants: { variant: 'inset' },
@@ -25,6 +27,7 @@ const headerVariants = cva('text-muted-foreground', {
       plain: 'text-subheadline',
       filled: 'px-4 text-footnote uppercase',
       warning: 'px-4 text-footnote uppercase',
+      danger: 'px-4 text-footnote uppercase',
     },
   },
   defaultVariants: { variant: 'inset' },
