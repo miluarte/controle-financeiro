@@ -57,7 +57,7 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
       // título e valor em subheadline negrito, subtítulo em subheadline regular
       className="text-subheadline"
       leading={
-        <CategoryIcon size="lg" icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')} />
+        <CategoryIcon size="lg" tone={inflow ? 'success' : 'default'} icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')} />
       }
       title={pinned ? (
         <span className="flex min-w-0 items-center gap-1.5 font-bold">

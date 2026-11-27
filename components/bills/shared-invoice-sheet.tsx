@@ -86,7 +86,7 @@ function Body({ inv, owner, onPay }: { inv: SharedInvoice; owner: string; onPay:
       )}
       {cancel.sheet}
 
-      <ListGroup header={`${paid ? 'Compras pagas' : 'Suas compras'} · ${list.length}`}
+      <ListGroup header={paid ? 'Compras pagas' : 'Suas compras'}
         footer={`Fatura de ${monthLabel(ref)}.`}>
         {list.length === 0 && <EmptyState>Nenhuma compra sua nesta fatura.</EmptyState>}
         {list.map(t => (

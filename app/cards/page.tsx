@@ -8,24 +8,23 @@ import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { LoadingBlock } from '@/components/shared/loading-dots'
-import { MonthSelector } from '@/components/shared/month-selector'
 import { TokenIcon } from '@/components/shared/token-icon'
 import { useCardInvoices } from '@/hooks/use-card-invoices'
-import { useMonth } from '@/hooks/use-month'
 import { nextBusinessDay } from '@/lib/business-days'
-import { formatCurrency, formatDate, walletLabel } from '@/lib/utils'
+import { currentMonth, formatCurrency, formatDate, walletLabel } from '@/lib/utils'
 import { Money } from '@/components/shared/money'
 
 // Faturas do mês: meus cartões (um por linha) e cartões compartilhados (uma linha por pessoa).
 export default function CardsPage() {
   const router = useRouter()
-  const { month } = useMonth()
+  // tela principal: sempre o mês atual, sem seletor de mês
+  const month = currentMonth()
   const { mine, owe, receive, toPay, toReceive, loading } = useCardInvoices(month)
   const empty = mine.length === 0 && owe.length === 0 && receive.length === 0
 
   return (
     <>
-      <LargeTitleHeader title="Cartões" actions={<MonthSelector />} />
+      <LargeTitleHeader title="Cartões" />
       <div className="space-y-7 px-4 pt-2">
         {loading ? (
           <LoadingBlock />

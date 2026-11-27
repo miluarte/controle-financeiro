@@ -1,9 +1,10 @@
 'use client'
 
-import { ArrowDownLinearIcon, ArrowUpLinearIcon, EyeClosedLinearIcon, EyeLinearIcon, WalletLinearIcon } from '@solar-icons/react'
+import { EyeClosedLinearIcon, EyeLinearIcon } from '@solar-icons/react'
 import { HIDDEN_MONEY as HIDDEN, useHideValues } from '@/hooks/use-hide-values'
 import { useMonthOutlook } from '@/hooks/use-month-outlook'
 import { Panel } from '@/components/ios/panel'
+import { FlowStat } from '@/components/shared/flow-stat'
 import { Money } from '@/components/shared/money'
 import { addMonths, formatCurrency, monthName } from '@/lib/utils'
 
@@ -37,9 +38,9 @@ export function BalanceCard({ month }: { month: string }) {
       </div>
       {!loading && (
         <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-separator pt-4">
-          <Total icon={<WalletLinearIcon />} label="Saldo hoje" cents={balance} hidden={hidden} />
-          <Total icon={<ArrowUpLinearIcon />} label="A receber" cents={toReceive} hidden={hidden} />
-          <Total icon={<ArrowDownLinearIcon />} label="A pagar" cents={toPay} hidden={hidden} />
+          <FlowStat direction="balance" label="Saldo hoje" cents={balance} mask={hidden ? HIDDEN : undefined} />
+          <FlowStat direction="in" label="A receber" cents={toReceive} mask={hidden ? HIDDEN : undefined} />
+          <FlowStat direction="out" label="A pagar" cents={toPay} mask={hidden ? HIDDEN : undefined} />
         </dl>
       )}
       {summary && summary.openingBalance !== 0 && (
@@ -48,18 +49,5 @@ export function BalanceCard({ month }: { month: string }) {
         </p>
       )}
     </Panel>
-  )
-}
-
-function Total({ icon, label, cents, hidden }: { icon: React.ReactNode; label: string; cents: number; hidden: boolean }) {
-  return (
-    <div className="flex min-w-0 items-start gap-1.5">
-      <span className="mt-0.5 shrink-0 [&_svg]:size-4">{icon}</span>
-      <div className="min-w-0">
-        <dt className="truncate text-footnote text-muted-foreground">{label}</dt>
-        <Money as="dd" size="item" className="truncate" cents={cents} mask={hidden ? HIDDEN : undefined}
-          tone={!hidden && cents < 0 ? 'danger' : 'default'} />
-      </div>
-    </div>
   )
 }
