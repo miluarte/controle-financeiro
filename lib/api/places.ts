@@ -48,33 +48,3 @@ export async function readMapsLink(text: string): Promise<MapsPlace | null> {
   return data as MapsPlace
 }
 
-// Busca do Google (rota /api/places, chave só no servidor). Sem chave configurada, enabled = false.
-export type PlaceSuggestion = { placeId: string; name: string; detail: string }
-export type PlaceSearchError = 'limit' | 'google'
-
-async function placesRoute(body: Record<string, unknown>) {
-  const { data } = await supabase.auth.getSession()
-  const token = data.session?.access_token
-  if (!token) return null
-  const res = await fetch('/api/places', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
-  }).catch(() => null)
-  return res?.ok ? res.json() : null
-}
-
-export const googlePlaces = {
-  enabled: async (): Promise<boolean> => !!(await placesRoute({ action: 'status' }))?.enabled,
-  // erro: 'limit' (100 buscas do dia) ou 'google' (Google recusou ou fora do ar)
-  search: async (input: string, session: string): Promise<{ results: PlaceSuggestion[]; error: PlaceSearchError | null }> => {
-    const d = await placesRoute({ action: 'search', input, session })
-    return d?.ok ? { results: d.results ?? [], error: null } : { results: [], error: d?.reason === 'limit' ? 'limit' : 'google' }
-  },
-  details: async (placeId: string, session: string): Promise<{ place: Omit<MapsPlace, 'name'> | null; error: PlaceSearchError | null }> => {
-    const d = await placesRoute({ action: 'details', placeId, session })
-    return d?.ok
-      ? { place: { url: d.url, address: d.address, latitude: d.latitude, longitude: d.longitude }, error: null }
-      : { place: null, error: d?.reason === 'limit' ? 'limit' : 'google' }
-  },
-}

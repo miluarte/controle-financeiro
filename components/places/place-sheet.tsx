@@ -10,7 +10,6 @@ import { ModalSheet } from '@/components/ios/modal-sheet'
 import { useDeleteAction } from '@/components/ios/use-delete-action'
 import { FormError } from '@/components/shared/form-error'
 import { LoadingDots } from '@/components/shared/loading-dots'
-import { GooglePlaceSearch } from './google-place-search'
 import { placeTitle, usePlaces } from '@/hooks/use-places'
 import { useRefresh } from '@/hooks/use-refresh'
 import { placesApi, readMapsLink, type MapsPlace } from '@/lib/api/places'
@@ -57,7 +56,7 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
   const [error, setError] = useState<string | null>(null)
 
   // link colado do Google Maps: preenche endereço e ponto (e o apelido, se ainda estiver vazio)
-  // lugar escolhido (busca do Google ou link do Maps): endereço, ponto e link; o apelido só se estiver vazio
+  // lugar lido do link do Maps: endereço, ponto e link; o apelido só se estiver vazio
   function applyPlace(found: MapsPlace) {
     setMapsUrl(found.url)
     setMapsError(null)
@@ -99,8 +98,6 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
 
   return (
     <form id="place" onSubmit={save} className="space-y-6">
-      <GooglePlaceSearch initial={place?.nickname ?? firstName ?? names[0]?.name ?? ''} onPick={applyPlace} />
-
       <ListGroup footer="Aparece no detalhe da compra e no mapa. As listas continuam com o nome da maquininha.">
         <FormRow label="Apelido" htmlFor="place-nickname">
           <Input id="place-nickname" variant="bare" value={nickname} onChange={e => setNickname(e.target.value)}
