@@ -12,13 +12,15 @@ import { formatCurrency } from '@/lib/utils'
 import { GoalSheet } from './goal-sheet'
 import { Money } from '@/components/shared/money'
 import { EmptyState } from '@/components/shared/empty-state'
+import { displayCategoryMap } from '@/lib/categories'
 
 // ANA-6: gastos por categoria com percentual e meta. ANA-5: categorias sem gasto, recolhidas.
+// Só as principais (o banco soma as subcategorias nelas), com a cor de cada uma: a única tela com categoria colorida.
 export function CategoryBreakdown({ month }: { month: string }) {
   const { rows } = useCategorySpending(month)
   const { categories } = useCategories()
   const [editing, setEditing] = useState<CategorySpending | null>(null)
-  const catById = new Map(categories.map(c => [c.id, c]))
+  const catById = displayCategoryMap(categories)
   const active = rows.filter(r => catById.has(r.categoryId))
   const spent = active.filter(r => r.total > 0)
   const empty = active.filter(r => r.total === 0)
@@ -32,7 +34,7 @@ export function CategoryBreakdown({ month }: { month: string }) {
       <ListRow
         key={r.categoryId}
         onClick={() => setEditing(r)}
-        leading={<CategoryIcon icon={c?.icon ?? 'ellipsis'} />}
+        leading={<CategoryIcon icon={c?.icon ?? 'ellipsis'} tone="own" color={c?.color} />}
         title={r.name}
         subtitle={
           r.goal ? (

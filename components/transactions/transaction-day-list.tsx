@@ -10,6 +10,7 @@ import type { Transaction } from '@/lib/types'
 import { dayLabel } from '@/lib/utils'
 import { useTransactionDelete } from './use-transaction-delete'
 import { usePinAction } from './use-pin-action'
+import { displayCategoryMap } from '@/lib/categories'
 
 interface TransactionDayListProps {
   transactions: Transaction[]
@@ -34,7 +35,7 @@ export function TransactionDayList({
   const pin = usePinAction()
   // compra parcelada aparece com o valor cheio e "em Nx" (cartões e faturas seguem com a parcela)
   const totalOf = useInstallmentTotals(transactions)
-  const catById = new Map(categories.map(c => [c.id, c]))
+  const catById = displayCategoryMap(categories)
   const walletById = new Map(wallets.map(w => [w.id, w]))
 
   if (transactions.length === 0) {

@@ -1,4 +1,5 @@
 import type { Category, Transaction } from './types'
+import { displayCategoryMap } from './categories'
 import { addMonths, currentMonth } from './utils'
 
 // 7.8 e 5.11: replanejamento de metas a partir do histórico real.
@@ -46,11 +47,16 @@ export function spendingProfile(
   const months = Math.max(1, monthsBetween(start, end))
   const inBase = expenses.filter(t => t.date.slice(0, 7) >= start && t.date.slice(0, 7) <= end)
 
+  // subcategoria soma na principal; metas só nas principais
+  const root = displayCategoryMap(categories)
   const totals = new Map<string, number>()
-  for (const t of inBase) if (t.categoryId) totals.set(t.categoryId, (totals.get(t.categoryId) ?? 0) + t.amount)
+  for (const t of inBase) {
+    const id = t.categoryId && (root.get(t.categoryId)?.id ?? t.categoryId)
+    if (id) totals.set(id, (totals.get(id) ?? 0) + t.amount)
+  }
 
   const rows = categories
-    .filter(c => c.type === 'expense' && c.active)
+    .filter(c => c.type === 'expense' && c.active && !c.parentId)
     .map(c => ({ category: c, average: Math.round((totals.get(c.id) ?? 0) / months), currentGoal: goals.get(c.id) ?? null }))
     .sort((a, b) => b.average - a.average)
 

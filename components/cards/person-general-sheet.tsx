@@ -19,6 +19,7 @@ import { feedback } from '@/lib/feedback'
 import { generalStatementPdf, shareOrDownload } from '@/lib/person-statement-pdf'
 import type { SharedDebt, Transaction } from '@/lib/types'
 import { formatCurrency, formatDate, monthLabel, walletLabel } from '@/lib/utils'
+import { displayCategoryMap } from '@/lib/categories'
 
 interface Props {
   open: boolean
@@ -48,7 +49,7 @@ function Body({ personId, name, month, owe, receive }: Omit<Props, 'open' | 'onO
   const { profile } = useProfile()
   const myName = profile?.name || 'Você'
   const { categories } = useCategories()
-  const catById = new Map(categories.map(c => [c.id, c]))
+  const catById = displayCategoryMap(categories)
   const [exporting, setExporting] = useState(false)
 
   const invoices = [
