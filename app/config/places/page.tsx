@@ -11,9 +11,7 @@ import { LoadingBlock } from '@/components/shared/loading-dots'
 import { placeTitle, usePlaceEntries, type PlaceEntry } from '@/hooks/use-places'
 import { placesApi } from '@/lib/api/places'
 
-const purchases = (n: number) => `${n} ${n === 1 ? 'compra' : 'compras'}`
-
-// Todos os locais das compras da família, dos mais frequentes para os menos. Tocar salva apelido e endereço.
+// Todos os locais das compras da família, em ordem alfabética. Tocar salva apelido, endereço e link do Maps.
 export default function PlacesPage() {
   const { entries, loading } = usePlaceEntries()
   const del = useConfirmDelete()
@@ -21,10 +19,10 @@ export default function PlacesPage() {
 
   const row = (e: PlaceEntry) => e.kind === 'saved' ? (
     <ListRow key={e.key} title={placeTitle(e.place)} chevron onClick={() => setTarget({ place: e.place })}
-      subtitle={[purchases(e.count), e.place.address].filter(Boolean).join(' · ')}
+      subtitle={e.place.address ?? e.place.names.map(n => n.name).join(', ')}
       onDelete={() => del.ask({ title: `Excluir "${placeTitle(e.place)}"?`, remove: () => placesApi.remove(e.place.id) })} />
   ) : (
-    <ListRow key={e.key} title={e.name} subtitle={purchases(e.count)} chevron onClick={() => setTarget({ name: e.name })} />
+    <ListRow key={e.key} title={e.name} chevron onClick={() => setTarget({ name: e.name })} />
   )
 
   return (

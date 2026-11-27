@@ -393,5 +393,8 @@ export interface Place {
   id: string
   nickname: string | null
   address: string | null
+  mapsUrl: string | null
+  latitude: number | null
+  longitude: number | null
   names: PlaceName[]
 }

@@ -9,9 +9,10 @@ import { ListRow } from '@/components/ios/list-row'
 import { ModalSheet } from '@/components/ios/modal-sheet'
 import { useDeleteAction } from '@/components/ios/use-delete-action'
 import { FormError } from '@/components/shared/form-error'
-import { placeTitle } from '@/hooks/use-places'
+import { LoadingDots } from '@/components/shared/loading-dots'
+import { placeTitle, usePlaces } from '@/hooks/use-places'
 import { useRefresh } from '@/hooks/use-refresh'
-import { placesApi } from '@/lib/api/places'
+import { placesApi, readMapsLink } from '@/lib/api/places'
 import { feedback } from '@/lib/feedback'
 import { placeKey } from '@/lib/places'
 import type { Place, PlaceName } from '@/lib/types'
@@ -40,11 +41,34 @@ export function PlaceSheet({ target, onClose }: { target: PlaceTarget | null; on
 
 function Form({ place, firstName, onDone }: { place: Place | null; firstName: string | null; onDone: () => void }) {
   const refresh = useRefresh()
+  // apelidos já usados: o mesmo apelido em locais diferentes (ex.: duas lojas da mesma marca) junta na análise
+  const { places } = usePlaces()
+  const nicknames = [...new Set(places.map(p => p.nickname).filter((n): n is string => !!n))]
   const [nickname, setNickname] = useState(place?.nickname ?? '')
   const [address, setAddress] = useState(place?.address ?? '')
   const [names, setNames] = useState<PlaceName[]>(
     () => place?.names ?? (firstName ? [{ key: placeKey(firstName), name: firstName }] : []))
+  const [mapsUrl, setMapsUrl] = useState(place?.mapsUrl ?? '')
+  const [point, setPoint] = useState(place?.latitude != null && place.longitude != null
+    ? { latitude: place.latitude, longitude: place.longitude } : null)
+  const [reading, setReading] = useState(false)
+  const [mapsError, setMapsError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // link colado do Google Maps: preenche endereço e ponto (e o apelido, se ainda estiver vazio)
+  async function readLink(text: string) {
+    setMapsUrl(text)
+    setMapsError(null)
+    if (!/https:\/\//.test(text)) { setPoint(null); return }
+    setReading(true)
+    const found = await readMapsLink(text).catch(() => null)
+    setReading(false)
+    if (!found) { setPoint(null); setMapsError('Não foi possível ler esse link do Maps.'); return }
+    setMapsUrl(found.url)
+    if (found.address) setAddress(found.address)
+    if (found.name && !nickname.trim()) setNickname(found.name)
+    setPoint(found.latitude != null && found.longitude != null ? { latitude: found.latitude, longitude: found.longitude } : null)
+  }
 
   function addName(name: string) {
     const k = placeKey(name)
@@ -56,7 +80,10 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
     if (names.length === 0) { setError('Inclua ao menos um nome da maquininha.'); return }
     setError(null)
     try {
-      await placesApi.save({ id: place?.id ?? null, nickname, address, names })
+      await placesApi.save({
+        id: place?.id ?? null, nickname, address, names,
+        mapsUrl: mapsUrl.trim() || null, latitude: point?.latitude ?? null, longitude: point?.longitude ?? null,
+      })
       await refresh()
       onDone()
       feedback.done('Local salvo')
@@ -68,12 +95,23 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
       <ListGroup footer="Aparece no detalhe da compra e no mapa. As listas continuam com o nome da maquininha.">
         <FormRow label="Apelido" htmlFor="place-nickname">
           <Input id="place-nickname" variant="bare" value={nickname} onChange={e => setNickname(e.target.value)}
-            placeholder="Opcional" maxLength={80} className="text-right" />
+            placeholder="Opcional" maxLength={80} list="place-nicknames" className="text-right" />
+          <datalist id="place-nicknames">{nicknames.map(n => <option key={n} value={n} />)}</datalist>
         </FormRow>
         <FormRow label="Endereço" htmlFor="place-address">
           <Input id="place-address" variant="bare" value={address} onChange={e => setAddress(e.target.value)}
             placeholder="Opcional" maxLength={200} autoComplete="street-address" className="text-right" />
         </FormRow>
+      </ListGroup>
+
+      <ListGroup footer={mapsError ?? (point ? 'Ponto do mapa salvo.' : 'No Maps, toque em Compartilhar e copie o link.')}>
+        <FormRow label="Link do Maps" htmlFor="place-maps">
+          {reading ? <LoadingDots size="sm" /> : (
+            <Input id="place-maps" variant="bare" value={mapsUrl} inputMode="url" placeholder="Colar link"
+              onChange={e => readLink(e.target.value)} className="text-right" />
+          )}
+        </FormRow>
+        {mapsUrl && !reading && <ListRow tone="tint" title="Abrir no Maps" onClick={() => window.open(mapsUrl, '_blank')} />}
       </ListGroup>
 
       <ListGroup header="Nomes na maquininha" footer="Compras com qualquer um desses nomes são deste local.">

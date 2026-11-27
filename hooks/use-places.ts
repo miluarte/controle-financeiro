@@ -35,7 +35,7 @@ export type PlaceEntry =
   | { kind: 'saved'; key: string; place: Place; count: number }
   | { kind: 'new'; key: string; name: string; count: number }
 
-// Todos os locais das compras (salvos ou não), dos mais frequentes para os menos.
+// Todos os locais das compras (salvos ou não), em ordem alfabética.
 export function usePlaceEntries() {
   const { places, placeFor, loading } = usePlaces()
   const { data, isLoading } = useSWR(['place-names'], () => transactionsApi.placeNames())
@@ -59,7 +59,7 @@ export function usePlaceEntries() {
       list.push({ kind: 'new', key, name, count: e.count })
     }
     const title = (e: PlaceEntry) => (e.kind === 'saved' ? placeTitle(e.place) : e.name)
-    return list.sort((a, b) => b.count - a.count || title(a).localeCompare(title(b), 'pt-BR', { sensitivity: 'base' }))
+    return list.sort((a, b) => title(a).localeCompare(title(b), 'pt-BR', { sensitivity: 'base' }))
   }, [places, placeFor, data])
   return { entries, loading: loading || isLoading }
 }
