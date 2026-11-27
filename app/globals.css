@@ -21,10 +21,12 @@
   --color-fill: var(--fill);
   --color-grouped: var(--grouped);
   --color-bar: var(--bar);
+  --color-screen-top: var(--screen-top);
   --color-segment: var(--segment);
   --color-glass: var(--glass);
   --color-glass-lens: var(--glass-lens);
   --color-scrim: var(--scrim);
+  --color-crop-mask: var(--crop-mask);
 
   /* Categorias: bg-category-red-surface, text-category-red-content… (token-icon.tsx) */
   --color-category-red-surface: var(--category-red-surface);
@@ -163,6 +165,10 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
   --color-success-content: var(--success-content);
+  --color-warning-content: var(--warning-content);
+  --color-warning-content-secondary: var(--warning-content-secondary);
+  --color-danger-content: var(--danger-content);
+  --color-danger-content-secondary: var(--danger-content-secondary);
   --color-warning: var(--warning);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -210,11 +216,19 @@
   --success: var(--status-success);
   --success-content: var(--status-success-content);
   --warning: var(--status-warning);
+  --warning-content: var(--status-warning-content);
+  --warning-content-secondary: var(--status-warning-content-secondary);
+  --danger-content: var(--status-danger-content);
+  --danger-content-secondary: var(--status-danger-content-secondary);
   --tint: var(--action-primary);
   --separator: var(--line-subtle);
   --fill: var(--surface-sunken);
   --grouped: var(--surface-raised);
   --bar: var(--glass-surface-strong);
+  --bar-solid: var(--surface-raised);
+  /* Fundo da tela aberta e cor da faixa da barra de status (trocados por tela no fim deste arquivo) */
+  --screen-bg: var(--background);
+  --screen-top: var(--screen-bg);
   --segment: var(--surface-selected);
   --glass: var(--glass-surface);
   --glass-strong: var(--glass-surface-strong);
@@ -256,6 +270,14 @@
   box-shadow: var(--glass-elevation-strong);
 }
 
+/* Barra de abas e botão +: mesma forma do vidro, com fundo sólido e sem desfoque,
+   para a lista que passa por trás não ficar borrada. */
+@utility bar-solid {
+  background-color: var(--bar-solid);
+  border: var(--glass-border-width) solid var(--glass-border);
+  box-shadow: var(--glass-elevation);
+}
+
 /* Carregando: três pontos que sobem e clareiam em sequência (LoadingDots) */
 @keyframes loading-dot {
   0%, 80%, 100% { opacity: var(--opacity-30); transform: translateY(0); }
@@ -289,14 +311,20 @@
     @apply bg-background text-body text-foreground;
     overscroll-behavior-y: none;
   }
-  /* Início (data-top="hero", posto pelo HomeHero): o iOS 26 tinge a área da barra de status com o fundo
-     da página ou do elemento fixo que encosta no topo. Pintar html, body e o AppShell com a cor da faixa
-     evita o degradê claro por cima do rosa. A tela do Início cobre todo o resto, então nada mais muda. Só no celular (no desktop o fundo aparece em volta da coluna). */
-  @media (width < 64rem) {
-    html[data-top="hero"],
-    html[data-top="hero"] body,
-    html[data-top="hero"] [data-app-shell] {
-      background-color: var(--surface-hero);
-    }
+}
+
+/* Cor por tela, só no celular (no desktop o fundo aparece em volta da coluna). html, body e o AppShell
+   ficam no fundo da tela aberta (cinza da página; branco nas telas grouped do Screen): o Safari pinta a
+   barra de baixo com essa cor. No Início tudo fica rosa: o Safari só pinta o topo de rosa quando o fundo
+   da página também é rosa, então a barra de baixo do Início fica rosa junto. A faixa da barra de status (StatusBarStrip) usa --screen-top: o mesmo
+   fundo, ou rosa no Início (data-top="hero", posto pelo HomeHero), e o ThemeColorSync leva essa cor ao
+   theme-color. Fora do @layer para vencer o :root. */
+@media (width < 64rem) {
+  html:has([data-screen="grouped"]) { --screen-bg: var(--grouped); }
+  html[data-top="hero"] { --screen-bg: var(--surface-hero); --screen-top: var(--surface-hero); }
+  html,
+  html body,
+  html [data-app-shell] {
+    background-color: var(--screen-bg);
   }
 }

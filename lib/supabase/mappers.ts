@@ -16,6 +16,7 @@ export function toProfile(r: Row): Profile {
     id: r.id,
     name: r.name ?? '',
     avatarColor: r.avatar_color,
+    avatarUrl: r.avatar_url ?? null,
     currency: r.currency,
     theme: r.theme,
     carryOverBalance: !!r.carry_over_balance,

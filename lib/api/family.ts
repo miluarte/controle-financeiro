@@ -31,6 +31,7 @@ export const familyApi = {
       userId: r.user_id as string,
       name: (r.name as string) || 'Sem nome',
       avatarColor: (r.avatar_color as string) || 'gray',
+      avatarUrl: (r.avatar_url as string) ?? null,
       role: r.role as FamilyMember['role'],
       status: r.status as FamilyMember['status'],
       joinedAt: (r.joined_at as string) ?? null,

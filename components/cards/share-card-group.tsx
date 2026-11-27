@@ -42,7 +42,7 @@ export function ShareCardGroup({ wallet, scope, members }: { wallet: OwnWallet; 
           <div className="flex flex-wrap gap-2">
             {members.map(m => (
               <ChoiceChip key={m.userId} selected={selected.has(m.userId)} onClick={() => toggle(m.userId)} className="pl-1">
-                <MemberAvatar name={m.name} color={m.avatarColor} size="sm" />{m.name}
+                <MemberAvatar name={m.name} color={m.avatarColor} src={m.avatarUrl} size="sm" />{m.name}
               </ChoiceChip>
             ))}
           </div>

@@ -19,13 +19,13 @@ function latest(list: Transaction[], limit: number) {
     .sort((a, b) => b.date.localeCompare(a.date))
 }
 
-export function RecentTransactions({ month, limit = 6 }: { month: string; limit?: number }) {
+export function RecentTransactions({ month, limit = 5 }: { month: string; limit?: number }) {
   const { transactions, loading } = useMonthTransactions(month)
   const [editing, setEditing] = useState<Transaction | null>(null)
 
   return (
     <section className="space-y-3">
-      <SectionHeader title="Atividade" action={{ label: 'Ver todas', href: `/transactions?mes=${month}` }} />
+      <SectionHeader title="Transações recentes" action={{ label: 'Ver todas', href: `/transactions?mes=${month}` }} />
       {loading ? (
         <LoadingBlock />
       ) : (

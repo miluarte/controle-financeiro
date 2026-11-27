@@ -93,7 +93,7 @@ export function SplitRows({ value, onChange, people, me, items, total, meOptiona
             )}
             {people.filter(p => p.userId !== me).map(p => (
               <ChoiceChip key={p.userId} selected={value.selected.includes(p.userId)} onClick={() => toggle(p.userId)} className="pl-1">
-                <MemberAvatar name={p.name} color={p.avatarColor} size="sm" />{p.name}
+                <MemberAvatar name={p.name} color={p.avatarColor} src={p.avatarUrl} size="sm" />{p.name}
               </ChoiceChip>
             ))}
           </li>

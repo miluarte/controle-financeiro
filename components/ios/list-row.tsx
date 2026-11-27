@@ -13,6 +13,10 @@ const rowVariants = cva(
         default: 'text-foreground',
         tint: 'justify-center text-tint',
         destructive: 'justify-center text-destructive',
+        // aviso (card amarelo): título em âmbar 900; subtítulo e seta em âmbar 600
+        warning: 'text-warning-content',
+        // aviso vermelho: título em vermelho 900; subtítulo e seta em vermelho 600
+        danger: 'text-danger-content',
       },
       interactive: {
         true: 'transition-colors active:bg-fill',
@@ -22,6 +26,12 @@ const rowVariants = cva(
     defaultVariants: { tone: 'default', interactive: false },
   },
 )
+
+// cor do subtítulo e da seta: nos avisos coloridos, o tom 600 da cor do aviso
+const secondaryTone = (tone: ListRowProps['tone']) =>
+  tone === 'warning' ? 'text-warning-content-secondary'
+    : tone === 'danger' ? 'text-danger-content-secondary'
+      : 'text-muted-foreground'
 
 interface ListRowProps extends VariantProps<typeof rowVariants> {
   leading?: React.ReactNode
@@ -60,10 +70,10 @@ export function ListRow({
         <span className={cn('min-w-0', !centered && 'flex-1')}>
           {/* no máximo duas linhas (título e subtítulo), cada uma corta com reticências numa linha só */}
           <span className="block truncate">{title}</span>
-          {subtitle && <span className="block truncate whitespace-nowrap text-subheadline text-muted-foreground [&>*]:whitespace-nowrap">{subtitle}</span>}
+          {subtitle && <span className={cn('block truncate whitespace-nowrap text-subheadline [&>*]:whitespace-nowrap', secondaryTone(tone))}>{subtitle}</span>}
         </span>
         {trailing && <span className="shrink-0 text-muted-foreground">{trailing}</span>}
-        {chevron && <AltArrowRightLinearIcon className="size-4 shrink-0 text-muted-foreground" />}
+        {chevron && <AltArrowRightLinearIcon className={cn('size-4 shrink-0 stroke-(length:--icon-stroke-chevron)', secondaryTone(tone))} />}
       </span>
     </>
   )

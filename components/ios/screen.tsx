@@ -14,5 +14,5 @@ const screenVariants = cva('', {
 })
 
 export function Screen({ variant, className, children }: VariantProps<typeof screenVariants> & { className?: string; children: React.ReactNode }) {
-  return <div className={cn(screenVariants({ variant }), className)}>{children}</div>
+  return <div data-screen={variant ?? 'page'} className={cn(screenVariants({ variant }), className)}>{children}</div>
 }

@@ -74,6 +74,8 @@
 
   /* Desfoque */
   --blur-6: 6px;
+  /* traço de ícone, em unidades do viewBox 24 do Solar (2 = traço de 2px no desenho) */
+  --stroke-2: 2;
   --blur-14: 14px;
 
   /* Saturação (vidro) */

@@ -37,6 +37,10 @@
   --status-warning: var(--color-amber-500);
   --status-info: var(--color-blue-500);
   --status-success-content: var(--color-green-700); /* texto verde sobre fundo claro (selo) */
+  --status-warning-content: var(--color-amber-900); /* título e ícone do aviso, sobre o fundo amarelo */
+  --status-warning-content-secondary: var(--color-amber-600); /* descrição e seta do aviso */
+  --status-danger-content: var(--color-red-900); /* título e ícone do aviso vermelho */
+  --status-danger-content-secondary: var(--color-red-600); /* descrição e seta do aviso vermelho */
 
   /* Dados (gráficos) */
   --data-1: var(--color-blue-500);
@@ -49,12 +53,14 @@
   --glass-surface: color-mix(in oklab, var(--color-white) var(--opacity-22), transparent);
   --glass-surface-strong: color-mix(in oklab, var(--color-zinc-50) var(--opacity-94), transparent); /* folhas e menus: fundo da tela */
   --scrim: color-mix(in oklab, var(--color-black) var(--opacity-12), transparent); /* escurece o fundo atrás das folhas */
+  --crop-mask: color-mix(in oklab, var(--color-black) var(--opacity-50), transparent); /* fora do círculo ao cortar a foto (igual nos dois modos) */
   --glass-edge: color-mix(in oklab, var(--color-white) var(--opacity-70), transparent);
   --glass-highlight: color-mix(in oklab, var(--color-white) var(--opacity-95), transparent);
   --glass-shade: color-mix(in oklab, var(--color-black) var(--opacity-4), transparent);
   --glass-shadow: color-mix(in oklab, var(--color-black) var(--opacity-12), transparent);
   --glass-lens: color-mix(in oklab, var(--color-brand-pink-400) var(--opacity-14), transparent); /* aba ativa */
   --glass-blur: var(--blur-6);
+  --icon-stroke-chevron: var(--stroke-2); /* seta das linhas de lista (ListRow) */
   --glass-blur-strong: var(--blur-14);
   --glass-saturate: var(--saturate-180);
   --glass-border-width: var(--border-width-hairline);
@@ -182,6 +188,14 @@
     --status-warning: var(--color-amber-400);
     --status-info: var(--color-blue-400);
     --status-success-content: var(--color-green-400);
+  --status-warning-content: var(--color-amber-100);
+  --status-warning-content-secondary: var(--color-amber-300);
+  --status-danger-content: var(--color-red-100);
+  --status-danger-content-secondary: var(--color-red-300);
+    --status-warning-content: var(--color-amber-100);
+  --status-warning-content-secondary: var(--color-amber-300);
+  --status-danger-content: var(--color-red-100);
+  --status-danger-content-secondary: var(--color-red-300);
     --surface-hero: var(--color-brand-pink-600);
     --data-1: var(--color-blue-400);
     --data-2: var(--color-green-400);

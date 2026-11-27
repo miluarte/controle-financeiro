@@ -1,28 +1,18 @@
 'use client'
 
-import { useState } from 'react'
 import { ArrowDownLinearIcon, ArrowUpLinearIcon, EyeClosedLinearIcon, EyeLinearIcon, WalletLinearIcon } from '@solar-icons/react'
+import { HIDDEN_MONEY as HIDDEN, useHideValues } from '@/hooks/use-hide-values'
 import { useMonthOutlook } from '@/hooks/use-month-outlook'
 import { Panel } from '@/components/ios/panel'
 import { Money } from '@/components/shared/money'
 import { addMonths, formatCurrency, monthName } from '@/lib/utils'
 
-const HIDDEN = 'R$ ••••'
-
-// Valores sempre ocultos ao abrir o app. A escolha vale só enquanto o app está aberto
-// (navegar entre telas mantém); não é gravada no aparelho.
-let hiddenThisSession = true
-
 // HOM-2: quanto sobra no mês. Saldo de hoje (regime de caixa) mais o que ainda entra, menos o que ainda vence.
 // Os três números de baixo somam o de cima.
 export function BalanceCard({ month }: { month: string }) {
   const { summary, balance, toPay, toReceive, leftover, loading } = useMonthOutlook(month)
-  const [hidden, setHidden] = useState(hiddenThisSession)
-
-  function toggle() {
-    hiddenThisSession = !hidden
-    setHidden(hiddenThisSession)
-  }
+  // sempre ocultos ao abrir o app (ver useHideValues)
+  const { hidden, toggle } = useHideValues()
 
   const show = (v: number) => (hidden ? HIDDEN : formatCurrency(v))
 
