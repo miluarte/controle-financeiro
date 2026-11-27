@@ -23,7 +23,7 @@ export default function HomePage() {
       <div className="space-y-7 px-4 pt-7">
         {/* avisos (fatura perto de vencer ou vencida, pendentes) e análise do mês juntos, com espaço menor entre eles */}
         <div className="space-y-3">
-          <CardDueAlerts month={month} />
+          <Suspense><CardDueAlerts month={month} /></Suspense>
           <Suspense><PendingBanner /></Suspense>
           <MonthAnalysisLink month={month} />
         </div>

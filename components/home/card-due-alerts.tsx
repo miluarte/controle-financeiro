@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { CardLinearIcon } from '@solar-icons/react'
 import { AlertCard } from '@/components/shared/alert-card'
 import { Money } from '@/components/shared/money'
@@ -32,8 +32,17 @@ function when(days: number) {
   return `vence em ${days} dias`
 }
 
+// Demonstração só nas prévias (fora do endereço de produção): ?demo=avisos mostra um aviso amarelo e um vermelho de exemplo.
+const PRODUCTION_HOST = 'troco-finance.vercel.app'
+const DEMO: { title: string; detail: string; days: number }[] = [
+  { title: 'Fatura Nubank 7104 vence em 2 dias', detail: 'R$ 1.234,56 a pagar', days: 2 },
+  { title: 'Fatura Santander 0514 vencida', detail: 'R$ 389,90 · venceu 20/11', days: -5 },
+]
+
 export function CardDueAlerts({ month }: { month: string }) {
   const router = useRouter()
+  const demo = useSearchParams().get('demo') === 'avisos'
+    && typeof window !== 'undefined' && window.location.hostname !== PRODUCTION_HOST
   const { hidden } = useHideValues()
   // faturas que vencem no mês anterior (podem estar vencidas), no atual e no seguinte (vencimento nos primeiros dias)
   const prev = useCardInvoices(addMonths(month, -1)).mine
@@ -50,6 +59,14 @@ export function CardDueAlerts({ month }: { month: string }) {
     })
     .sort((a, b) => a.days - b.days)
 
+  if (demo) return (
+    <>
+      {DEMO.map(d => (
+        <AlertCard key={d.title} tone={d.days < 0 ? 'danger' : 'warning'} icon={CardLinearIcon}
+          onClick={() => router.push('/cards')} title={d.title} subtitle={d.detail} />
+      ))}
+    </>
+  )
   if (!alerts.length) return null
   return (
     <>
