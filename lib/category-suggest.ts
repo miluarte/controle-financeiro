@@ -26,20 +26,16 @@ const KEYWORDS: Record<string, string[]> = {
   'dividas e parcelamentos': ['emprestimo', 'financiamento', 'parcelamento de fatura', 'juros', 'iof', 'consignado', 'acordo'],
 }
 
-export type PlaceMemory = Map<string, string> // local normalizado -> categoria mais usada
+export type PlaceMemory = Map<string, string> // local normalizado -> última categoria usada
 
+// rows do mais recente (última alteração) para o mais antigo: vale a última categoria que você deu ao local
 export function buildPlaceMemory(rows: { place: string | null; categoryId: string | null }[]): PlaceMemory {
-  const counts = new Map<string, Map<string, number>>()
+  const memory: PlaceMemory = new Map()
   for (const r of rows) {
     if (!r.place || !r.categoryId) continue
     const key = normPlace(r.place)
-    if (!key) continue
-    const c = counts.get(key) ?? new Map<string, number>()
-    c.set(r.categoryId, (c.get(r.categoryId) ?? 0) + 1)
-    counts.set(key, c)
+    if (key && !memory.has(key)) memory.set(key, r.categoryId)
   }
-  const memory: PlaceMemory = new Map()
-  for (const [key, c] of counts) memory.set(key, [...c.entries()].sort((a, b) => b[1] - a[1])[0][0])
   return memory
 }
 

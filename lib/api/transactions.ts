@@ -190,7 +190,7 @@ export const transactionsApi = {
   // local e categoria dos gastos recentes, para sugerir categoria sem IA (lib/category-suggest.ts)
   placeHistory: async (): Promise<{ place: string | null; categoryId: string | null }[]> =>
     unwrap(await supabase.from('transactions').select('place, category_id').eq('type', 'expense').eq('status', 'confirmed')
-      .not('category_id', 'is', null).not('place', 'is', null).order('date', { ascending: false }).limit(2000))
+      .not('category_id', 'is', null).not('place', 'is', null).order('updated_at', { ascending: false }).limit(2000))
       .map(r => ({ place: r.place as string | null, categoryId: r.category_id as string | null })),
 
   // partes de uma parcela de compra dividida (a original e as de cada pessoa)
