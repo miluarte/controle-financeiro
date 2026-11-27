@@ -18,6 +18,7 @@ interface InstallmentProgressProps {
 
 // Compra parcelada já em andamento: em que parcela está e se o valor digitado é o total ou o da parcela.
 // Só entram da parcela atual em diante; as anteriores já foram pagas.
+// A parcela atual vem calculada pela data da compra (no cartão, pela fatura que ainda não venceu).
 export function InstallmentProgress({
   installments, current, onCurrentChange, amountIsInstallment, onAmountIsInstallmentChange, purchaseDate, amount,
 }: InstallmentProgressProps) {
@@ -35,6 +36,8 @@ export function InstallmentProgress({
           options={[{ value: 'total', label: 'Valor total' }, { value: 'one', label: 'Valor da parcela' }]} />
         <p className="px-1 text-footnote text-muted-foreground">
           {preview}Última parcela em {monthName(last, 'short')} {last.slice(0, 4)}
+          {current === 2 && '. A primeira já foi paga e fica de fora.'}
+          {current > 2 && `. As ${current - 1} primeiras já foram pagas e ficam de fora.`}
         </p>
       </li>
     </>

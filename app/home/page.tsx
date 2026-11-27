@@ -7,6 +7,7 @@ import { FirstSteps } from '@/components/home/first-steps'
 import { HomeHero } from '@/components/home/home-hero'
 import { MonthAnalysisLink } from '@/components/home/month-analysis-link'
 import { RecentTransactions } from '@/components/home/recent-transactions'
+import { ToPayList } from '@/components/home/to-pay-list'
 import { PendingBanner } from '@/components/pending/pending-banner'
 import { Screen } from '@/components/ios/screen'
 import { currentMonth } from '@/lib/utils'
@@ -28,6 +29,7 @@ export default function HomePage() {
           <MonthAnalysisLink month={month} />
         </div>
         <FirstSteps />
+        <ToPayList month={month} />
         <RecentTransactions month={month} />
       </div>
     </Screen>

@@ -296,6 +296,8 @@ function EditForm({ t, onDone, onAssign }: { t: Transaction; onDone: () => void;
         <PrepayGroup t={t} onDone={onDone} />
       )}
 
+      {/* compra minha no cartão de outra pessoa da família: informar o acerto daqui */}
+
       {t.receiptPath && (
         <ListGroup header="Nota fiscal">
             <li className="p-3">
