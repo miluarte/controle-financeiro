@@ -64,13 +64,13 @@ export function TransactionDetail({ transaction: t, info, wallet, category, onIn
         icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')}
         title={title} cents={total} inflow={inflow} installments={n} date={info?.firstDate ?? t.date} tags={tags} />
 
-      {/* como no Mercado Pago: um card com estabelecimento, parcelas, cartão e categoria (e as pessoas, quando houver) */}
+      {/* como no Mercado Pago: um card com estabelecimento, forma de pagamento, parcelas e categoria (e as pessoas, quando houver) */}
       <ListGroup>
         {(t.place || t.description) && <DetailRow label={t.place ? 'Estabelecimento' : 'Descrição'} value={(t.place || t.description)!} />}
+        {walletName && <DetailRow label={paymentLabel} value={wallet?.ownerName ? `${walletName} · de ${wallet.ownerName}` : walletName} />}
         {n && n > 1 && t.installmentN && (
           <DetailRow label="Parcelas" value={`${t.installmentN} de ${n}`} onClick={onInstallments} />
         )}
-        {walletName && <DetailRow label={paymentLabel} value={wallet?.ownerName ? `${walletName} · de ${wallet.ownerName}` : walletName} />}
         {category && <DetailRow label="Categoria" value={category.name} />}
         {sender && <DetailRow label={t.type === 'income' ? 'Remetente' : 'Destinatário'} value={sender.name} />}
         {t.paidBy && <DetailRow label="Quem pagou" value={nameOf(t.paidBy)} />}
