@@ -60,6 +60,7 @@
   --glass-shadow: color-mix(in oklab, var(--color-black) var(--opacity-12), transparent);
   --glass-lens: color-mix(in oklab, var(--color-brand-pink-400) var(--opacity-14), transparent); /* aba ativa */
   --glass-blur: var(--blur-6);
+  --icon-stroke-chevron: var(--stroke-2); /* seta das linhas de lista (ListRow) */
   --glass-blur-strong: var(--blur-14);
   --glass-saturate: var(--saturate-180);
   --glass-border-width: var(--border-width-hairline);

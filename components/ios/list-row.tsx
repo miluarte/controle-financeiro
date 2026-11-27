@@ -73,7 +73,7 @@ export function ListRow({
           {subtitle && <span className={cn('block truncate whitespace-nowrap text-subheadline [&>*]:whitespace-nowrap', secondaryTone(tone))}>{subtitle}</span>}
         </span>
         {trailing && <span className="shrink-0 text-muted-foreground">{trailing}</span>}
-        {chevron && <AltArrowRightLinearIcon className={cn('size-4 shrink-0', secondaryTone(tone))} />}
+        {chevron && <AltArrowRightLinearIcon className={cn('size-4 shrink-0 stroke-(length:--icon-stroke-chevron)', secondaryTone(tone))} />}
       </span>
     </>
   )

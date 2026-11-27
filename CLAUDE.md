@@ -80,6 +80,8 @@ Avisos coloridos (2026-11-27, regra): card no tom do estado (ex.: `ListGroup var
 
 Categorias são sempre cinza (2026-11-25): ícone por `CategoryIcon` (`components/shared/category-icon.tsx`, `TokenIcon` com `gray`), sem escolha de cor; `categories.color` fica no banco e é ignorada na tela. Ícone em traço (`Linear`) e preenchido (`Bold`) só quando selecionado (`active`).
 
+Seta das linhas (`ListRow chevron`, 2026-11-27): 16px (`size-4`) com traço 2 no viewBox do Solar, pelo token `--icon-stroke-chevron` (primitivo `--stroke-2`), classe `stroke-(length:--icon-stroke-chevron)`.
+
 `cn` (`lib/utils.ts`) usa tailwind-merge estendido com os tokens acima. Ao criar token de fonte/espaçamento/raio novo, registrar ali, senão o merge descarta classes.
 
 ## Comunicação com o backend
