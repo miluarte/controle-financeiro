@@ -47,3 +47,28 @@ export async function readMapsLink(text: string): Promise<MapsPlace | null> {
   if (error || !data?.ok) return null
   return data as MapsPlace
 }
+
+// Busca do Google (rota /api/places, chave só no servidor). Sem chave configurada, enabled = false.
+export type PlaceSuggestion = { placeId: string; name: string; detail: string }
+
+async function placesRoute(body: Record<string, unknown>) {
+  const { data } = await supabase.auth.getSession()
+  const token = data.session?.access_token
+  if (!token) return null
+  const res = await fetch('/api/places', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  }).catch(() => null)
+  return res?.ok ? res.json() : null
+}
+
+export const googlePlaces = {
+  enabled: async (): Promise<boolean> => !!(await placesRoute({ action: 'status' }))?.enabled,
+  search: async (input: string, session: string): Promise<PlaceSuggestion[]> =>
+    (await placesRoute({ action: 'search', input, session }))?.results ?? [],
+  details: async (placeId: string, session: string): Promise<Omit<MapsPlace, 'name'> | null> => {
+    const d = await placesRoute({ action: 'details', placeId, session })
+    return d?.ok ? { url: d.url, address: d.address, latitude: d.latitude, longitude: d.longitude } : null
+  },
+}

@@ -10,9 +10,10 @@ import { ModalSheet } from '@/components/ios/modal-sheet'
 import { useDeleteAction } from '@/components/ios/use-delete-action'
 import { FormError } from '@/components/shared/form-error'
 import { LoadingDots } from '@/components/shared/loading-dots'
+import { GooglePlaceSearch } from './google-place-search'
 import { placeTitle, usePlaces } from '@/hooks/use-places'
 import { useRefresh } from '@/hooks/use-refresh'
-import { placesApi, readMapsLink } from '@/lib/api/places'
+import { placesApi, readMapsLink, type MapsPlace } from '@/lib/api/places'
 import { feedback } from '@/lib/feedback'
 import { placeKey } from '@/lib/places'
 import type { Place, PlaceName } from '@/lib/types'
@@ -56,6 +57,15 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
   const [error, setError] = useState<string | null>(null)
 
   // link colado do Google Maps: preenche endereço e ponto (e o apelido, se ainda estiver vazio)
+  // lugar escolhido (busca do Google ou link do Maps): endereço, ponto e link; o apelido só se estiver vazio
+  function applyPlace(found: MapsPlace) {
+    setMapsUrl(found.url)
+    setMapsError(null)
+    if (found.address) setAddress(found.address)
+    if (found.name && !nickname.trim()) setNickname(found.name)
+    setPoint(found.latitude != null && found.longitude != null ? { latitude: found.latitude, longitude: found.longitude } : null)
+  }
+
   async function readLink(text: string) {
     setMapsUrl(text)
     setMapsError(null)
@@ -64,10 +74,7 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
     const found = await readMapsLink(text).catch(() => null)
     setReading(false)
     if (!found) { setPoint(null); setMapsError('Não foi possível ler esse link do Maps.'); return }
-    setMapsUrl(found.url)
-    if (found.address) setAddress(found.address)
-    if (found.name && !nickname.trim()) setNickname(found.name)
-    setPoint(found.latitude != null && found.longitude != null ? { latitude: found.latitude, longitude: found.longitude } : null)
+    applyPlace(found)
   }
 
   function addName(name: string) {
@@ -92,6 +99,8 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
 
   return (
     <form id="place" onSubmit={save} className="space-y-6">
+      <GooglePlaceSearch initial={place?.nickname ?? firstName ?? names[0]?.name ?? ''} onPick={applyPlace} />
+
       <ListGroup footer="Aparece no detalhe da compra e no mapa. As listas continuam com o nome da maquininha.">
         <FormRow label="Apelido" htmlFor="place-nickname">
           <Input id="place-nickname" variant="bare" value={nickname} onChange={e => setNickname(e.target.value)}
