@@ -9,6 +9,7 @@ import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { ModalSheet } from '@/components/ios/modal-sheet'
 import { useDeleteAction } from '@/components/ios/use-delete-action'
+import { BrandSuggestions } from '@/components/places/brand-suggestions'
 import { CategoryField } from '@/components/shared/category-field'
 import { FormError } from '@/components/shared/form-error'
 import { LoadingDots } from '@/components/shared/loading-dots'
@@ -61,24 +62,26 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
   const [mapsError, setMapsError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // link colado do Google Maps: preenche endereço e ponto (e o apelido, se ainda estiver vazio)
-  // lugar lido do link do Maps: endereço, ponto e link; o apelido só se estiver vazio
+  // lugar lido do link do Maps: endereço (ou o nome do lugar, sem endereço), ponto e link
   function applyPlace(found: MapsPlace) {
     setMapsUrl(found.url)
     setMapsError(null)
-    if (found.address) setAddress(found.address)
-    if (found.name && !nickname.trim()) setNickname(found.name)
+    setAddress(found.address ?? found.name ?? '')
     setPoint(found.latitude != null && found.longitude != null ? { latitude: found.latitude, longitude: found.longitude } : null)
   }
 
-  async function readLink(text: string) {
-    setMapsUrl(text)
+  // Endereço: digitado à mão ou colado do Maps. Com link, lê endereço e ponto; apagar tudo tira o link e o ponto.
+  async function changeAddress(text: string) {
     setMapsError(null)
-    if (!/https:\/\//.test(text)) { setPoint(null); return }
+    if (!/https:\/\//.test(text)) {
+      setAddress(text)
+      if (!text.trim()) { setMapsUrl(''); setPoint(null) }
+      return
+    }
     setReading(true)
     const found = await readMapsLink(text).catch(() => null)
     setReading(false)
-    if (!found) { setPoint(null); setMapsError('Não foi possível ler esse link do Maps.'); return }
+    if (!found) { setMapsError('Não foi possível ler esse link do Maps.'); return }
     applyPlace(found)
   }
 
@@ -105,21 +108,25 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
 
   return (
     <form id="place" onSubmit={save} className="space-y-6">
-      <ListGroup footer="Lojas da mesma marca ficam juntas na análise. Aparece no detalhe da compra.">
+      <ListGroup footer={online ? 'Lojas da mesma marca ficam juntas na análise.'
+        : mapsError ?? (point ? 'Ponto do mapa salvo.' : 'Digite o endereço ou cole o link do Maps.')}>
         <FormRow label="Marca" htmlFor="place-nickname">
           <Input id="place-nickname" variant="bare" value={nickname} onChange={e => setNickname(e.target.value)}
-            placeholder="Opcional" maxLength={80} list="place-nicknames" className="text-right" />
-          <datalist id="place-nicknames">{nicknames.map(n => <option key={n} value={n} />)}</datalist>
+            placeholder="Opcional" maxLength={80} autoComplete="off" className="text-right" />
         </FormRow>
+        <BrandSuggestions brands={nicknames} query={nickname} onPick={setNickname} />
         <FormRow label="Loja online">
           <Switch checked={online} onCheckedChange={setOnline} />
         </FormRow>
         {!online && (
           <FormRow label="Endereço" htmlFor="place-address">
-            <Input id="place-address" variant="bare" value={address} onChange={e => setAddress(e.target.value)}
-              placeholder="Opcional" maxLength={200} autoComplete="street-address" className="text-right" />
+            {reading ? <LoadingDots size="sm" /> : (
+              <Input id="place-address" variant="bare" value={address} onChange={e => changeAddress(e.target.value)}
+                placeholder="Digitar ou colar link" maxLength={500} autoComplete="street-address" className="text-right" />
+            )}
           </FormRow>
         )}
+        {!online && mapsUrl && !reading && <ListRow tone="tint" title="Abrir no Maps" onClick={() => window.open(mapsUrl, '_blank')} />}
       </ListGroup>
 
       <ListGroup footer="Sugerida nas compras deste local, para toda a família.">
@@ -127,18 +134,6 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
           placeholder="Opcional" />
         {categoryId && <ListRow tone="destructive" title="Remover categoria" onClick={() => setCategoryId(null)} />}
       </ListGroup>
-
-      {!online && (
-        <ListGroup footer={mapsError ?? (point ? 'Ponto do mapa salvo.' : 'No Maps, toque em Compartilhar e copie o link.')}>
-          <FormRow label="Link do Maps" htmlFor="place-maps">
-            {reading ? <LoadingDots size="sm" /> : (
-              <Input id="place-maps" variant="bare" value={mapsUrl} inputMode="url" placeholder="Colar link"
-                onChange={e => readLink(e.target.value)} className="text-right" />
-            )}
-          </FormRow>
-          {mapsUrl && !reading && <ListRow tone="tint" title="Abrir no Maps" onClick={() => window.open(mapsUrl, '_blank')} />}
-        </ListGroup>
-      )}
 
       <ListGroup header="Nomes na maquininha" footer="Compras com qualquer um desses nomes são deste local.">
         {names.map(n => (
