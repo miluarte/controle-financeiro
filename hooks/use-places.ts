@@ -25,6 +25,9 @@ export function usePlaces() {
   return { places, placeFor, loading: isLoading }
 }
 
+// nomes da maquininha do local, como aparecem na lista de Locais
+export const placeMachineNames = (p: Place) => p.names.map(n => n.name).join(', ')
+
 // nome que o local mostra na lista: o apelido ou o primeiro nome da maquininha
 export function placeTitle(p: Place) {
   return p.nickname ?? p.names[0]?.name ?? 'Local'
@@ -58,7 +61,7 @@ export function usePlaceEntries() {
       const name = [...e.names.entries()].sort((a, b) => b[1] - a[1])[0][0]
       list.push({ kind: 'new', key, name, count: e.count })
     }
-    const title = (e: PlaceEntry) => (e.kind === 'saved' ? placeTitle(e.place) : e.name)
+    const title = (e: PlaceEntry) => (e.kind === 'saved' ? placeMachineNames(e.place) : e.name)
     return list.sort((a, b) => title(a).localeCompare(title(b), 'pt-BR', { sensitivity: 'base' }))
   }, [places, placeFor, data])
   return { entries, loading: loading || isLoading }
