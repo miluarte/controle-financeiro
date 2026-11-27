@@ -27,12 +27,14 @@ export function purchaseTotal(t: Transaction, info: PurchaseInfo | undefined) {
 
 // Detalhe de um lançamento (entrada ou saída): o que foi, quanto, quando, onde e como foi pago.
 // Só leitura; editar abre o formulário padrão.
-export function TransactionDetail({ transaction: t, info, wallet, category, onInstallments }: {
+export function TransactionDetail({ transaction: t, info, wallet, category, onInstallments, onEdit }: {
   transaction: Transaction
   info: PurchaseInfo | undefined
   wallet: Wallet | undefined
   category: Category | undefined
   onInstallments: () => void
+  // Categoria sem valor: tocar abre a edição para escolher
+  onEdit: () => void
 }) {
   const { me, nameOf } = useCardPeople()
   const inflow = INFLOW.has(t.type)
@@ -71,7 +73,11 @@ export function TransactionDetail({ transaction: t, info, wallet, category, onIn
         {n && n > 1 && t.installmentN && (
           <DetailRow label="Parcelas" value={`${t.installmentN} de ${n}`} onClick={onInstallments} />
         )}
-        {category && <DetailRow label="Categoria" value={category.name} />}
+        {/* gasto e receita sempre mostram a categoria, mesmo sem nenhuma escolhida */}
+        {(t.type === 'expense' || t.type === 'income') && (
+          category ? <DetailRow label="Categoria" value={category.name} />
+            : <DetailRow label="Categoria" value="Sem categoria" onClick={onEdit} />
+        )}
         {sender && <DetailRow label={t.type === 'income' ? 'Remetente' : 'Destinatário'} value={sender.name} />}
         {t.paidBy && <DetailRow label="Quem pagou" value={nameOf(t.paidBy)} />}
         {!parts && t.owner !== me && <DetailRow label="De quem é" value={nameOf(t.owner)} />}

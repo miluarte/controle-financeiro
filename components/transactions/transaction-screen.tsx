@@ -29,7 +29,7 @@ export function TransactionScreen({ id }: { id: string }) {
       <div className="space-y-8 px-4 pt-4 pb-8">
         {!ready ? <LoadingBlock /> : (
           <TransactionDetail transaction={t} info={info} wallet={wallet} category={category}
-            onInstallments={() => router.push(`/transactions/${id}/parcelas`)} />
+            onInstallments={() => router.push(`/transactions/${id}/parcelas`)} onEdit={() => setEditing(true)} />
         )}
       </div>
 

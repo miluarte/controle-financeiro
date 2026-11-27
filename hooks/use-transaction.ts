@@ -1,7 +1,6 @@
 'use client'
 
 import useSWR from 'swr'
-import { useCategories } from '@/hooks/use-categories'
 import { useSession } from '@/hooks/use-session'
 import { useWallets } from '@/hooks/use-wallets'
 import { categoriesApi } from '@/lib/api/categories'
@@ -15,7 +14,8 @@ export const FORM_TYPES = ['expense', 'income', 'save_apply', 'save_redeem']
 export function useTransaction(id: string) {
   const { session } = useSession()
   const me = session?.user.id ?? ''
-  const { categories } = useCategories()
+  // todas as categorias, inclusive as arquivadas: o lançamento pode estar numa categoria arquivada
+  const { data: categories } = useSWR(['categories-all'], () => categoriesApi.getAll())
   const { wallets } = useWallets()
   const { data, isLoading } = useSWR(['transaction', id], () => transactionsApi.getOne(id))
   const t = data ?? null
