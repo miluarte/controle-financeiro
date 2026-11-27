@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 // em ordem alfabética; a própria principal vem primeiro no grupo (escolher ela grava só a principal).
 // Com onSelect, a escolhida mostra o ícone preenchido e a marca; o grupo dela já abre aberto.
 // Com busca, mostra só o que combina, com os grupos abertos.
+// Ícones na cor da principal (as subcategorias herdam); fora do acordeão e da análise ficam cinza.
 export function CategoryAccordion({ categories, type, value, onSelect, query = '' }: {
   categories: Category[]
   type: CategoryType
@@ -41,12 +42,12 @@ export function CategoryAccordion({ categories, type, value, onSelect, query = '
 
   if (!groups.length) return <ListGroup><EmptyState>Nenhuma categoria encontrada.</EmptyState></ListGroup>
 
-  const option = (c: Category, sub: boolean) => {
+  const option = (c: Category, sub: boolean, color: string) => {
     const selected = c.id === value
     return (
       <ListRow key={`${sub ? 'sub' : 'all'}-${c.id}`} onClick={onSelect ? () => onSelect(c.id) : undefined}
         className={sub ? 'pl-4' : undefined}
-        leading={<CategoryIcon icon={c.icon} size="sm" active={selected} />}
+        leading={<CategoryIcon icon={c.icon} size="sm" active={selected} tone="own" color={color} />}
         title={c.name}
         trailing={selected ? <CheckCircleBoldIcon className="size-5 text-tint" /> : undefined} />
     )
@@ -62,13 +63,13 @@ export function CategoryAccordion({ categories, type, value, onSelect, query = '
         return (
           <li key={parent.id} className={cn('group/acc', !expanded && 'group/row')}>
             <ListRow bare onClick={() => toggle(parent.id)}
-              leading={<CategoryIcon icon={parent.icon} active={expanded} />}
+              leading={<CategoryIcon icon={parent.icon} active={expanded} tone="own" color={parent.color} />}
               title={parent.name}
               trailing={<AltArrowDownLinearIcon className={cn('size-4 stroke-(length:--icon-stroke-chevron) transition-transform duration-300 ease-out', expanded && 'rotate-180')} />} />
             <Collapse open={expanded}>
               <ul className="ml-4 border-b border-separator group-last/acc:border-b-0">
-                {onSelect && (!q || hit(parent)) && option(parent, true)}
-                {children.map(c => option(c, true))}
+                {onSelect && (!q || hit(parent)) && option(parent, true, parent.color)}
+                {children.map(c => option(c, true, parent.color))}
               </ul>
             </Collapse>
           </li>

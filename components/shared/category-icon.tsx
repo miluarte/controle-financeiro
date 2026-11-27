@@ -1,7 +1,7 @@
 import { TokenIcon } from './token-icon'
 
 // Ícone de categoria: cinza por padrão; em entrada de dinheiro, `tone="success"` usa o verde dos tokens
-// de categoria. `tone="own"` usa a cor da própria categoria (`color`), só na análise por categoria.
+// de categoria. `tone="own"` usa a cor da principal (`color`), só na análise por categoria e no acordeão de categorias.
 // Traço (Linear) por padrão, preenchido (Bold) quando a categoria está selecionada.
 const TONE_COLOR = { default: 'gray', success: 'green' } as const
 
