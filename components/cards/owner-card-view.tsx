@@ -8,7 +8,7 @@ import { InvoiceSheet, type InvoiceRef } from '@/components/bills/invoice-sheet'
 import { ReconcileSheet } from '@/components/bills/reconcile-sheet'
 import { MemberAvatar } from '@/components/family/member-avatar'
 import { ProgressBar, toneFor } from '@/components/shared/progress-bar'
-import { TransactionEditor } from '@/components/transactions/transaction-editor'
+import { useShowTransaction } from '@/components/transactions/use-show-transaction'
 import { TransactionItem } from '@/components/transactions/transaction-item'
 import { useCategories } from '@/hooks/use-categories'
 import { useInvoices } from '@/hooks/use-data'
@@ -44,7 +44,7 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
   const [ref, setRef] = useState(initialRef ?? openRef)
   const [paying, setPaying] = useState<InvoiceRef | null>(null)
   const [checking, setChecking] = useState(false)
-  const [editing, setEditing] = useState<Transaction | null>(null)
+  const showTransaction = useShowTransaction()
   const delTx = useTransactionDelete()
   const [confirming, setConfirming] = useState<Settlement | null>(null)
   const settlements = useSettlements(wallet.id)
@@ -176,12 +176,12 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
           <TransactionItem key={main.id} transaction={{ ...main, amount: parts.reduce((s, p) => s + p.amount, 0) }}
             category={main.categoryId ? catById.get(main.categoryId) : undefined}
             note={parts.map(p => nameOf(p.owner)).join(', ')}
-            onClick={() => setEditing(main)} />
+            onClick={() => showTransaction(main)} />
         ) : (
           <TransactionItem key={main.id} transaction={main}
             category={main.categoryId ? catById.get(main.categoryId) : undefined}
             note={shared ? `de ${nameOf(main.owner)}` : undefined}
-            onClick={() => setEditing(main)}
+            onClick={() => showTransaction(main)}
             onDelete={() => delTx.ask(main)} />
         ))}
       </ListGroup>
@@ -191,7 +191,6 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
 
       <InvoiceSheet invoice={paying} onClose={() => setPaying(null)} />
       <ConfirmSettlementSheet settlement={confirming} debtorName={confirming ? nameOf(confirming.debtorId) : ''} onClose={() => setConfirming(null)} />
-      <TransactionEditor transaction={editing} onClose={() => setEditing(null)} />
     </div>
   )
 }

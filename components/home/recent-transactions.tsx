@@ -1,9 +1,8 @@
 'use client'
 
 import { SectionHeader } from '@/components/ios/section-header'
-import { useState } from 'react'
 import { TransactionDayList } from '@/components/transactions/transaction-day-list'
-import { TransactionEditor } from '@/components/transactions/transaction-editor'
+import { useShowTransaction } from '@/components/transactions/use-show-transaction'
 import { useMonthTransactions } from '@/hooks/use-month-transactions'
 import type { Transaction } from '@/lib/types'
 import { todayIso } from '@/lib/utils'
@@ -21,7 +20,7 @@ function latest(list: Transaction[], limit: number) {
 
 export function RecentTransactions({ month, limit = 5 }: { month: string; limit?: number }) {
   const { transactions, loading } = useMonthTransactions(month)
-  const [editing, setEditing] = useState<Transaction | null>(null)
+  const showTransaction = useShowTransaction()
 
   return (
     <section className="space-y-3">
@@ -29,9 +28,8 @@ export function RecentTransactions({ month, limit = 5 }: { month: string; limit?
       {loading ? (
         <LoadingBlock />
       ) : (
-        <TransactionDayList transactions={latest(transactions, limit)} onSelect={setEditing} />
+        <TransactionDayList transactions={latest(transactions, limit)} onSelect={showTransaction} />
       )}
-      <TransactionEditor transaction={editing} onClose={() => setEditing(null)} />
     </section>
   )
 }

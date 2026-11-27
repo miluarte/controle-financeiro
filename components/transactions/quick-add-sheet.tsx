@@ -60,6 +60,7 @@ import { SplitParcelGroups, useSplitParcel } from './split-parcel-group'
 import { receiptUrl } from '@/lib/receipt'
 import type { SplitValue } from './split-group'
 import { FormError } from '@/components/shared/form-error'
+import { useShowTransaction } from './use-show-transaction'
 
 const UNKNOWN_CARD = '__sem-cartao'
 
@@ -82,6 +83,8 @@ interface QuickAddSheetProps {
   editBill?: BillOccurrence | null
   // edição de um lançamento: o mesmo formulário, preenchido com a compra inteira
   edit?: EditTarget | null
+  // depois de salvar a edição: o id do lançamento (outro, quando a compra foi registrada de novo)
+  onSaved?: (id: string | null) => void
 }
 
 // lançamento aberto para editar: a compra inteira (purchase_info), quem edita e, na compra de outra pessoa,
@@ -147,7 +150,7 @@ function billRepeat(o: BillOccurrence | null | undefined, initialRepeat: boolean
   return { ...base, on: o.bill.recurring && o.bill.installmentsTotal == null, mode: end ? 'month' as const : 'never' as const, endMonth: end ?? base.endMonth }
 }
 
-export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pending = null, initialReceipt = null, initialRepeat = false, editBill = null, edit = null }: QuickAddSheetProps) {
+export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pending = null, initialReceipt = null, initialRepeat = false, editBill = null, edit = null, onSaved }: QuickAddSheetProps) {
   const bill = editBill?.bill ?? null
   const et = edit?.tx ?? null
   // lançamento em edição ou pendente: de onde vêm a origem e os dados guardados ao registrar de novo
@@ -159,6 +162,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const refreshMonth = useRefresh()
   const { session } = useSession()
   const suggest = useCategorySuggest()
+  const showTransaction = useShowTransaction()
 
   // receita pendente (Pix de alguém da família) abre como Receita
   const [mode, setMode] = useState<Mode>(editMode ?? (pending?.type === 'income' || bill?.type === 'income' ? 'income' : initialMode))
@@ -370,12 +374,14 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     setError(null)
     try {
       const placeValue = place.trim() || null
+      // lançamento salvo: abre o detalhe dele (gasto fixo, Pagar depois e sem cartão vão para Contas ou pendentes)
+      let savedId: string | null = null
       if (edit) {
-        await saveEdit(placeValue)
+        savedId = await saveEdit(placeValue)
       } else if (bill) {
         await updateBill(placeValue)
       } else {
-        await createNew(placeValue)
+        savedId = await createNew(placeValue)
       }
       if (pending) await finishPending(pending)
       await refreshMonth()
@@ -397,7 +403,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         : unknownCard ? 'Enviado para confirmar'
         : splitting ? 'Compra dividida' : sharedPix ? 'Gasto dividido' : 'Gasto adicionado'
       reset()
+      if (edit) onSaved?.(savedId)
       onOpenChange(false)
+      if (!edit && savedId) showTransaction(savedId)
       feedback.done(done)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível registrar.')
@@ -407,7 +415,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   }
 
   // registra o lançamento novo (o caminho de sempre do Novo gasto)
-  async function createNew(placeValue: string | null) {
+  async function createNew(placeValue: string | null): Promise<string | null> {
     if (payingFixed && fixedMatch) {
       // o valor deste mês pode ser outro: muda só esta ocorrência e paga
       if (amount !== fixedMatch.amount) await billsApi.updateOccurrence(fixedMatch.id, amount, fixedMatch.dueDate)
@@ -419,7 +427,9 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
     } else if (mode === 'expense' && repeatExpense) {
       await createRecurringExpense(placeValue)
     } else if (sharedPix) {
-      await createSharedPix(placeValue)
+      const sharedId = await createSharedPix(placeValue)
+      // a sua parte (quando você não ficou fora da divisão)
+      return sharedId ? transactionsApi.partOfShared(sharedId, me) : null
     } else if (unknownCard) {
       await createWithoutCard(placeValue)
     } else if ((isCredit || installable) && installments > 1) {
@@ -435,14 +445,14 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         const path = await takeReceipt()
         if (path) await transactionsApi.setGroupReceipt(group, path)
       }
+      const [first] = await transactionsApi.idsOfGroup(group)
       if (splitting) {
-        const [first] = await transactionsApi.idsOfGroup(group)
         if (first) await applySplit(first)
       } else if (assignTo) {
         // assign_purchase vale para todas as parcelas em aberto da compra
-        const [first] = await transactionsApi.idsOfGroup(group)
         if (first) await familyApi.assignPurchase(first, assignTo)
       }
+      return first ?? null
     } else {
       const fromPhoto = mode === 'expense' && receipt
       // receita: quem enviou; gasto no Pix: para quem foi
@@ -469,13 +479,15 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
       })
       if (splitting) await applySplit(created.id)
       else if (assignTo && isCredit) await familyApi.assignPurchase(created.id, assignTo)
+      return created.id
     }
+    return null
   }
 
   // edição: lançamento simples muda no lugar; compra parcelada ou dividida sem mudar valor, parcelas, cartão ou
   // divisão muda local, categoria e itens em todas as partes; mudou a estrutura, registra de novo e exclui a antiga
-  async function saveEdit(placeValue: string | null) {
-    if (!edit || !et) return
+  async function saveEdit(placeValue: string | null): Promise<string | null> {
+    if (!edit || !et) return null
     const simple = edit.info.rows <= 1 && !et.sharedPaymentId && !partsOf(et, 'split_parts')
     if (simple && !splitting && !sharedPix && !unknownCard && !(creditLike && installments > 1)) {
       const withSender = mode === 'income' || isPix ? senderData(sender) : {}
@@ -491,17 +503,18 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
       })
       const initialOwner = et.owner !== edit.me ? et.owner : ''
       if (isCredit && owner !== initialOwner) await familyApi.assignPurchase(et.id, assignTo ?? me)
-      return
+      return et.id
     }
     if (structure === initialStructure) {
       await transactionsApi.updatePurchaseInfo(et.id, placeValue, categoryId, items)
       await parcel.save()
-      return
+      return et.id
     }
     if (et.prepaidBy) throw new Error('Desfaça a antecipação antes de mudar valor, parcelas ou divisão.')
-    await createNew(placeValue)
+    const created = await createNew(placeValue)
     if (et.sharedPaymentId) await sharedApi.remove(et.sharedPaymentId)
     else await transactionsApi.removePurchase(et.id)
+    return created
   }
 
   // a foto lida vira definitiva ao registrar; se falhar, o gasto entra sem ela
@@ -528,12 +541,12 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   }
 
   // Pix dividido: cada pessoa ganha a sua parte; o dinheiro sai de quem pagou. Por item, os itens vão com o dono.
-  async function createSharedPix(placeValue: string | null) {
-    if (!splitResult) return
+  async function createSharedPix(placeValue: string | null): Promise<string | null> {
+    if (!splitResult) return null
     const byItem = split.on && splitMode(split, items) === 'item'
     const fromPhoto = receipt
     const receiptPath = fromPhoto ? await takeReceipt() : et?.receiptPath ?? null
-    await sharedApi.create({
+    return sharedApi.create({
       payerId, walletId: payerId === me ? walletId : null, amount: net, date, place: placeValue, categoryId,
       parts: splitResult.parts,
       source: fromPhoto ? 'photo' : origin?.source ?? 'manual',

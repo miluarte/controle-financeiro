@@ -6,7 +6,7 @@ import { extendTailwindMerge } from "tailwind-merge"
 const twMerge = extendTailwindMerge({
   extend: {
     theme: {
-      text: ["large-title", "title1", "title2", "title3", "headline", "body", "callout", "subheadline", "footnote", "caption1", "caption2"],
+      text: ["large-title", "title1", "title2", "title3", "headline", "body", "callout", "subheadline", "field", "footnote", "caption1", "caption2"],
       spacing: [
         "row", "tabbar", "app", "safe-top", "safe-bottom", "safe-top-page", "safe-bottom-page", "safe-bar", "safe-sheet",
         "shell-bottom", "sheet-max", "sheet-max-desktop",
@@ -80,6 +80,18 @@ export function dayLabel(date: string): string {
   // outro ano: mostra o ano junto (a busca traz lançamentos de todos os meses)
   const year = date.slice(0, 4) !== today.slice(0, 4)
   return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', ...(year && { year: 'numeric' }) })
+}
+
+// "Quinta-feira, 8 de janeiro de 2026" (detalhe de um lançamento)
+export function longDate(date: string): string {
+  const d = new Date(`${date.slice(0, 10)}T12:00:00`)
+  return capitalize(d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))
+}
+
+// "9 jan 2026" (mês abreviado, sem ponto)
+export function shortDate(date: string): string {
+  const d = new Date(`${date.slice(0, 10)}T12:00:00`)
+  return `${d.getDate()} ${monthName(date.slice(0, 7), 'short')} ${d.getFullYear()}`
 }
 
 export function greeting(): string {
