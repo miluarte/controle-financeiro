@@ -117,7 +117,7 @@ export default function BillsPage() {
                     key={o.id}
                     onClick={() => setOpenBill(o)}
                     onDelete={() => askEnd(o)}
-                    leading={<CategoryIcon icon={cat?.icon ?? 'ellipsis'} />}
+                    leading={<CategoryIcon tone="success" icon={cat?.icon ?? 'ellipsis'} />}
                     title={o.bill.name}
                     subtitle={<span className="flex items-center gap-1.5">Dia {formatDate(o.dueDate).slice(0, 5)} <DueBadge dueDate={o.dueDate} paid={!!o.paidAt} income /></span>}
                     trailing={<Money cents={o.amount} tone="success" sign="+" />}

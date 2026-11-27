@@ -104,7 +104,6 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
       <Panel className="space-y-3">
         <div className="text-center">
           <Money as="p" size="display" cents={total} />
-          <p className="text-footnote text-muted-foreground">{list.length} {list.length === 1 ? 'compra' : 'compras'}</p>
         </div>
         {shared && byPerson.size > 0 && (
           <ul className="space-y-2 border-t border-separator pt-3">
