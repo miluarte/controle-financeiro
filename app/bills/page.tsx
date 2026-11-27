@@ -59,7 +59,7 @@ export default function BillsPage() {
       <LargeTitleHeader title="Contas" />
       <div className="space-y-7 px-4 pt-2">
         <SegmentedControl aria-label="Visão" value={view} onChange={setView}
-          options={[{ value: 'cards', label: 'Cartões' }, { value: 'fixed', label: 'Fixas' }]} />
+          options={[{ value: 'cards', label: 'Todas' }, { value: 'fixed', label: 'Fixas' }]} />
         {view === 'cards' ? <CardStatement /> : <>
         <BillsMonthCard total={total} paid={paid} />
 
