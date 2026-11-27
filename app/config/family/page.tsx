@@ -16,7 +16,7 @@ export default function FamilyPage() {
 
   return (
     <>
-      <LargeTitleHeader back title="Família" />
+      <LargeTitleHeader title="Família" />
       <div className="px-4 pt-2">
         {loading ? (
           <LoadingBlock />

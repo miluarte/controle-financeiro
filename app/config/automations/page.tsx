@@ -41,7 +41,7 @@ export default function AutomationsPage() {
   return (
     <>
       {ask.sheet}
-      <LargeTitleHeader back title="Automações" />
+      <LargeTitleHeader title="Automações" />
       <div className="space-y-7 px-4 pt-2">
         <p className="px-4 text-subheadline text-muted-foreground">Compras entram como pendentes. Você confirma no Início.</p>
 

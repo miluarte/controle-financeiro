@@ -24,7 +24,7 @@ export function TransactionScreen({ id }: { id: string }) {
   const ready = !!t && (!form || (!!info && (!other || !!ownerCategories)))
   return (
     <>
-      <LargeTitleHeader back title=""
+      <LargeTitleHeader title=""
         actions={ready ? <GlassButton size="capsule" onClick={() => setEditing(true)}>Editar</GlassButton> : undefined} />
       <div className="space-y-8 px-4 pt-4 pb-8">
         {!ready ? <LoadingBlock /> : (

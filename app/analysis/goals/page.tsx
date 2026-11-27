@@ -27,7 +27,7 @@ export default function GoalsPage() {
 
   return (
     <>
-      <LargeTitleHeader back title="Objetivos"
+      <LargeTitleHeader title="Objetivos"
         actions={<GlassButton aria-label="Novo objetivo" onClick={() => openGoal(null)}><AddLinearIcon /></GlassButton>} />
       <div className="space-y-7 px-4 pt-2">
         <Panel>

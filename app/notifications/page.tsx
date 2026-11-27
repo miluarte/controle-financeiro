@@ -31,7 +31,7 @@ export default function NotificationsPage() {
   return (
     <>
       {del.sheet}
-      <LargeTitleHeader back title="Notificações" />
+      <LargeTitleHeader title="Notificações" />
       <div className="space-y-7 px-4 pt-2">
         {unread > 0 && (
           <div className="flex items-center justify-between px-4">

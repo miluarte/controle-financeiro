@@ -31,7 +31,7 @@ export default function SubscriptionsPage() {
 
   return (
     <>
-      <LargeTitleHeader back title="Assinaturas"
+      <LargeTitleHeader title="Assinaturas"
         actions={<GlassButton aria-label="Nova assinatura" onClick={() => openSub(null)}><AddLinearIcon /></GlassButton>} />
       <div className="space-y-7 px-4 pt-2">
         <div className="flex"><MonthSelector /></div>

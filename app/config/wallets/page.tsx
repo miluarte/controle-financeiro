@@ -50,7 +50,7 @@ export default function WalletsPage() {
 
   return (
     <>
-      <LargeTitleHeader back title="Carteiras" actions={
+      <LargeTitleHeader title="Carteiras" actions={
         <GlassButton aria-label="Adicionar carteira" onClick={() => setCreating(true)}><AddLinearIcon /></GlassButton>
       } />
       <div className="space-y-7 px-4 pt-2">
