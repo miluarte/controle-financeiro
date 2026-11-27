@@ -6,12 +6,10 @@ import { ListRow } from '@/components/ios/list-row'
 import { Money } from '@/components/shared/money'
 import { useCardPeople } from '@/hooks/use-card-people'
 import { WALLET_TYPES } from '@/lib/constants'
-import { discountOf } from '@/lib/discount'
-import { invoiceDueDate } from '@/lib/invoice'
 import { receiptUrl, type ReceiptItem } from '@/lib/receipt'
 import { SPLIT_ALL } from '@/lib/split'
 import type { Category, PurchaseInfo, Transaction, Wallet } from '@/lib/types'
-import { formatCurrency, shortDate, walletLabel } from '@/lib/utils'
+import { formatCurrency, walletLabel } from '@/lib/utils'
 import { senderOf } from './sender-field'
 import { TransactionHero } from './transaction-hero'
 import { TYPE_LABEL } from './transaction-item'
@@ -44,12 +42,11 @@ export function TransactionDetail({ transaction: t, info, wallet, category, onIn
   const total = purchaseTotal(t, info)
   const n = info?.installments ?? t.installmentsTotal ?? null
   const sender = senderOf(t.sourceData)
-  const discount = discountOf(t.sourceData)
   const items = Array.isArray(t.sourceData?.items) ? (t.sourceData.items as ReceiptItem[]) : []
   const walletName = (wallet ? walletLabel(wallet) : null) ?? t.walletNameSnapshot
-  const walletType = WALLET_TYPES.find(w => w.value === wallet?.type)?.label
-  const isCard = wallet?.type === 'credit' || wallet?.type === 'debit'
-  const due = wallet?.type === 'credit' && t.invoiceRef && wallet.dueDay ? invoiceDueDate(wallet, t.invoiceRef.slice(0, 7)) : null
+  // rótulo pela forma de pagamento: "Cartão de crédito", "Pix", "Dinheiro"…
+  const paymentLabel = wallet?.type === 'credit' ? 'Cartão de crédito' : wallet?.type === 'debit' ? 'Cartão de débito'
+    : WALLET_TYPES.find(w => w.value === wallet?.type)?.label ?? 'Conta'
   const title = t.place || t.description || category?.name || TYPE_LABEL[t.type]
 
   const tags = [
@@ -67,23 +64,17 @@ export function TransactionDetail({ transaction: t, info, wallet, category, onIn
         icon={category?.icon ?? (t.type.startsWith('save') ? 'piggy-bank' : 'ellipsis')}
         title={title} cents={total} inflow={inflow} installments={n} date={info?.firstDate ?? t.date} tags={tags} />
 
+      {/* como no Mercado Pago: um card com estabelecimento, parcelas, cartão e categoria (e as pessoas, quando houver) */}
       <ListGroup>
-        {t.place && <DetailRow label="Estabelecimento" value={t.place} />}
-        {t.description && !t.place && <DetailRow label="Descrição" value={t.description} />}
+        {(t.place || t.description) && <DetailRow label={t.place ? 'Estabelecimento' : 'Descrição'} value={(t.place || t.description)!} />}
         {n && n > 1 && t.installmentN && (
-          <DetailRow label="Parcelas" value={`${t.installmentN} de ${n} · ${formatCurrency(t.amount)}`} onClick={onInstallments} />
+          <DetailRow label="Parcelas" value={`${t.installmentN} de ${n}`} onClick={onInstallments} />
         )}
-        {walletName && <DetailRow label={isCard ? 'Cartão' : 'Conta'} value={wallet?.ownerName ? `${walletName} · de ${wallet.ownerName}` : walletName} />}
-        {walletType && <DetailRow label="Forma de pagamento" value={walletType} />}
-        {due && <DetailRow label="Fatura" value={`Vence em ${shortDate(due)}`} />}
+        {walletName && <DetailRow label={paymentLabel} value={wallet?.ownerName ? `${walletName} · de ${wallet.ownerName}` : walletName} />}
         {category && <DetailRow label="Categoria" value={category.name} />}
         {sender && <DetailRow label={t.type === 'income' ? 'Remetente' : 'Destinatário'} value={sender.name} />}
         {t.paidBy && <DetailRow label="Quem pagou" value={nameOf(t.paidBy)} />}
         {!parts && t.owner !== me && <DetailRow label="De quem é" value={nameOf(t.owner)} />}
-        {discount && (
-          <DetailRow label="Desconto"
-            value={discount.percent ? `${formatCurrency(discount.amount)} (${discount.percent}%)` : formatCurrency(discount.amount)} />
-        )}
       </ListGroup>
 
       {parts && parts.length > 0 && (

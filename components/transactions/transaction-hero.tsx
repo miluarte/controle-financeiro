@@ -20,13 +20,13 @@ export function TransactionHero({ icon, title, cents, inflow, installments, date
     <header className="space-y-3 px-1">
       <CategoryIcon icon={icon} size="xl" />
       <div className="space-y-1">
-        <h2 className="line-clamp-2 text-title2 font-bold break-words">{title}</h2>
+        <h2 className="line-clamp-2 text-title1 font-bold break-words">{title}</h2>
         <Money as="p" cents={cents} size="display" tone={inflow ? 'success' : 'default'} sign={inflow ? '+' : undefined} />
         {installments && installments > 1 && (
           <p className="text-headline font-semibold">{`em ${installments}x de ${formatCurrency(Math.round(cents / installments))}`}</p>
         )}
       </div>
-      <p className="text-subheadline text-muted-foreground">{longDate(date)}</p>
+      <p className="text-body text-foreground">{longDate(date)}</p>
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}

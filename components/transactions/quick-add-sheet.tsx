@@ -58,7 +58,7 @@ import { SplitParcelGroups, useSplitParcel } from './split-parcel-group'
 import { receiptUrl } from '@/lib/receipt'
 import type { SplitValue } from './split-group'
 import { FormError } from '@/components/shared/form-error'
-import { useShowTransaction } from './transaction-detail-context'
+import { useShowTransaction } from './use-show-transaction'
 
 const UNKNOWN_CARD = '__sem-cartao'
 

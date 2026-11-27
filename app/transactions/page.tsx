@@ -9,7 +9,7 @@ import { Note } from '@/components/shared/note'
 import { MonthSelector } from '@/components/shared/month-selector'
 import { TransactionDayList } from '@/components/transactions/transaction-day-list'
 import { DuplicatesSheet } from '@/components/transactions/duplicates-sheet'
-import { TransactionEditor } from '@/components/transactions/transaction-editor'
+import { useShowTransaction } from '@/components/transactions/use-show-transaction'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { findDuplicates } from '@/lib/duplicates'
@@ -20,7 +20,6 @@ import { useMonthTransactions } from '@/hooks/use-month-transactions'
 import { useAllMyTransactions } from '@/hooks/use-data'
 import { useSession } from '@/hooks/use-session'
 import { useWallets } from '@/hooks/use-wallets'
-import type { Transaction } from '@/lib/types'
 import { LoadingBlock } from '@/components/shared/loading-dots'
 import { matchesFilters, NO_FILTER, TransactionFilters } from '@/components/transactions/transaction-filters'
 import { senderOf } from '@/components/transactions/sender-field'
@@ -52,7 +51,7 @@ function TransactionsContent() {
   const transactions = searching ? allSorted : monthList
   const loading = searching ? all.loading : monthLoading
   const [extra, setExtra] = useState(() => ({ ...NO_FILTER, walletIds: params.get('pagamento')?.split(',').filter(Boolean) ?? [] }))
-  const [editing, setEditing] = useState<Transaction | null>(null)
+  const showTransaction = useShowTransaction()
   const [showDuplicates, setShowDuplicates] = useState(false)
   const duplicates = useMemo(() => findDuplicates(monthList), [monthList])
 
@@ -84,11 +83,10 @@ function TransactionsContent() {
         {loading ? (
           <LoadingBlock />
         ) : (
-          <TransactionDayList transactions={visible} onSelect={setEditing}
+          <TransactionDayList transactions={visible} onSelect={showTransaction}
             emptyText={searching ? 'Nada encontrado em nenhum mês' : undefined} />
         )}
       </div>
-      <TransactionEditor transaction={editing} onClose={() => setEditing(null)} />
       <DuplicatesSheet open={showDuplicates} pairs={duplicates} onOpenChange={setShowDuplicates} />
     </Screen>
   )

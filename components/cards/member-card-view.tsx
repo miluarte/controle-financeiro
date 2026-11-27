@@ -5,14 +5,14 @@ import { Button } from '@/components/ui/button'
 import useSWR from 'swr'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
-import { TransactionEditor } from '@/components/transactions/transaction-editor'
+import { useShowTransaction } from '@/components/transactions/use-show-transaction'
 import { TransactionItem } from '@/components/transactions/transaction-item'
 import { useCategories } from '@/hooks/use-categories'
 import { useMyDebts, useSettlements } from '@/hooks/use-family'
 import { familyApi } from '@/lib/api/family'
 import { transactionsApi } from '@/lib/api/transactions'
 import { openInvoiceRef } from '@/lib/invoice'
-import type { Transaction, Wallet } from '@/lib/types'
+import type { Wallet } from '@/lib/types'
 import { addMonths, capitalize, formatCurrency, formatDate, monthName, todayIso } from '@/lib/utils'
 import { InvoiceNavigator } from './invoice-navigator'
 import { SettlementSheet } from './settlement-sheet'
@@ -28,7 +28,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
   const openRef = openInvoiceRef({ closingDay: wallet.closingDay, closingDayInclusive: true }, todayIso())
   const nextRef = addMonths(openRef, 1)
   const [ref, setRef] = useState(openRef)
-  const [editing, setEditing] = useState<Transaction | null>(null)
+  const showTransaction = useShowTransaction()
   const [paying, setPaying] = useState(false)
   const settlements = useSettlements(wallet.id)
   const ask = useConfirmDelete()
@@ -90,7 +90,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
         {list.map(t => (
           <TransactionItem key={t.id} transaction={t}
             category={t.categoryId ? catById.get(t.categoryId) : undefined}
-            onClick={() => setEditing(t)} />
+            onClick={() => showTransaction(t)} />
         ))}
       </ListGroup>
       {confirmed.length > 0 && (
@@ -101,7 +101,6 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
           ))}
         </ListGroup>
       )}
-      <TransactionEditor transaction={editing} onClose={() => setEditing(null)} />
       <SettlementSheet open={paying} onOpenChange={setPaying} card={wallet} debts={payable} />
     </div>
   )
