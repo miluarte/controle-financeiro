@@ -8,16 +8,14 @@ import { Money } from '@/components/shared/money'
 import { MonthBarChart } from '@/components/shared/month-bar-chart'
 import { TransactionDayList } from '@/components/transactions/transaction-day-list'
 import { useShowTransaction } from '@/components/transactions/use-show-transaction'
-import { useCardPeople } from '@/hooks/use-card-people'
 import { useCardStatement } from '@/hooks/use-card-statement'
 import { currentMonth, monthName } from '@/lib/utils'
 
-// Gasto de todos os meus cartões somados, pela fatura que vence em cada mês: gráfico por mês,
-// total do mês escolhido e uma lista só com as compras de todos os cartões, por dia.
+// Meus gastos em todos os cartões (os meus e os da família), pela fatura que vence em cada mês:
+// gráfico por mês, total do mês escolhido e uma lista só com as compras de todos os cartões, por dia.
 export function CardStatement() {
   const [month, setMonth] = useState(currentMonth())
-  const { months, purchases, merged, total, hasCards, loading } = useCardStatement(month)
-  const { me, nameOf } = useCardPeople()
+  const { months, purchases, total, hasCards, loading } = useCardStatement(month)
   const showTransaction = useShowTransaction()
 
   if (!loading && !hasCards) {
@@ -36,12 +34,7 @@ export function CardStatement() {
         <LoadingBlock />
       ) : (
         <TransactionDayList transactions={purchases} onSelect={showTransaction} fullPurchase={false}
-          emptyText="Nenhuma compra nos cartões neste mês"
-          describe={t => {
-            const owners = merged.get(t.id)
-            if (owners) return { note: owners.map(nameOf).join(', '), locked: true }
-            return { note: t.owner !== me ? `de ${nameOf(t.owner)}` : undefined }
-          }} />
+          emptyText="Nenhuma compra nos cartões neste mês" />
       )}
     </div>
   )
