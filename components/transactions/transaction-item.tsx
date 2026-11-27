@@ -40,15 +40,16 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
   const title = t.place || t.description || category?.name || TYPE_LABEL[t.type]
   const walletName = (wallet ? walletLabel(wallet) : null) ?? t.walletNameSnapshot
   const full = purchaseTotal !== undefined && !!t.installmentsTotal
-  // com o valor cheio, o "em Nx" fica embaixo do valor e a parcela sai do subtítulo
-  const installment = !full && t.installmentN && t.installmentsTotal ? `${t.installmentN} de ${t.installmentsTotal}` : null
-  // subtítulo: só a forma de pagamento e a parcela (categoria fica no ícone; itens e detalhes, ao abrir)
+  // parcelas sempre embaixo do valor: "em Nx" com o valor cheio (Início, Transações) ou "3 de 12" com a parcela
+  const installments = full ? `em ${t.installmentsTotal}x`
+    : t.installmentN && t.installmentsTotal ? `${t.installmentN} de ${t.installmentsTotal}` : undefined
+  // subtítulo: só a forma de pagamento (categoria fica no ícone; itens e detalhes, ao abrir)
   // receita: quem enviou; gasto no Pix: para quem foi (source_data.sender)
   const sender = senderOf(t.sourceData)?.name
   // Pix dividido: de quem foi o Pix (quando não foi você)
   const { nameOf } = useCardPeople()
   const shared = t.sharedPaymentId ? (t.paidBy && t.paidBy !== t.owner ? `Pago por ${nameOf(t.paidBy)}` : 'Dividido') : null
-  const subtitle = [sender ? `${t.type === 'income' ? 'De' : 'Para'} ${sender}` : null, walletName, shared, installment, note].filter(Boolean).join(' · ')
+  const subtitle = [sender ? `${t.type === 'income' ? 'De' : 'Para'} ${sender}` : null, walletName, shared, note].filter(Boolean).join(' · ')
   const inflow = INFLOW.has(t.type)
 
   return (
@@ -73,7 +74,7 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
       trailing={
         <Money cents={full ? purchaseTotal : t.amount} size="item" tone={inflow ? 'success' : 'default'} sign={inflow ? '+' : undefined} />
       }
-      trailingSubtitle={full ? `em ${t.installmentsTotal}x` : undefined}
+      trailingSubtitle={installments}
     />
   )
 }
