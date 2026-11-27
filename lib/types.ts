@@ -396,6 +396,7 @@ export interface Place {
   mapsUrl: string | null
   latitude: number | null
   longitude: number | null
+  online: boolean            // loja online: sem endereço, link do Maps nem ponto
   categoryId: string | null  // categoria do local (principal ou subcategoria), vale para a família
   names: PlaceName[]
 }

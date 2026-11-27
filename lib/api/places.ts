@@ -3,7 +3,7 @@ import { supabase, unwrap } from '../supabase/client'
 
 type Row = {
   id: string; nickname: string | null; address: string | null; maps_url: string | null
-  latitude: number | null; longitude: number | null; category_id: string | null; place_names: { key: string; name: string }[] | null }
+  latitude: number | null; longitude: number | null; category_id: string | null; online: boolean; place_names: { key: string; name: string }[] | null }
 
 const toPlace = (r: Row): Place => ({
   id: r.id,
@@ -13,22 +13,23 @@ const toPlace = (r: Row): Place => ({
   latitude: r.latitude,
   longitude: r.longitude,
   categoryId: r.category_id,
+  online: r.online,
   names: (r.place_names ?? []).map(n => ({ key: n.key, name: n.name })),
 })
 
 // Locais da família (ou só seus, sem família). O app mostra sempre o nome da maquininha; o apelido só ajuda a reconhecer.
 export const placesApi = {
   list: async (): Promise<Place[]> =>
-    unwrap(await supabase.from('places').select('id, nickname, address, maps_url, latitude, longitude, category_id, place_names(key, name)')).map(r => toPlace(r as Row)),
+    unwrap(await supabase.from('places').select('id, nickname, address, maps_url, latitude, longitude, category_id, online, place_names(key, name)')).map(r => toPlace(r as Row)),
 
   // cria (sem id) ou atualiza; nome da maquininha que estava em outro local passa para este
   save: async (p: {
     id: string | null; nickname: string; address: string; names: PlaceName[]
-    mapsUrl: string | null; latitude: number | null; longitude: number | null; categoryId: string | null
+    mapsUrl: string | null; latitude: number | null; longitude: number | null; categoryId: string | null; online: boolean
   }): Promise<string> => {
     const { data, error } = await supabase.rpc('save_place', {
       p_id: p.id, p_nickname: p.nickname, p_address: p.address, p_names: p.names,
-      p_maps_url: p.mapsUrl, p_latitude: p.latitude, p_longitude: p.longitude, p_category_id: p.categoryId,
+      p_maps_url: p.mapsUrl, p_latitude: p.latitude, p_longitude: p.longitude, p_category_id: p.categoryId, p_online: p.online,
     })
     if (error) throw new Error(error.message)
     return data as string

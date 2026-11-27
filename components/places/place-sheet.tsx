@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { AddRow } from '@/components/ios/add-row'
 import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
@@ -48,6 +49,7 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
   const nicknames = [...new Set(places.map(p => p.nickname).filter((n): n is string => !!n))]
   const [nickname, setNickname] = useState(place?.nickname ?? '')
   const [address, setAddress] = useState(place?.address ?? '')
+  const [online, setOnline] = useState(place?.online ?? false)
   const expenseCategories = useCategories().categories.filter(c => c.type === 'expense')
   const [categoryId, setCategoryId] = useState<string | null>(place?.categoryId ?? null)
   const [names, setNames] = useState<PlaceName[]>(
@@ -93,7 +95,7 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
       await placesApi.save({
         id: place?.id ?? null, nickname, address, names,
         mapsUrl: mapsUrl.trim() || null, latitude: point?.latitude ?? null, longitude: point?.longitude ?? null,
-        categoryId,
+        categoryId, online,
       })
       await refresh()
       onDone()
@@ -109,10 +111,15 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
             placeholder="Opcional" maxLength={80} list="place-nicknames" className="text-right" />
           <datalist id="place-nicknames">{nicknames.map(n => <option key={n} value={n} />)}</datalist>
         </FormRow>
-        <FormRow label="Endereço" htmlFor="place-address">
-          <Input id="place-address" variant="bare" value={address} onChange={e => setAddress(e.target.value)}
-            placeholder="Opcional" maxLength={200} autoComplete="street-address" className="text-right" />
+        <FormRow label="Loja online">
+          <Switch checked={online} onCheckedChange={setOnline} />
         </FormRow>
+        {!online && (
+          <FormRow label="Endereço" htmlFor="place-address">
+            <Input id="place-address" variant="bare" value={address} onChange={e => setAddress(e.target.value)}
+              placeholder="Opcional" maxLength={200} autoComplete="street-address" className="text-right" />
+          </FormRow>
+        )}
       </ListGroup>
 
       <ListGroup footer="Sugerida nas compras deste local, para toda a família.">
@@ -121,15 +128,17 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
         {categoryId && <ListRow tone="destructive" title="Remover categoria" onClick={() => setCategoryId(null)} />}
       </ListGroup>
 
-      <ListGroup footer={mapsError ?? (point ? 'Ponto do mapa salvo.' : 'No Maps, toque em Compartilhar e copie o link.')}>
-        <FormRow label="Link do Maps" htmlFor="place-maps">
-          {reading ? <LoadingDots size="sm" /> : (
-            <Input id="place-maps" variant="bare" value={mapsUrl} inputMode="url" placeholder="Colar link"
-              onChange={e => readLink(e.target.value)} className="text-right" />
-          )}
-        </FormRow>
-        {mapsUrl && !reading && <ListRow tone="tint" title="Abrir no Maps" onClick={() => window.open(mapsUrl, '_blank')} />}
-      </ListGroup>
+      {!online && (
+        <ListGroup footer={mapsError ?? (point ? 'Ponto do mapa salvo.' : 'No Maps, toque em Compartilhar e copie o link.')}>
+          <FormRow label="Link do Maps" htmlFor="place-maps">
+            {reading ? <LoadingDots size="sm" /> : (
+              <Input id="place-maps" variant="bare" value={mapsUrl} inputMode="url" placeholder="Colar link"
+                onChange={e => readLink(e.target.value)} className="text-right" />
+            )}
+          </FormRow>
+          {mapsUrl && !reading && <ListRow tone="tint" title="Abrir no Maps" onClick={() => window.open(mapsUrl, '_blank')} />}
+        </ListGroup>
+      )}
 
       <ListGroup header="Nomes na maquininha" footer="Compras com qualquer um desses nomes são deste local.">
         {names.map(n => (

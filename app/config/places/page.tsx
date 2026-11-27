@@ -19,7 +19,7 @@ export default function PlacesPage() {
 
   const row = (e: PlaceEntry) => e.kind === 'saved' ? (
     <ListRow key={e.key} title={placeTitle(e.place)} chevron onClick={() => setTarget({ place: e.place })}
-      subtitle={e.place.address ?? e.place.names.map(n => n.name).join(', ')}
+      subtitle={e.place.online ? 'Loja online' : e.place.address ?? e.place.names.map(n => n.name).join(', ')}
       onDelete={() => del.ask({ title: `Excluir "${placeTitle(e.place)}"?`, remove: () => placesApi.remove(e.place.id) })} />
   ) : (
     <ListRow key={e.key} title={e.name} chevron onClick={() => setTarget({ name: e.name })} />
