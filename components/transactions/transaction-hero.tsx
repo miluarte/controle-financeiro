@@ -17,9 +17,9 @@ interface TransactionHeroProps {
 
 export function TransactionHero({ icon, title, cents, inflow, installments, date, tags }: TransactionHeroProps) {
   return (
-    <header className="space-y-3 px-1">
+    <header className="space-y-5 px-1">
       <CategoryIcon icon={icon} size="xl" />
-      <div className="space-y-1">
+      <div className="space-y-2">
         <h2 className="line-clamp-2 text-title1 font-bold break-words">{title}</h2>
         <Money as="p" cents={cents} size="display" tone={inflow ? 'success' : 'default'} sign={inflow ? '+' : undefined} />
         {installments && installments > 1 && (

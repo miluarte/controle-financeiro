@@ -26,7 +26,7 @@ export function TransactionScreen({ id }: { id: string }) {
     <>
       <LargeTitleHeader back title=""
         actions={ready ? <GlassButton size="capsule" onClick={() => setEditing(true)}>Editar</GlassButton> : undefined} />
-      <div className="space-y-7 px-4 pt-2 pb-8">
+      <div className="space-y-8 px-4 pt-4 pb-8">
         {!ready ? <LoadingBlock /> : (
           <TransactionDetail transaction={t} info={info} wallet={wallet} category={category}
             onInstallments={() => router.push(`/transactions/${id}/parcelas`)} />
