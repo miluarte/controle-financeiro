@@ -21,6 +21,7 @@ import { LoadingBlock } from '@/components/shared/loading-dots'
 import { useBillDelete } from '@/components/bills/use-bill-delete'
 import { QuickAddSheet } from '@/components/transactions/quick-add-sheet'
 import { Money } from '@/components/shared/money'
+import { displayCategoryMap } from '@/lib/categories'
 
 export default function BillsPage() {
   // tela principal: sempre o mês atual, sem seletor de mês
@@ -34,7 +35,7 @@ export default function BillsPage() {
   const [editing, setEditing] = useState<BillOccurrence | null>(null)
   const del = useBillDelete()
   const askEnd = del.ask
-  const catById = new Map(categories.map(c => [c.id, c]))
+  const catById = displayCategoryMap(categories)
 
   // Contas mostra só o que é fixo; as faturas dos cartões ficam na aba Cartões.
   // Gastos fixos cobrados no cartão já entram na fatura: não são pagos à parte.

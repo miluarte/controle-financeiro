@@ -53,6 +53,7 @@ export function toCategory(r: Row): Category {
     class: r.class ?? null,
     sortOrder: num(r.sort_order),
     active: !!r.active,
+    parentId: r.parent_id ?? null,
   }
 }
 

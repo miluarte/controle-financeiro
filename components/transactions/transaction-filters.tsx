@@ -7,6 +7,7 @@ import { ListGroup } from '@/components/ios/list-group'
 import { ModalSheet } from '@/components/ios/modal-sheet'
 import { ChoiceChip } from '@/components/shared/choice-chip'
 import { TokenIcon } from '@/components/shared/token-icon'
+import { categoryTree } from '@/lib/categories'
 import { WALLET_TYPE_ICON } from '@/lib/constants'
 import type { Category, Transaction, Wallet } from '@/lib/types'
 import { walletLabel } from '@/lib/utils'
@@ -26,10 +27,10 @@ export interface TransactionFilterValue {
 
 export const NO_FILTER: TransactionFilterValue = { types: [], categoryIds: [], walletIds: [] }
 
-// o lançamento passa pelos filtros escolhidos (filtro vazio = tudo)
-export function matchesFilters(t: Transaction, f: TransactionFilterValue) {
+// o lançamento passa pelos filtros escolhidos (filtro vazio = tudo); categoria compara pela principal (`rootOf`)
+export function matchesFilters(t: Transaction, f: TransactionFilterValue, rootOf: (id: string) => string = id => id) {
   if (f.types.length && !TYPE_FILTERS.some(o => f.types.includes(o.id) && (o.types as readonly string[]).includes(t.type))) return false
-  if (f.categoryIds.length && !(t.categoryId && f.categoryIds.includes(t.categoryId))) return false
+  if (f.categoryIds.length && !(t.categoryId && f.categoryIds.includes(rootOf(t.categoryId)))) return false
   if (f.walletIds.length && !(t.walletId && f.walletIds.includes(t.walletId))) return false
   return true
 }
@@ -50,8 +51,9 @@ export function TransactionFilters({ value, onChange, categories, wallets }: {
 }) {
   const [open, setOpen] = useState<FilterKey | null>(null)
 
-  const expense = categories.filter(c => c.type === 'expense')
-  const income = categories.filter(c => c.type === 'income')
+  // só as principais, em ordem alfabética
+  const expense = categoryTree(categories, 'expense').map(g => g.parent)
+  const income = categoryTree(categories, 'income').map(g => g.parent)
   const catOption = (c: Category): Option => ({ id: c.id, label: c.name, icon: c.icon, color: 'gray' })
   const walletOptions = wallets.map(w => ({
     id: w.id, label: w.ownerName ? `${walletLabel(w)}, de ${w.ownerName}` : walletLabel(w), icon: WALLET_TYPE_ICON[w.type] ?? 'wallet', color: 'gray',

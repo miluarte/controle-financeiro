@@ -29,6 +29,7 @@ import { useTransactionDelete } from '@/components/transactions/use-transaction-
 import { Money } from '@/components/shared/money'
 import { EmptyState } from '@/components/shared/empty-state'
 import { Panel } from '@/components/ios/panel'
+import { displayCategoryMap } from '@/lib/categories'
 
 // CAR-5 e VIS-3: visão do titular. Fatura total, fatia de cada pessoa, limite, compras e compartilhamento.
 // initialRef (AAAA-MM): fatura que abre primeiro (ex.: a que vence no mês, vinda da aba Cartões).
@@ -81,7 +82,7 @@ export function OwnerCardView({ wallet, initialRef }: { wallet: OwnWallet; initi
   // limite usado: tudo o que falta pagar no cartão, de todas as pessoas (fatura fechada e não paga,
   // aberta e parcelas futuras), calculado no banco pela view card_limit_used
   const { data: used = 0 } = useSWR(wallet.spendingLimit ? ['limit-used', wallet.id] : null, () => invoicesApi.limitUsed(wallet.id))
-  const catById = new Map(categories.map(c => [c.id, c]))
+  const catById = displayCategoryMap(categories)
   const due = invoiceDueDate(wallet, ref)
 
   // fatura só da pessoa (ex.: quem não tem o app) para ela conferir e pagar

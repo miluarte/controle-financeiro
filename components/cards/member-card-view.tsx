@@ -20,6 +20,7 @@ import { useConfirmDelete } from '@/components/ios/use-delete-action'
 import { Money } from '@/components/shared/money'
 import { EmptyState } from '@/components/shared/empty-state'
 import { Panel } from '@/components/ios/panel'
+import { displayCategoryMap } from '@/lib/categories'
 
 // VIS-1 e VIS-2: visão do membro. Só as próprias compras e quanto deve ao titular.
 export function MemberCardView({ wallet }: { wallet: Wallet }) {
@@ -37,7 +38,7 @@ export function MemberCardView({ wallet }: { wallet: Wallet }) {
   // faturas com saldo, das mais antigas para as mais novas (fechadas primeiro)
   const payable = debts.filter(d => d.open > 0 && d.reported === 0 && d.invoiceRef.slice(0, 7) <= nextRef)
   const { data: purchases } = useSWR(['invoice-tx', wallet.id, ref], () => transactionsApi.getByInvoice(wallet.id, `${ref}-01`))
-  const catById = new Map(categories.map(c => [c.id, c]))
+  const catById = displayCategoryMap(categories)
   const owner = wallet.ownerName ?? 'titular'
 
   const at = (r: string) => debts.find(d => d.invoiceRef.slice(0, 7) === r)

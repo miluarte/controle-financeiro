@@ -6,7 +6,7 @@ import { FormRow } from '@/components/ios/form-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { SegmentedControl } from '@/components/ios/segmented-control'
-import { useAllCategories, useOwnWallets } from '@/hooks/use-data'
+import { useOwnWallets } from '@/hooks/use-data'
 import { useProfile } from '@/hooks/use-profile'
 import { useRefresh } from '@/hooks/use-refresh'
 import { profileApi, type ProfilePatch } from '@/lib/api/profile'
@@ -46,16 +46,13 @@ export function AppearanceGroup() {
 export function RegistryGroup() {
   const router = useRouter()
   const { profile } = useProfile()
-  const { categories } = useAllCategories()
   const { wallets } = useOwnWallets()
   const save = useSaveProfile()
-  // uma linha só: a tela de categorias tem Gastos e Receitas
-  const activeCategories = categories.filter(c => c.active).length
   const activeWallets = wallets.filter(w => w.active).length
 
   return (
     <ListGroup header="Registro" footer="O que sobra passa para o mês seguinte.">
-      <ListRow title="Categorias" trailing={`${activeCategories} ativas`} chevron onClick={() => router.push('/config/categories')} />
+      <ListRow title="Categorias" chevron onClick={() => router.push('/config/categories')} />
       <ListRow title="Carteiras" trailing={`${activeWallets} ativas`} chevron onClick={() => router.push('/config/wallets')} />
       <FormRow label="Moeda padrão" htmlFor="currency">
         <select id="currency" value={profile?.currency ?? 'BRL'} onChange={e => save({ currency: e.target.value })}

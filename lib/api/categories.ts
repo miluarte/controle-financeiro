@@ -1,8 +1,9 @@
-import type { Category, CategoryInput } from '../types'
+import type { Category } from '../types'
 import { supabase, unwrap } from '../supabase/client'
 import { toCategory } from '../supabase/mappers'
 
-// Categorias sempre em ordem alfabética (português, sem diferenciar acento nem maiúscula).
+// Categorias universais: a mesma lista para todos, só leitura (o banco não aceita escrita do app).
+// Ordem alfabética (português, sem diferenciar acento nem maiúscula); a árvore sai de lib/categories.ts.
 const byName = (list: Category[]) =>
   list.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }))
 
@@ -19,7 +20,7 @@ export const categoriesApi = {
     return byName(rows.map(toCategory))
   },
 
-  // categorias de outra pessoa da família (titular escolhendo a categoria de uma compra dela)
+  // categorias vistas por outra pessoa da família (hoje a mesma lista universal)
   ofMember: async (userId: string) => {
     const { data, error } = await supabase.rpc('member_categories', { p_user: userId })
     if (error) throw new Error(error.message)
@@ -30,18 +31,5 @@ export const categoriesApi = {
   usage: async () => {
     const rows = unwrap(await supabase.from('category_usage').select('*'))
     return new Map<string, number>(rows.map(r => [r.category_id as string, Number(r.transactions)]))
-  },
-
-  create: async (c: CategoryInput, sortOrder: number) =>
-    toCategory(unwrap(await supabase.from('categories').insert({ ...c, sort_order: sortOrder }).select('*').single())),
-
-  update: async (id: string, patch: Partial<CategoryInput> & { active?: boolean; sort_order?: number }) => {
-    unwrap(await supabase.from('categories').update(patch).eq('id', id))
-  },
-
-  // CAT-5: o banco só deixa excluir categoria sem lançamentos.
-  remove: async (id: string) => {
-    const { count } = await supabase.from('categories').delete({ count: 'exact' }).eq('id', id)
-    if (!count) throw new Error('Esta categoria tem lançamentos. Arquive em vez de excluir.')
   },
 }
