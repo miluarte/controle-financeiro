@@ -8,8 +8,10 @@ import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { ModalSheet } from '@/components/ios/modal-sheet'
 import { useDeleteAction } from '@/components/ios/use-delete-action'
+import { CategoryField } from '@/components/shared/category-field'
 import { FormError } from '@/components/shared/form-error'
 import { LoadingDots } from '@/components/shared/loading-dots'
+import { useCategories } from '@/hooks/use-categories'
 import { placeTitle, usePlaces } from '@/hooks/use-places'
 import { useRefresh } from '@/hooks/use-refresh'
 import { placesApi, readMapsLink, type MapsPlace } from '@/lib/api/places'
@@ -46,6 +48,8 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
   const nicknames = [...new Set(places.map(p => p.nickname).filter((n): n is string => !!n))]
   const [nickname, setNickname] = useState(place?.nickname ?? '')
   const [address, setAddress] = useState(place?.address ?? '')
+  const expenseCategories = useCategories().categories.filter(c => c.type === 'expense')
+  const [categoryId, setCategoryId] = useState<string | null>(place?.categoryId ?? null)
   const [names, setNames] = useState<PlaceName[]>(
     () => place?.names ?? (firstName ? [{ key: placeKey(firstName), name: firstName }] : []))
   const [mapsUrl, setMapsUrl] = useState(place?.mapsUrl ?? '')
@@ -89,6 +93,7 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
       await placesApi.save({
         id: place?.id ?? null, nickname, address, names,
         mapsUrl: mapsUrl.trim() || null, latitude: point?.latitude ?? null, longitude: point?.longitude ?? null,
+        categoryId,
       })
       await refresh()
       onDone()
@@ -108,6 +113,12 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
           <Input id="place-address" variant="bare" value={address} onChange={e => setAddress(e.target.value)}
             placeholder="Opcional" maxLength={200} autoComplete="street-address" className="text-right" />
         </FormRow>
+      </ListGroup>
+
+      <ListGroup footer="Sugerida nas compras deste local, para toda a família.">
+        <CategoryField categories={expenseCategories} value={categoryId} onChange={setCategoryId} id="place-category"
+          placeholder="Opcional" />
+        {categoryId && <ListRow tone="destructive" title="Remover categoria" onClick={() => setCategoryId(null)} />}
       </ListGroup>
 
       <ListGroup footer={mapsError ?? (point ? 'Ponto do mapa salvo.' : 'No Maps, toque em Compartilhar e copie o link.')}>
