@@ -47,6 +47,7 @@ export interface Category {
   class: 'essential' | 'desire' | null
   sortOrder: number
   active: boolean
+  parentId: string | null // subcategoria: id da principal
 }
 
 export type TransactionType =
@@ -147,14 +148,6 @@ export interface OwnWallet extends Wallet {
   revolvingRate: number | null
   closingDayInclusive: boolean
   shareScope: 'none' | 'family' | 'selected'
-}
-
-export interface CategoryInput {
-  type: CategoryType
-  name: string
-  icon: string
-  color: string
-  class: 'essential' | 'desire' | null
 }
 
 export type BillType = 'expense' | 'income'

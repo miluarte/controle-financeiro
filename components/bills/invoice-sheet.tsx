@@ -27,6 +27,7 @@ import { Money } from '@/components/shared/money'
 import { FormError } from '@/components/shared/form-error'
 import { EmptyState } from '@/components/shared/empty-state'
 import { Note } from '@/components/shared/note'
+import { displayCategoryMap } from '@/lib/categories'
 
 export interface InvoiceRef {
   wallet: OwnWallet
@@ -68,7 +69,7 @@ function Body({ inv, onDone }: { inv: InvoiceRef; onDone: () => void }) {
   const [error, setError] = useState<string | null>(null)
   const { data: purchases } = useSWR(['invoice-tx', inv.wallet.id, inv.ref], () =>
     transactionsApi.getByInvoice(inv.wallet.id, `${inv.ref}-01`))
-  const catById = new Map(categories.map(c => [c.id, c]))
+  const catById = displayCategoryMap(categories)
   const count = (purchases ?? []).length
 
   async function run(fn: () => Promise<void>, done: string) {

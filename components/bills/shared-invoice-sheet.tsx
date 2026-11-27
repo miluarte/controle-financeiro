@@ -18,6 +18,7 @@ import type { CardDebt, Wallet } from '@/lib/types'
 import { formatCurrency, formatDate, monthLabel, walletLabel } from '@/lib/utils'
 import { Money } from '@/components/shared/money'
 import { EmptyState } from '@/components/shared/empty-state'
+import { displayCategoryMap } from '@/lib/categories'
 
 export interface SharedInvoice { wallet: Wallet; debt: CardDebt }
 
@@ -45,7 +46,7 @@ function Body({ inv, owner, onPay }: { inv: SharedInvoice; owner: string; onPay:
   const { debt, wallet } = inv
   const ref = debt.invoiceRef.slice(0, 7)
   const { data: purchases } = useSWR(['invoice-tx', wallet.id, ref], () => transactionsApi.getByInvoice(wallet.id, `${ref}-01`))
-  const catById = new Map(categories.map(c => [c.id, c]))
+  const catById = displayCategoryMap(categories)
   const list = purchases ?? []
   const paid = debt.open <= 0
   // acertos já informados que o titular ainda não confirmou (um por fatura: para informar outro, cancela este)

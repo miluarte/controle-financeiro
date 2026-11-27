@@ -23,6 +23,7 @@ import { matchesFilters, NO_FILTER, TransactionFilters } from '@/components/tran
 import { senderOf } from '@/components/transactions/sender-field'
 import { currentMonth, walletLabel } from '@/lib/utils'
 import { matchesQuery } from '@/lib/search'
+import { displayCategoryMap } from '@/lib/categories'
 
 // ?pagamento=id1,id2&mes=AAAA-MM abre já filtrado (ex.: "Você deve a …" da Home, com o mês das compras).
 export default function TransactionsPage() {
@@ -53,10 +54,12 @@ function TransactionsContent() {
   const duplicates = useMemo(() => findDuplicates(monthList), [monthList])
 
   const visible = useMemo(() => {
-    const catName = new Map(categories.map(c => [c.id, c.name]))
+    // busca acha pela principal e pela subcategoria; o filtro escolhe principais e inclui as subcategorias
+    const root = displayCategoryMap(categories)
+    const catName = new Map(categories.map(c => [c.id, root.get(c.id)?.id === c.id ? c.name : `${c.name} ${root.get(c.id)?.name}`]))
     const walletName = new Map(wallets.map(w => [w.id, walletLabel(w)]))
     return transactions.filter(t => {
-      if (!matchesFilters(t, extra)) return false
+      if (!matchesFilters(t, extra, id => root.get(id)?.id ?? id)) return false
       if (!searching) return true
       const itemNames = Array.isArray(t.sourceData?.items) ? (t.sourceData.items as { name: string }[]).map(i => i.name) : []
       return matchesQuery(query, [t.place, t.description, t.categoryId && catName.get(t.categoryId), t.walletId && walletName.get(t.walletId), ...itemNames, senderOf(t.sourceData)?.name], t.amount)
