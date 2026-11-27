@@ -16,7 +16,7 @@ import { useCategories } from '@/hooks/use-categories'
 import { useBills } from '@/hooks/use-data'
 import { useCardChargePaid } from '@/hooks/use-card-charge-paid'
 import type { BillOccurrence } from '@/lib/types'
-import { currentMonth, formatCurrency, formatDate, walletLabel } from '@/lib/utils'
+import { currentMonth, formatCurrency, formatDate, installmentLabel, walletLabel } from '@/lib/utils'
 import { LoadingBlock } from '@/components/shared/loading-dots'
 import { useBillDelete } from '@/components/bills/use-bill-delete'
 import { QuickAddSheet } from '@/components/transactions/quick-add-sheet'
@@ -76,7 +76,6 @@ export default function BillsPage() {
           <ListGroup header={`Contas · ${bills.length}`}>
             {bills.map(o => {
               const cat = o.bill.categoryId ? catById.get(o.bill.categoryId) : undefined
-              const n = o.installmentN ? ` · ${o.installmentN}/${o.bill.installmentsTotal}` : ''
               const to = o.bill.recipient ? ` · Para ${o.bill.recipient.name}` : ''
               return (
                 <ListRow
@@ -85,8 +84,9 @@ export default function BillsPage() {
                   onDelete={() => askEnd(o)}
                   leading={<CategoryIcon icon={cat?.icon ?? 'ellipsis'} />}
                   title={o.bill.name}
-                  subtitle={<span className="flex min-w-0 items-center gap-1.5"><span className="truncate">Vence {formatDate(o.dueDate).slice(0, 5)}{n}{to}</span> <DueBadge dueDate={o.dueDate} paid={!!o.paidAt} /></span>}
+                  subtitle={<span className="flex min-w-0 items-center gap-1.5"><span className="truncate">Vence {formatDate(o.dueDate).slice(0, 5)}{to}</span> <DueBadge dueDate={o.dueDate} paid={!!o.paidAt} /></span>}
                   trailing={<Money cents={o.amount} />}
+                  trailingSubtitle={installmentLabel(o.installmentN, o.bill.installmentsTotal)}
                   chevron
                 />
               )

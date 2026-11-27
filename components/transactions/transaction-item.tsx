@@ -8,7 +8,7 @@ import { CategoryIcon } from '@/components/shared/category-icon'
 import { Money } from '@/components/shared/money'
 import { useCardPeople } from '@/hooks/use-card-people'
 import type { Category, Transaction, Wallet } from '@/lib/types'
-import { walletLabel } from '@/lib/utils'
+import { installmentLabel, walletLabel } from '@/lib/utils'
 
 export const TYPE_LABEL: Record<Transaction['type'], string> = {
   expense: 'Gasto',
@@ -41,8 +41,7 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
   const walletName = (wallet ? walletLabel(wallet) : null) ?? t.walletNameSnapshot
   const full = purchaseTotal !== undefined && !!t.installmentsTotal
   // parcelas sempre embaixo do valor: "em Nx" com o valor cheio (Início, Transações) ou "3 de 12" com a parcela
-  const installments = full ? `em ${t.installmentsTotal}x`
-    : t.installmentN && t.installmentsTotal ? `${t.installmentN} de ${t.installmentsTotal}` : undefined
+  const installments = installmentLabel(t.installmentN, t.installmentsTotal, full)
   // subtítulo: só a forma de pagamento (categoria fica no ícone; itens e detalhes, ao abrir)
   // receita: quem enviou; gasto no Pix: para quem foi (source_data.sender)
   const sender = senderOf(t.sourceData)?.name
