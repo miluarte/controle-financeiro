@@ -7,7 +7,7 @@ import { MemberAvatar } from '@/components/family/member-avatar'
 import { ChoiceChip } from '@/components/shared/choice-chip'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import type { ReceiptItem } from '@/lib/receipt'
-import { discountParts } from '@/lib/discount'
+import { discountPartError, discountParts } from '@/lib/discount'
 import { SPLIT_ALL, splitParts, type SplitMode } from '@/lib/split'
 import type { FamilyMember } from '@/lib/types'
 import { formatCurrency } from '@/lib/utils'
@@ -37,12 +37,14 @@ export function splitPeople(value: SplitValue, people: FamilyMember[], me: strin
 
 // Texto do rodapé: quanto fica para cada pessoa, ou o motivo de não fechar.
 // net: valor com desconto; as partes são calculadas sobre o total e levadas a ele na proporção
-export function splitSummary(value: SplitValue, people: FamilyMember[], me: string, items: ReceiptItem[], total: number, net = total) {
+// (ou o desconto sai inteiro da parte de discountTo)
+export function splitSummary(value: SplitValue, people: FamilyMember[], me: string, items: ReceiptItem[], total: number, net = total,
+  discountTo: string | null = null) {
   const ids = splitPeople(value, people, me)
   const { parts: gross, error } = splitParts({ mode: splitMode(value, items), total, people: ids, items, values: value.values })
-  const parts = discountParts(gross, net)
+  const parts = discountParts(gross, net, discountTo)
   const name = (id: string) => (id === me ? 'Você' : people.find(p => p.userId === id)?.name ?? 'Pessoa')
-  return error ?? parts.map(p => `${name(p.userId)} ${formatCurrency(p.amount)}`).join(' · ')
+  return error ?? discountPartError(parts, discountTo, name(discountTo ?? '')) ?? parts.map(p => `${name(p.userId)} ${formatCurrency(p.amount)}`).join(' · ')
 }
 
 // Opções de dono de item na divisão por item: cada pessoa da divisão ou "Dividir" (entre todos).

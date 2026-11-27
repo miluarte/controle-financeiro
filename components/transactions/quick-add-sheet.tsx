@@ -40,7 +40,7 @@ import { PickerRow } from '@/components/shared/picker-row'
 import { walletOption } from '@/components/shared/wallet-picker'
 import { useCardPeople } from '@/hooks/use-card-people'
 import { SPLIT_ALL, splitParts } from '@/lib/split'
-import { discountAmount, discountData, discountDefault, discountError, discountOf, discountParts, discountValueOf, withDiscount } from '@/lib/discount'
+import { discountAmount, discountData, discountDefault, discountError, discountOf, discountPartError, discountParts, discountValueOf, withDiscount } from '@/lib/discount'
 import { DiscountGroup } from './discount-group'
 import { SenderRows, senderData, senderOf, type Sender } from './sender-field'
 import { PayerRow } from './payer-field'
@@ -102,21 +102,30 @@ const partsOf = (t: Transaction | null | undefined, key: string) =>
 // parcelas que estavam em aberto; vale como proporção do valor da compra no formulário.
 function editSplit(e: EditTarget | null): SplitValue {
   const parts = partsOf(e?.tx, 'split_parts') ?? partsOf(e?.tx, 'shared_parts')
-  if (!e || !parts || parts.length < 2) return splitDefault()
+  const d = discountOf(e?.tx.sourceData)
+  const people = new Set([...(parts ?? []).map(p => p.user_id), ...(d?.to ? [d.to] : [])])
+  if (!e || !parts || people.size < 2) return splitDefault()
   const total = editAmount(e)
   const sum = parts.reduce((s, p) => s + Number(p.amount), 0)
   const values: Record<string, number> = {}
-  let left = total
-  parts.forEach((p, i) => {
-    const v = i === parts.length - 1 ? left : sum ? Math.round(Number(p.amount) * total / sum) : 0
-    values[p.user_id] = v
-    left -= v
-  })
+  if (d?.to) {
+    // desconto de uma pessoa só: a parte dela sem desconto é a parte lançada mais o desconto
+    // (quem ficou com parte zero não foi lançado e volta para a divisão)
+    parts.forEach(p => { values[p.user_id] = Number(p.amount) })
+    values[d.to] = (values[d.to] ?? 0) + d.amount
+  } else {
+    let left = total
+    parts.forEach((p, i) => {
+      const v = i === parts.length - 1 ? left : sum ? Math.round(Number(p.amount) * total / sum) : 0
+      values[p.user_id] = v
+      left -= v
+    })
+  }
   return {
     on: true, mode: 'value',
-    selected: parts.map(p => p.user_id).filter(id => id !== e.me),
+    selected: Object.keys(values).filter(id => id !== e.me),
     values,
-    withoutMe: !parts.some(p => p.user_id === e.me),
+    withoutMe: !(e.me in values),
   }
 }
 
@@ -323,8 +332,6 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
   const netTotal = grossTotal - discountValue
   // valor digitado (compra ou parcela) com o desconto abatido, na proporção
   const net = withDiscount(amount, grossTotal, netTotal)
-  const discountSd = discountOn ? (d => (d ? { discount: d } : {}))(discountData(discount, grossTotal)) : {}
-  const discountErr = discountOn ? discountError(discount, grossTotal) : null
   // Pix dividido: com a família toda; pago por você e para pagar depois, não divide
   const pixPeople = payLater ? [] : payerPeople
   const sharedPix = pixPeople.length > 1 && (split.on || payerId !== me)
@@ -337,9 +344,20 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
         ? { parts: [{ userId: pixIds[0], amount }], error: pixIds[0] === payerId ? 'Escolha quem divide o gasto.' : null }
         : splitParts({ mode: splitMode(split, items), total: amount, people: pixIds, items, values: split.values }))
       : null
-  const splitResult = grossSplit && { ...grossSplit, parts: discountParts(grossSplit.parts, net) }
   // pessoas cuja divisão aparece no grupo (cartão ou Pix)
   const dividing = splitting ? splitWith : sharedPix && split.on ? pixPeople : []
+  const dividingIds = splitting ? splitPeople(split, splitWith, me) : sharedPix && split.on ? pixIds : []
+  const personName = (id: string) => (id === me ? 'Você' : dividing.find(p => p.userId === id)?.name ?? 'Pessoa')
+  // compra dividida: o desconto pode sair inteiro da parte de uma pessoa
+  const discountTo = discountOn && discount.to && dividingIds.length > 1 && dividingIds.includes(discount.to) ? discount.to : null
+  const discountSd = discountOn ? (d => (d ? { discount: d } : {}))(discountData(discount, grossTotal, discountTo)) : {}
+  const splitParts_ = grossSplit && discountParts(grossSplit.parts, net, discountTo)
+  // gasto dividido com o desconto todo numa pessoa: se só quem pagou fica com parte, não há o que dividir
+  const discountOnlyPayer = !!discountTo && sharedPix && !!splitParts_ && splitParts_.every(p => p.amount <= 0 || p.userId === payerId)
+    ? `Com o desconto, só ${personName(payerId) === 'Você' ? 'você paga' : `${personName(payerId)} paga`}. Desligue Dividir compra.` : null
+  const discountErr = discountOn ? discountError(discount, grossTotal) ?? discountOnlyPayer
+    ?? (splitParts_ ? discountPartError(splitParts_, discountTo, personName(discountTo ?? '')) : null) : null
+  const splitResult = grossSplit && splitParts_ && { ...grossSplit, parts: splitParts_ }
   // itens guardam o dono só na compra dividida
   const plainItems = items.map(it => ({ name: it.name, amount: it.amount }))
   const canSubmit = amount > 0 && net > 0 && !discountErr && (!requireCategory || !!categoryId) && (!requireWallet || hasWallet) && !splitResult?.error && !submitting
@@ -742,7 +760,8 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
               )}
             </ListGroup>
 
-            {canDiscount && <DiscountGroup value={discount} onChange={setDiscount} gross={grossTotal} />}
+            {canDiscount && <DiscountGroup value={discount} onChange={setDiscount} gross={grossTotal}
+              people={dividingIds.map(id => ({ value: id, label: personName(id) }))} error={discountOnlyPayer} />}
 
             {mode === 'income' && !pending && !edit && (!bill || repeat.on) && (
               <RepeatGroup value={repeat} onChange={setRepeat} start={bill ? bill.startMonth.slice(0, 7) : date.slice(0, 7)}
@@ -767,7 +786,7 @@ export function QuickAddSheet({ open, onOpenChange, initialMode = 'expense', pen
 
             {(needsCategory || needsWallet) && (
               <ListGroup footer={unknownCard ? holderFooter(holders, holder, me)
-                : splitting || (sharedPix && split.on) ? splitSummary(split, dividing, me, items, amount, net)
+                : splitting || (sharedPix && split.on) ? splitSummary(split, dividing, me, items, amount, net, discountTo)
                 : sharedPix ? `Você deve ${formatCurrency(net)} a ${cardPeople.nameOf(payerId)}.` : undefined}>
                 {needsCategory && <CategoryField id="qa-category" categories={visibleCategories} value={categoryId} onChange={setCategoryId} />}
                 {needsWallet && (

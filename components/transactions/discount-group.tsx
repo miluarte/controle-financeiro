@@ -7,20 +7,27 @@ import { SegmentedControl } from '@/components/ios/segmented-control'
 import { CurrencyInput } from '@/components/shared/currency-input'
 import { DecimalField } from '@/components/shared/decimal-field'
 import { Switch } from '@/components/ui/switch'
-import { discountAmount, discountError, discountLabel, type Discount, type DiscountKind, type DiscountValue } from '@/lib/discount'
+import { PickerRow } from '@/components/shared/picker-row'
+import { discountAmount, discountError, discountLabel, discountShare, type Discount, type DiscountKind, type DiscountValue } from '@/lib/discount'
 import { formatCurrency } from '@/lib/utils'
 import { Money } from '@/components/shared/money'
 
 // "Teve desconto?" no gasto: em porcentagem ou em reais, abatido do valor da compra.
 // gross: total da compra sem desconto (na parcelada, todas as parcelas).
-export function DiscountGroup({ value, onChange, gross }: {
+// people: na compra dividida, quem está na divisão, para escolher de quem é o desconto.
+const ALL = 'all'
+
+export function DiscountGroup({ value, onChange, gross, people = [], error: extraError }: {
   value: DiscountValue
   onChange: (v: DiscountValue) => void
   gross: number
+  people?: { value: string; label: string }[]
+  // erro que depende do resto do formulário (ex.: divisão)
+  error?: string | null
 }) {
   const set = (patch: Partial<DiscountValue>) => onChange({ ...value, ...patch })
   const amount = discountAmount(value, gross)
-  const error = discountError(value, gross)
+  const error = discountError(value, gross) ?? extraError ?? null
   const footer = !value.on || gross <= 0 ? undefined
     : error ?? (amount > 0 ? `Total com desconto: ${formatCurrency(gross - amount)}.` : undefined)
   return (
@@ -49,6 +56,11 @@ export function DiscountGroup({ value, onChange, gross }: {
                 onChange={v => set({ value: v })} />
             </FormRow>
           )}
+          {people.length > 1 && (
+            <PickerRow id="discount-to" label="Desconto para" value={value.to && people.some(p => p.value === value.to) ? value.to : ALL}
+              onChange={v => set({ to: v === ALL ? null : v })}
+              options={[{ value: ALL, label: 'Todos' }, ...people]} />
+          )}
         </>
       )}
     </ListGroup>
@@ -56,7 +68,7 @@ export function DiscountGroup({ value, onChange, gross }: {
 }
 
 // Desconto de um lançamento já registrado (só leitura): o desconto da compra inteira e, na compra
-// dividida, a parte de cada pessoa, na mesma proporção da divisão.
+// dividida, a parte de cada pessoa (inteiro para a pessoa escolhida ou na proporção da divisão).
 export function DiscountSummary({ discount, parts, nameOf, installments }: {
   discount: Discount
   parts?: { user_id: string; amount: number }[] | null
@@ -64,7 +76,6 @@ export function DiscountSummary({ discount, parts, nameOf, installments }: {
   installments?: number
 }) {
   const sum = parts?.reduce((s, p) => s + Number(p.amount), 0) ?? 0
-  const share = (amount: number) => (sum > 0 ? Math.round((discount.amount * amount) / sum) : 0)
   const footer = `Sem desconto: ${formatCurrency(discount.gross)}${installments && installments > 1 ? ' na compra inteira' : ''}.`
   return (
     <ListGroup footer={footer}>
@@ -72,7 +83,7 @@ export function DiscountSummary({ discount, parts, nameOf, installments }: {
         trailing={<span className="text-body tabular-nums text-foreground">{discountLabel(discount, formatCurrency)}</span>} />
       {parts && nameOf && parts.length > 1 && parts.map(p => (
         <ListRow key={p.user_id} title={nameOf(p.user_id)}
-          trailing={<Money cents={share(Number(p.amount))} size="rowRegular" />} />
+          trailing={<Money cents={discountShare(discount, p.user_id, Number(p.amount), sum)} size="rowRegular" />} />
       ))}
     </ListGroup>
   )
