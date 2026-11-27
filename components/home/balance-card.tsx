@@ -1,27 +1,17 @@
 'use client'
 
-import { useState } from 'react'
 import { ArrowDownLinearIcon, ArrowUpLinearIcon, EyeClosedLinearIcon, EyeLinearIcon } from '@solar-icons/react'
+import { HIDDEN_MONEY as HIDDEN, useHideValues } from '@/hooks/use-hide-values'
 import { useMonthSummary } from '@/hooks/use-month-summary'
 import { Panel } from '@/components/ios/panel'
 import { Money } from '@/components/shared/money'
 import { addMonths, formatCurrency, monthName } from '@/lib/utils'
 
-const HIDDEN = 'R$ ••••'
-
-// Valores sempre ocultos ao abrir o app. A escolha vale só enquanto o app está aberto
-// (navegar entre telas mantém); não é gravada no aparelho.
-let hiddenThisSession = true
-
 // HOM-2 e HOM-6: saldo do mês (regime de caixa), receitas, gastos e botão de ocultar.
 export function BalanceCard({ month }: { month: string }) {
   const { summary, loading } = useMonthSummary(month)
-  const [hidden, setHidden] = useState(hiddenThisSession)
-
-  function toggle() {
-    hiddenThisSession = !hidden
-    setHidden(hiddenThisSession)
-  }
+  // sempre ocultos ao abrir o app (ver useHideValues)
+  const { hidden, toggle } = useHideValues()
 
   const show = (v: number) => (hidden ? HIDDEN : formatCurrency(v))
 

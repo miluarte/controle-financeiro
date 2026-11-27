@@ -2,15 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { InboxLinearIcon } from '@solar-icons/react'
-import { ListGroup } from '@/components/ios/list-group'
-import { ListRow } from '@/components/ios/list-row'
+import { DangerTriangleLinearIcon } from '@solar-icons/react'
+import { AlertCard } from '@/components/shared/alert-card'
 import { usePending } from '@/hooks/use-data'
 import { useSession } from '@/hooks/use-session'
 import { PendingSheet } from './pending-sheet'
 import { Money } from '@/components/shared/money'
 
-// Home: gastos das automações esperando confirmação. Abre sozinho pelo aviso (?pendentes=1).
+// Home: aviso (card amarelo, acima da Análise do mês) com os gastos esperando confirmação; some quando não há nenhum. Abre sozinho pelo aviso (?pendentes=1).
 export function PendingBanner() {
   const { session } = useSession()
   const { pending } = usePending(session?.user.id)
@@ -27,12 +26,9 @@ export function PendingBanner() {
 
   return (
     <>
-      <ListGroup variant="filled">
-        <ListRow chevron onClick={() => setOpen(true)}
-          leading={<InboxLinearIcon className="size-6 text-tint" />}
-          title={`${pending.length} para confirmar`}
-          trailing={<Money cents={total} />} />
-      </ListGroup>
+      <AlertCard tone="warning" icon={DangerTriangleLinearIcon} onClick={() => setOpen(true)}
+        title={pending.length === 1 ? '1 gasto para confirmar' : `${pending.length} gastos para confirmar`}
+        subtitle={<><Money size="inherit" tone="inherit" cents={total} /> no total</>} />
       <PendingSheet open={open} pending={pending} onOpenChange={setOpen} />
     </>
   )
