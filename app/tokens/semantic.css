@@ -37,8 +37,8 @@
   --status-warning: var(--color-amber-500);
   --status-info: var(--color-blue-500);
   --status-success-content: var(--color-green-700); /* texto verde sobre fundo claro (selo) */
-  --status-warning-content: var(--color-amber-900); /* título do aviso, sobre o fundo amarelo */
-  --status-warning-content-secondary: var(--color-amber-600); /* descrição, ícone e seta do aviso */
+  --status-warning-content: var(--color-amber-900); /* título e ícone do aviso, sobre o fundo amarelo */
+  --status-warning-content-secondary: var(--color-amber-600); /* descrição e seta do aviso */
 
   /* Dados (gráficos) */
   --data-1: var(--color-blue-500);
