@@ -38,6 +38,8 @@ interface ListRowProps extends VariantProps<typeof rowVariants> {
   title: React.ReactNode
   subtitle?: React.ReactNode
   trailing?: React.ReactNode
+  // segunda linha à direita, embaixo do valor (ex.: "em 12x"), no tom do subtítulo
+  trailingSubtitle?: React.ReactNode
   chevron?: boolean
   onClick?: () => void
   // deslizar para a esquerda revela a lixeira
@@ -53,7 +55,7 @@ interface ListRowProps extends VariantProps<typeof rowVariants> {
 }
 
 export function ListRow({
-  leading, title, subtitle, trailing, chevron, onClick, onDelete, swipeExtra, bare, tone, layout = 'inset', className,
+  leading, title, subtitle, trailing, trailingSubtitle, chevron, onClick, onDelete, swipeExtra, bare, tone, layout = 'inset', className,
 }: ListRowProps) {
   const centered = tone === 'tint' || tone === 'destructive'
   const plain = layout === 'plain'
@@ -72,7 +74,12 @@ export function ListRow({
           <span className="block truncate">{title}</span>
           {subtitle && <span className={cn('block truncate whitespace-nowrap text-subheadline [&>*]:whitespace-nowrap', secondaryTone(tone))}>{subtitle}</span>}
         </span>
-        {trailing && <span className="shrink-0 text-muted-foreground">{trailing}</span>}
+        {trailing && (trailingSubtitle ? (
+          <span className="flex shrink-0 flex-col items-end text-muted-foreground">
+            {trailing}
+            <span className={cn('whitespace-nowrap text-subheadline', secondaryTone(tone))}>{trailingSubtitle}</span>
+          </span>
+        ) : <span className="shrink-0 text-muted-foreground">{trailing}</span>)}
         {chevron && <AltArrowRightLinearIcon className={cn('size-4 shrink-0 stroke-(length:--icon-stroke-chevron)', secondaryTone(tone))} />}
       </span>
     </>

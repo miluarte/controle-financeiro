@@ -4,6 +4,7 @@ import { TransactionItem } from './transaction-item'
 import { ListGroup } from '@/components/ios/list-group'
 import { EmptyState } from '@/components/shared/empty-state'
 import { useCategories } from '@/hooks/use-categories'
+import { useInstallmentTotals } from '@/hooks/use-installment-totals'
 import { useWallets } from '@/hooks/use-wallets'
 import type { Transaction } from '@/lib/types'
 import { dayLabel } from '@/lib/utils'
@@ -18,20 +19,25 @@ interface TransactionDayListProps {
   // complemento do subtítulo de cada linha (ex.: "de Ana") e linhas sem excluir/fixar no deslizar
   // (ex.: compra dividida somada numa linha só)
   describe?: (t: Transaction) => { note?: string; locked?: boolean }
+  // compra parcelada com o valor cheio e "em Nx" (Início e Transações); false mostra a parcela (faturas)
+  fullPurchase?: boolean
 }
 
-// TRA-1: lista por dia, direto no fundo da tela (sem card), igual em todas as telas.
+// TRA-1: lista por dia, direto no fundo da tela (sem card), no Início e em Transações.
 export function TransactionDayList({
   transactions,
   emptyTitle = 'Nenhuma transação',
   emptyText = 'Nenhum gasto registrado neste mês',
   onSelect,
   describe,
+  fullPurchase = true,
 }: TransactionDayListProps) {
   const { categories } = useCategories()
   const { wallets } = useWallets()
   const del = useTransactionDelete()
   const pin = usePinAction()
+  // compra parcelada aparece com o valor cheio e "em Nx" (cartões e faturas seguem com a parcela)
+  const totalOf = useInstallmentTotals(transactions)
   const catById = new Map(categories.map(c => [c.id, c]))
   const walletById = new Map(wallets.map(w => [w.id, w]))
 
@@ -67,6 +73,7 @@ export function TransactionDayList({
                 onDelete={row.locked ? undefined : () => del.ask(t)}
                 swipeExtra={row.locked ? undefined : pin.extra(t)}
                 pinned={pin.pinned(t)}
+                purchaseTotal={fullPurchase ? totalOf(t) : undefined}
               />
             )
           })}

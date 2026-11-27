@@ -35,7 +35,7 @@ export function CardStatement() {
       {loading ? (
         <LoadingBlock />
       ) : (
-        <TransactionDayList transactions={purchases} onSelect={showTransaction}
+        <TransactionDayList transactions={purchases} onSelect={showTransaction} fullPurchase={false}
           emptyText="Nenhuma compra nos cartões neste mês"
           describe={t => {
             const owners = merged.get(t.id)

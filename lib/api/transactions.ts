@@ -61,6 +61,14 @@ export const transactionsApi = {
     return rows[0] ? toTransaction(rows[0]) : null
   },
 
+  // Valor cheio de cada compra parcelada (installment_groups.total_amount: a parte da pessoa na compra inteira).
+  // Grupos que o RLS não mostra ficam de fora.
+  groupTotals: async (groupIds: string[]): Promise<Record<string, number>> => {
+    if (!groupIds.length) return {}
+    const rows = unwrap(await supabase.from('installment_groups').select('id, total_amount').in('id', groupIds))
+    return Object.fromEntries(rows.map(r => [r.id as string, Number(r.total_amount)]))
+  },
+
   // Parcelas de uma compra parcelada, em ordem.
   getGroup: async (groupId: string) => {
     const rows = unwrap(

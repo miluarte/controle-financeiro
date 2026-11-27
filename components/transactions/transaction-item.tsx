@@ -32,12 +32,16 @@ interface TransactionItemProps {
   // fixar/desafixar no deslizar; pinned mostra o alfinete ao lado do nome
   swipeExtra?: SwipeExtra
   pinned?: boolean
+  // valor cheio da compra parcelada (Início e Transações): no lugar da parcela, com "em Nx" embaixo
+  purchaseTotal?: number
 }
 
-export function TransactionItem({ transaction: t, category, wallet, onClick, onDelete, note, swipeExtra, pinned }: TransactionItemProps) {
+export function TransactionItem({ transaction: t, category, wallet, onClick, onDelete, note, swipeExtra, pinned, purchaseTotal }: TransactionItemProps) {
   const title = t.place || t.description || category?.name || TYPE_LABEL[t.type]
   const walletName = (wallet ? walletLabel(wallet) : null) ?? t.walletNameSnapshot
-  const installment = t.installmentN && t.installmentsTotal ? `${t.installmentN} de ${t.installmentsTotal}` : null
+  const full = purchaseTotal !== undefined && !!t.installmentsTotal
+  // com o valor cheio, o "em Nx" fica embaixo do valor e a parcela sai do subtítulo
+  const installment = !full && t.installmentN && t.installmentsTotal ? `${t.installmentN} de ${t.installmentsTotal}` : null
   // subtítulo: só a forma de pagamento e a parcela (categoria fica no ícone; itens e detalhes, ao abrir)
   // receita: quem enviou; gasto no Pix: para quem foi (source_data.sender)
   const sender = senderOf(t.sourceData)?.name
@@ -67,8 +71,9 @@ export function TransactionItem({ transaction: t, category, wallet, onClick, onD
       ) : <span className="font-bold">{title}</span>}
       subtitle={subtitle}
       trailing={
-        <Money cents={t.amount} size="item" tone={inflow ? 'success' : 'default'} sign={inflow ? '+' : undefined} />
+        <Money cents={full ? purchaseTotal : t.amount} size="item" tone={inflow ? 'success' : 'default'} sign={inflow ? '+' : undefined} />
       }
+      trailingSubtitle={full ? `em ${t.installmentsTotal}x` : undefined}
     />
   )
 }
