@@ -105,8 +105,8 @@ function Form({ place, firstName, onDone }: { place: Place | null; firstName: st
 
   return (
     <form id="place" onSubmit={save} className="space-y-6">
-      <ListGroup footer="Aparece no detalhe da compra e no mapa. As listas continuam com o nome da maquininha.">
-        <FormRow label="Apelido" htmlFor="place-nickname">
+      <ListGroup footer="Lojas da mesma marca ficam juntas na análise. Aparece no detalhe da compra.">
+        <FormRow label="Marca" htmlFor="place-nickname">
           <Input id="place-nickname" variant="bare" value={nickname} onChange={e => setNickname(e.target.value)}
             placeholder="Opcional" maxLength={80} list="place-nicknames" className="text-right" />
           <datalist id="place-nicknames">{nicknames.map(n => <option key={n} value={n} />)}</datalist>
