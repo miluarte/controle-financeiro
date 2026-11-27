@@ -24,7 +24,7 @@ export default function AnalysisPage() {
 
   return (
     <>
-      <LargeTitleHeader back title="Análise" actions={<MonthSelector />} />
+      <LargeTitleHeader title="Análise" actions={<MonthSelector />} />
       <div className="space-y-7 px-4 pt-2">
         <BudgetCard month={month} spent={spent} budget={budget} cumulative={cumulative} day={day} />
         <CategoryBreakdown month={month} />

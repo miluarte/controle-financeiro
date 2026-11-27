@@ -65,7 +65,7 @@ export default function NotificationsPage() {
 
   return (
     <>
-      <LargeTitleHeader back title="Notificações" />
+      <LargeTitleHeader title="Notificações" />
       <div className="space-y-7 px-4 pt-2">
         <ListGroup header="Este aparelho" footer={message ?? (state ? STATE_TEXT[state] || undefined : undefined)}>
           <li className="p-3">

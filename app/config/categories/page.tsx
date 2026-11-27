@@ -73,7 +73,7 @@ function Categories() {
   return (
     <>
       {del.sheet}
-      <LargeTitleHeader back title="Categorias" />
+      <LargeTitleHeader title="Categorias" />
       <div className="space-y-7 px-4 pt-2">
         <SegmentedControl aria-label="Tipo" value={type} onChange={setType}
           options={[{ value: 'expense', label: 'Gastos' }, { value: 'income', label: 'Receitas' }]} />

@@ -26,7 +26,7 @@ export default function YourCategoriesPage() {
 
   return (
     <>
-      <LargeTitleHeader back title="Suas categorias" />
+      <LargeTitleHeader title="Suas categorias" />
       <div className="space-y-7 px-4 pt-2">
         {loading ? <LoadingBlock /> : <p className="px-4 text-subheadline text-muted-foreground">{subtitle}</p>}
 

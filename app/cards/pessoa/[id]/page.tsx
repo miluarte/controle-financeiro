@@ -85,7 +85,7 @@ export default function PersonCardsPage() {
 
   return (
     <>
-      <LargeTitleHeader back title={name} actions={<MonthSelector />} />
+      <LargeTitleHeader title={name} actions={<MonthSelector />} />
       <div className="space-y-7 px-4 pt-2">
         {loading ? <LoadingBlock /> : !toOwe && !toReceive ? (
           <EmptyState variant="block">Nada com {name} neste mês</EmptyState>

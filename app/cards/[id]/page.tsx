@@ -30,7 +30,7 @@ function CardContent() {
 
   return (
     <>
-      <LargeTitleHeader back title={wallet ? (shared ? `${walletLabel(wallet)}, de ${wallet.ownerName}` : walletLabel(wallet)) : 'Cartão'}
+      <LargeTitleHeader title={wallet ? (shared ? `${walletLabel(wallet)}, de ${wallet.ownerName}` : walletLabel(wallet)) : 'Cartão'}
         actions={mine ? <GlassButton size="capsule" onClick={() => setEditing(true)}>Editar</GlassButton> : undefined} />
       <div className="space-y-7 px-4 pt-2">
         {wallet && (

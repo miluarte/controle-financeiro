@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { WiFiCrossLinearIcon } from '@solar-icons/react'
-import { PageHeader } from '@/components/layout/page-header'
+import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { Card, CardContent } from '@/components/ui/card'
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function OfflinePage() {
   return (
     <>
-      <PageHeader title="Sem conexão" />
+      <LargeTitleHeader title="Sem conexão" />
       <div className="p-4">
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-10 text-center">

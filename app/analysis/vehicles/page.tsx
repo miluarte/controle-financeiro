@@ -30,7 +30,7 @@ export default function VehiclesPage() {
 
   return (
     <>
-      <LargeTitleHeader back title="Veículos"
+      <LargeTitleHeader title="Veículos"
         actions={<GlassButton aria-label="Novo veículo" onClick={() => openVehicle(null)}><AddLinearIcon /></GlassButton>} />
       <div className="space-y-7 px-4 pt-2">
         <div className="flex"><MonthSelector /></div>

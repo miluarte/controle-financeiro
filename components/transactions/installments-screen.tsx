@@ -26,7 +26,7 @@ export function InstallmentsScreen({ id }: { id: string }) {
 
   return (
     <>
-      <LargeTitleHeader back title="Parcelas" />
+      <LargeTitleHeader title="Parcelas" />
       <div className="space-y-7 px-4 pt-2 pb-8">
         {!t || !lines ? <LoadingBlock /> : (
           <>

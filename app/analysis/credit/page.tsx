@@ -42,7 +42,7 @@ export default function CreditSimulatorPage() {
 
   return (
     <>
-      <LargeTitleHeader back title="Simular crédito" />
+      <LargeTitleHeader title="Simular crédito" />
       <div className="space-y-7 px-4 pt-2">
         <ListGroup>
           <FormRow label="Banco" htmlFor="sim-bank">

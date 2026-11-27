@@ -61,6 +61,7 @@
   --glass-lens: color-mix(in oklab, var(--color-brand-pink-400) var(--opacity-14), transparent); /* aba ativa */
   --glass-blur: var(--blur-6);
   --icon-stroke-chevron: var(--stroke-2); /* seta das linhas de lista (ListRow) */
+  --icon-stroke-back: var(--stroke-2); /* seta de voltar do título (LargeTitleHeader) */
   --glass-blur-strong: var(--blur-14);
   --glass-saturate: var(--saturate-180);
   --glass-border-width: var(--border-width-hairline);
