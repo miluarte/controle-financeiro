@@ -1,11 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { DetailRow } from '@/components/ios/detail-row'
 import { ListGroup } from '@/components/ios/list-group'
 import { ListRow } from '@/components/ios/list-row'
 import { Money } from '@/components/shared/money'
-import { PlaceSheet, type PlaceTarget } from '@/components/places/place-sheet'
 import { useCardPeople } from '@/hooks/use-card-people'
 import { usePlaces } from '@/hooks/use-places'
 import { WALLET_TYPES } from '@/lib/constants'
@@ -41,10 +39,8 @@ export function TransactionDetail({ transaction: t, info, wallet, category, onIn
 }) {
   const { me, nameOf } = useCardPeople()
   const { placeFor } = usePlaces()
-  const [placeTarget, setPlaceTarget] = useState<PlaceTarget | null>(null)
-  // local salvo pelo nome da maquininha (só gasto): apelido e endereço ajudam a reconhecer a loja
+  // local salvo pelo nome da maquininha (só gasto): o apelido aparece como observação do estabelecimento
   const saved = t.type === 'expense' && t.place ? placeFor(t.place) : null
-  const openPlace = () => setPlaceTarget(saved ? { place: saved } : { name: t.place! })
   const inflow = INFLOW.has(t.type)
   const split = partsOf(t, 'split_parts')
   const shared = partsOf(t, 'shared_parts')
@@ -76,11 +72,11 @@ export function TransactionDetail({ transaction: t, info, wallet, category, onIn
 
       {/* como no Mercado Pago: um card com estabelecimento, forma de pagamento, parcelas e categoria (e as pessoas, quando houver) */}
       <ListGroup>
-        {(t.place || t.description) && <DetailRow label={t.place ? 'Estabelecimento' : 'Descrição'} value={(t.place || t.description)!} />}
-        {t.type === 'expense' && t.place && (
-          <DetailRow label="Apelido" value={saved?.nickname ?? 'Adicionar'} onClick={openPlace} />
+        {(t.place || t.description) && (
+          <DetailRow label={t.place ? 'Estabelecimento' : 'Descrição'} value={(t.place || t.description)!}
+            note={saved?.nickname ?? undefined} />
         )}
-        {saved?.address && <DetailRow label="Endereço" value={saved.address} onClick={openPlace} />}
+        {saved?.address && <DetailRow label="Endereço" value={saved.address} />}
         {walletName && <DetailRow label={paymentLabel} value={wallet?.ownerName ? `${walletName} · de ${wallet.ownerName}` : walletName} />}
         {n && n > 1 && t.installmentN && (
           <DetailRow label="Parcelas" value={`${t.installmentN} de ${n}`} onClick={onInstallments} />
@@ -114,8 +110,6 @@ export function TransactionDetail({ transaction: t, info, wallet, category, onIn
           ))}
         </ListGroup>
       )}
-
-      <PlaceSheet target={placeTarget} onClose={() => setPlaceTarget(null)} />
 
       {t.receiptPath && (
         <ListGroup>

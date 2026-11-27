@@ -8,18 +8,24 @@ import { useConfirmDelete } from '@/components/ios/use-delete-action'
 import { PlaceSheet, type PlaceTarget } from '@/components/places/place-sheet'
 import { EmptyState } from '@/components/shared/empty-state'
 import { LoadingBlock } from '@/components/shared/loading-dots'
-import { placeTitle, usePlaceEntries, type PlaceEntry } from '@/hooks/use-places'
+import { useCategories } from '@/hooks/use-categories'
+import { placeMachineNames, placeTitle, usePlaceEntries, type PlaceEntry } from '@/hooks/use-places'
 import { placesApi } from '@/lib/api/places'
 
-// Todos os locais das compras da família, em ordem alfabética. Tocar salva apelido, endereço e link do Maps.
+// Todos os locais das compras da família, em ordem alfabética pelo nome da maquininha. Linha: o nome da maquininha
+// e, embaixo, a categoria e o endereço (ou Loja online). O apelido fica só na folha do local.
 export default function PlacesPage() {
   const { entries, loading } = usePlaceEntries()
   const del = useConfirmDelete()
+  const { categories } = useCategories()
+  const categoryName = (id: string | null) => categories.find(c => c.id === id)?.name
+  const preview = (p: PlaceEntry & { kind: 'saved' }) =>
+    [categoryName(p.place.categoryId), p.place.online ? 'Loja online' : p.place.address].filter(Boolean).join(' · ') || undefined
   const [target, setTarget] = useState<PlaceTarget | null>(null)
 
   const row = (e: PlaceEntry) => e.kind === 'saved' ? (
-    <ListRow key={e.key} title={placeTitle(e.place)} chevron onClick={() => setTarget({ place: e.place })}
-      subtitle={e.place.address ?? e.place.names.map(n => n.name).join(', ')}
+    <ListRow key={e.key} title={placeMachineNames(e.place)} chevron onClick={() => setTarget({ place: e.place })}
+      subtitle={preview(e)}
       onDelete={() => del.ask({ title: `Excluir "${placeTitle(e.place)}"?`, remove: () => placesApi.remove(e.place.id) })} />
   ) : (
     <ListRow key={e.key} title={e.name} chevron onClick={() => setTarget({ name: e.name })} />
