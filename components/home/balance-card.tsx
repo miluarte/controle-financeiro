@@ -1,9 +1,10 @@
 'use client'
 
-import { ArrowDownLinearIcon, ArrowUpLinearIcon, EyeClosedLinearIcon, EyeLinearIcon } from '@solar-icons/react'
+import { EyeClosedLinearIcon, EyeLinearIcon } from '@solar-icons/react'
 import { HIDDEN_MONEY as HIDDEN, useHideValues } from '@/hooks/use-hide-values'
 import { useMonthSummary } from '@/hooks/use-month-summary'
 import { Panel } from '@/components/ios/panel'
+import { FlowStat } from '@/components/shared/flow-stat'
 import { Money } from '@/components/shared/money'
 import { addMonths, formatCurrency, monthName } from '@/lib/utils'
 
@@ -41,22 +42,10 @@ export function BalanceCard({ month }: { month: string }) {
       )}
       {summary && (
         <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-separator pt-4">
-          <Total icon={<ArrowUpLinearIcon />} label="Receitas" cents={summary.income} hidden={hidden} />
-          <Total icon={<ArrowDownLinearIcon />} label="Gastos" cents={summary.spending} hidden={hidden} />
+          <FlowStat direction="in" label="Receitas" cents={summary.income} mask={hidden ? HIDDEN : undefined} />
+          <FlowStat direction="out" label="Gastos" cents={summary.spending} mask={hidden ? HIDDEN : undefined} />
         </dl>
       )}
     </Panel>
-  )
-}
-
-function Total({ icon, label, cents, hidden }: { icon: React.ReactNode; label: string; cents: number; hidden: boolean }) {
-  return (
-    <div className="flex min-w-0 items-start gap-2">
-      <span className="mt-0.5 shrink-0 [&_svg]:size-5">{icon}</span>
-      <div className="min-w-0">
-        <dt className="truncate text-subheadline text-muted-foreground">{label}</dt>
-        <Money as="dd" size="item" className="truncate" cents={cents} mask={hidden ? HIDDEN : undefined} />
-      </div>
-    </div>
   )
 }

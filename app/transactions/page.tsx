@@ -1,12 +1,11 @@
 'use client'
 
-import { Suspense, useEffect, useMemo, useState } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { LargeTitleHeader } from '@/components/ios/large-title-header'
 import { SearchField } from '@/components/ios/search-field'
 import { Screen } from '@/components/ios/screen'
 import { Note } from '@/components/shared/note'
-import { MonthSelector } from '@/components/shared/month-selector'
 import { TransactionDayList } from '@/components/transactions/transaction-day-list'
 import { DuplicatesSheet } from '@/components/transactions/duplicates-sheet'
 import { useShowTransaction } from '@/components/transactions/use-show-transaction'
@@ -15,7 +14,6 @@ import { ListRow } from '@/components/ios/list-row'
 import { findDuplicates } from '@/lib/duplicates'
 import { TransactionsSummary } from '@/components/transactions/transactions-summary'
 import { useCategories } from '@/hooks/use-categories'
-import { useMonth } from '@/hooks/use-month'
 import { useMonthTransactions } from '@/hooks/use-month-transactions'
 import { useAllMyTransactions } from '@/hooks/use-data'
 import { useSession } from '@/hooks/use-session'
@@ -23,7 +21,7 @@ import { useWallets } from '@/hooks/use-wallets'
 import { LoadingBlock } from '@/components/shared/loading-dots'
 import { matchesFilters, NO_FILTER, TransactionFilters } from '@/components/transactions/transaction-filters'
 import { senderOf } from '@/components/transactions/sender-field'
-import { walletLabel } from '@/lib/utils'
+import { currentMonth, walletLabel } from '@/lib/utils'
 import { matchesQuery } from '@/lib/search'
 
 // ?pagamento=id1,id2&mes=AAAA-MM abre já filtrado (ex.: "Você deve a …" da Home, com o mês das compras).
@@ -33,9 +31,8 @@ export default function TransactionsPage() {
 
 function TransactionsContent() {
   const params = useSearchParams()
-  const { month, setMonth } = useMonth()
-  const linkMonth = params.get('mes')
-  useEffect(() => { if (linkMonth) setMonth(linkMonth) }, [linkMonth, setMonth])
+  // sem seletor de mês: o mês atual, ou o mês do link (?mes=AAAA-MM)
+  const month = params.get('mes') ?? currentMonth()
   const { transactions: monthList, loading: monthLoading } = useMonthTransactions(month)
   const { categories } = useCategories()
   const { wallets } = useWallets()
@@ -68,7 +65,7 @@ function TransactionsContent() {
 
   return (
     <Screen variant="grouped">
-      <LargeTitleHeader title="Transações" actions={<MonthSelector />} />
+      <LargeTitleHeader title="Transações" />
       <div className="space-y-5 px-4 pt-2">
         <SearchField autoFocus={params.get('busca') === '1'} placeholder="Buscar local, item, categoria" value={query} onChange={e => setQuery(e.target.value)} />
         {searching && <Note align="start" className="-mt-3">Em todos os meses</Note>}
